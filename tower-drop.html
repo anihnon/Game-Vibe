@@ -3,844 +3,1212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>המשחק שלי - Helix Jump</title>
+    <title>אודות – Game Vibe</title>
+    <!-- קישור לפונט חדש מ-Google Fonts - עקבי עם העיצוב הכללי של האתר -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
     <style>
         body {
+            font-family: 'Varela Round', sans-serif;
             margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f4f4f9, #e0e0e5);
+            color: #333;
+            line-height: 1.6;
+            direction: rtl;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: #fff;
+            padding: 1.5rem 0;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.8rem;
+        }
+
+        header h1 a {
+            color: #fff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        header h1 a:hover {
+            color: #3498db;
+        }
+
+        .content-section {
+            background-color: #fff;
+            padding: 50px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            margin-top: 50px;
+            text-align: center;
+        }
+
+        canvas {
+            margin-top: 20px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px 0;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            margin-top: 50px;
+        }
+
+        .footer-links {
+            margin-top: 10px;
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #2c3e50;
-            font-family: Arial, sans-serif;
-            color: #fff;
-            overflow: hidden;
+            flex-wrap: wrap;
+            gap: 15px;
         }
-        canvas {
-            display: block;
-            border: 5px solid #ecf0f1;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-            max-width: 90vw;
-            max-height: 90vh;
+
+        .footer-links a {
+            color: #fff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #3498db;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2.2rem;
+            }
+
+            .content-section {
+                padding: 30px;
+            }
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
 </head>
 <body>
+    <header>
+        <nav>
+            <h1><a href="index.html">Game Vibe</a></h1>
+        </nav>
+    </header>
+
+    <div class="container">
+        <section class="content-section">
+            <h2>ציור עם P5.js</h2>
+            <div id="p5-container"></div>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Game Vibe. כל הזכויות שמורות.</p>
+        <div class="footer-links">
+            <a href="index.html">דף הבית</a>
+            <a href="contact.html">צור קשר</a>
+        </div>
+    </footer>
+
     <script>
-        /**
-         * The main p5.js sketch for the refactored Helix Jump game.
-         * This code is structured with modern JavaScript practices for better readability and maintenance.
-         */
-        new p5(function(s) {
+        function setup() {
+            let canvas = createCanvas(400, 400);
+            canvas.parent('p5-container');
+            background(220);
+        }
 
-            // --- Constants and Configuration ---
-            const SCENES = {
-                MENU: 0,
-                PLAY: 1,
-                LEADERBOARD: 2,
-                CREDITS: 3
-            };
-            let currentScene = SCENES.MENU;
+        function draw() {
+/** 
+    @CONGRATS   
+        {+} I JUST WANNA SAY IM REALLY PROUD... 
+            THIS GOT 1400 VOTES IN TWO WEEKS AND 1.2K IN 7 DAYS!!!
+            CAN YOU BELIEVE THAT?
+        {+} JUST HIT 1.7K THIS OCTOBER, 2019! FOR A THOUSAND LINES 
+            OF CODE, THAT'S NOT BAD!
+    
+    @REMINDER
+        
+        {+} PS IF THE TEXTS LOOK OFFSET, RELOAD THE PAGE :)
+        {+} TO GET ON THE LEADERBOARD, POST YOU SCORE IN THE T&T
+    
+    @CREDITS
+    
+        {+} THANKS TO Eclipse OS, T1PP, Apollo, AND ALL THOSE STALKERS WHO TESTED MY GAME
+        {+} ALL CODE BY Arrowhead Co. BASED ON THE GAME Helix Jump BY Voodoo
+    
+    @INFO
+    
+        {+} MY ELEVENTH GAME
+        
+        {+} STARTED  : 09 / 05 / 2019
+        {+} FINISHED : 11 / 05 / 2019
+        {+} RELEASED : 13 / 05 / 2019
+**/
 
-            const CONFIG = {
-                canvasWidth: 400,
-                canvasHeight: 600,
-                fonts: ["Arial", "Impact", "Arial Black"],
-                palettes: [
-                    [s.color(255, 255, 255), s.color(249, 241, 219), s.color(252, 213, 129), s.color(213, 41, 65), s.color(153, 13, 53)],
-                    [s.color(248, 244, 227), s.color(255, 137, 102), s.color(42, 43, 42), s.color(112, 108, 157), s.color(229, 68, 109)],
-                    [s.color(255, 228, 250), s.color(225, 218, 189), s.color(71, 99, 152), s.color(141, 200, 178), s.color(255, 196, 35)],
-                    [s.color(249, 234, 225), s.color(19, 190, 156), s.color(170, 153, 143), s.color(204, 139, 134), s.color(125, 79, 80)],
-                    [s.color(228, 214, 167), s.color(200, 130, 196), s.color(28, 17, 10), s.color(80, 162, 167), s.color(155, 41, 21)],
-                    [s.color(165, 196, 212), s.color(123, 109, 141), s.color(73, 59, 42), s.color(132, 153, 177), s.color(89, 63, 98)],
-                    [s.color(255, 238, 242), s.color(255, 200, 251), s.color(89, 87, 88), s.color(185, 188, 223), s.color(255, 146, 194)],
-                    [s.color(255, 253, 253), s.color(240, 225, 0), s.color(11, 60, 73), s.color(183, 190, 188), s.color(125, 35, 109)],
-                    [s.color(203, 121, 58), s.color(154, 3, 30), s.color(50, 19, 37), s.color(95, 15, 64), s.color(252, 220, 77)],
-                    [s.color(178, 221, 247), s.color(76, 181, 174), s.color(100, 180, 200), s.color(202, 186, 200), s.color(255, 32, 62)],
-                    [s.color(178, 221, 247), s.color(48, 107, 172), s.color(20, 27, 65), s.color(11, 156, 235), s.color(145, 142, 244)],
-                    [s.color(232, 233, 243), s.color(177, 229, 242), s.color(39, 38, 53), s.color(166, 166, 168), s.color(200, 200, 200)],
-                    [s.color(247, 255, 221), s.color(219, 161, 89), s.color(232, 233, 155), s.color(239, 200, 128), s.color(208, 227, 204)],
-                    [s.color(0, 117, 196), s.color(214, 81, 8), s.color(239, 160, 11), s.color(239, 160, 11), s.color(89, 31, 10)],
-                    [s.color(240, 231, 216), s.color(166, 58, 80), s.color(177, 155, 150), s.color(186, 110, 110), s.color(201, 223, 74)],
-                    [s.color(246, 216, 174), s.color(244, 211, 94), s.color(46, 64, 87), s.color(8, 61, 119), s.color(218, 65, 103)],
-                    [s.color(241, 242, 235), s.color(86, 98, 70), s.color(74, 74, 72), s.color(164, 194, 165), s.color(216, 218, 211)],
-                    [s.color(255, 194, 226), s.color(110, 68, 255), s.color(184, 146, 255), s.color(255, 144, 179), s.color(239, 122, 133)],
-                    [s.color(228, 223, 218), s.color(115, 29, 216), s.color(193, 102, 107), s.color(72, 169, 166), s.color(212, 180, 131)],
-                    [s.color(239, 214, 172), s.color(67, 37, 52), s.color(40, 61, 101), s.color(54, 88, 85), s.color(196, 73, 0)],
-                    [s.color(145, 245, 173), s.color(116, 82, 150), s.color(99, 42, 80), s.color(139, 158, 183), s.color(194, 232, 18)],
-                    [s.color(212, 228, 188), s.color(150, 172, 183), s.color(72, 35, 60), s.color(54, 85, 143), s.color(64, 55, 110)],
-                    [s.color(161, 204, 165), s.color(65, 93, 67), s.color(17, 29, 19), s.color(112, 151, 117), s.color(143, 155, 190)],
-                    [s.color(213, 230, 141), s.color(107, 5, 4), s.color(36, 16, 35), s.color(163, 50, 11), s.color(71, 160, 37)],
-                    [s.color(251, 251, 249), s.color(166, 52, 70), s.color(0, 0, 4), s.color(126, 25, 70), s.color(12, 98, 145)],
-                ],
-                titles: [
-                    ["Endless", 0], ["Play", 0], ["Leaderboard", 0], ["Credits", 0]
-                ]
-            };
 
-            // --- Game State Variables ---
-            let Cur_Pal = 2;
-            let keys = {};
-            let layers = [];
-            let ptsEarned = [];
-            let previousMouseX = 0;
-            let lastTouchX = 0;
+/***************************************************************************************/
 
-            // --- Color Variables for smooth transitions ---
-            let central, platform, bg, ball, lava;
-            let targetCentral, targetPlatform, targetBg, targetBall, targetLava;
 
-            // --- Game Over Animation Variables ---
-            let particles = [];
-            let explosionParticles = [];
-            let screenFlashAlpha = 0;
-            let shakeAmount = 0;
-            let isGameOverAnimating = false;
 
-            // --- Data for Leaderboard ---
-            let leaderboard = [
-                ["Arrowhead Co.", 13649], ["Ethan Botha", 2324], ["🐧 MrPenguin2 🐧", 4401],
-                ["Dancing Doggle", 5599], ["Tsunamon", 1200], ["noahware", 74655],
-                ["Clayton", 46587], ["Kochendorfer,Zachary", 20134], ["chris316213", 2326],
-                ["Star Traveler", 5039], ["Lightning McCode", 2267], ["Thanksbeardgod", 3789],
-                ["CHRISTIAN SCHOOL TRY HARD", 7160], ["WWescoat", 5128], ["DavidJAllen", 3821],
-                ["MaxWhitten", 3338], ["20khagerty", 11169], ["megamanwhiz", 13124],
-                ["ASSASSIN", 61723], ["Gray Strickland", 4898], ["raff", 5395],
-                ["20khagerty", 108821], ["PriSSSSM", 4456], ["Matias M", 11904],
-                ["HaZard_Luke", 27777], ["Caleb Taylor", 15028], ["Maria Alex", 23588],
-                ["Ellie Sexton", 13232], ["GrantGoins", 46588], ["Brady Beard", 1929],
-                ["iHack", 2145], ["timestruck", 1827], ["PanGalacticGargleBlaster", 6197],
-                ["Nalin Theodore", 2072], ["Programster", 29080], ["Imgbrentlinger", 5718],
-                ["Akiva Rosenberg", 65583], ["HoneyBadger1015", 61456], ["Jcofield.o", 17115],
-                ["Bowtieman", 72190], ["Dylan721668", 6694], ["Computer?", 125670],
-                ["Salamander Maniacs YT", 65576], ["Nikyan", 33740], ["braxtonbailey", 65386],
-                ["The#1Pr🥔grammer", 88321], ["big sad", 62055], ["Austin", 43236],
-                ["WWescoat", 9325], ["manny benitez", 5559], ["Robert McKenzie", 19898],
-                ["Flagilament", 7824], ["angel.cruz", 40198], ["ACAlfredo", 1544],
-                ["Devion Rennier", 6113], ["Declan Ross", 559], ["Andrew Karr", 3611],
-                ["cool guy 24", 6552], ["misaboo918", 14925], ["bcruse12", 4880],
-                ["xxxtentacion", 14891], ["Lampony Snicket", 5000], ["Aidan", 4276],
-                ["Ethan Lee", 20937], ["Noah", 7785], ["siddadi1819", 4222],
-                ["J.Ramirez", 1653], ["anandb", 1578], ["noarwhalmoo", 8173],
-                ["Ethan Carpintero", 3157], ["511Slloth", 4699], ["BloodyBaron", 7383],
-                ["HenryMcKeon3", 7649], ["jelly135", 15934], ["culobCoder", 30567],
-                ["samson nwobi", 80921], ["LightningMc Code", 13198], ["LiquidKetchup", 1772],
-                ["Declan Gibson", 2118], ["DaZe_sneenzy", 2377], ["Light in the Dark", 4114],
-                ["K G", 1712], ["erand05", 5130], ["Angus MacGyver", 5916],
-                ["CAMREN ALEXZANDER HUDSON", 8577], ["jedielijaho0", 125890], ["AnimTheTree", 5054],
-                ["EmilyGRidenour", 7038], ["KikiNoelle", 1438], ["~The Mailbox Programmer~", 1355],
-                ["Kochendorfer.Zackary", 40751], ["Wolf Studios", 4867], ["hmcknight01", 9685],
-                ["Jeremy", 5008], ["elijah", 3998], ["Jay Rosa", 1756],
-                ["Harrison P. Cevasco", 9127], ["Hotrod", 14567], ["A RANDOM GUY", 91094],
-                ["Jo$h", 71234], ["Finder", 10919], ["Sye", 6407],
-                ["Rohaam", 2268], ["CubsFan41", 2515], ["Benny", 13735],
-                ["KingSwords", 9168], ["Alexander O.", 17030], ["Jilian", 196],
-                ["Rebekah R.", 1243], ["Israel", 11532], ["Mr.JPrograms", 4851],
-                ["AuttumStar", 929], ["Kingslay productions", 2113], ["₱ⱤØ₲Ɽ₳₥₥ł₦₲ ₭ł₦₲", 114898],
-                ["👑👑👑Aidair Sanchez👑👑", 11657], ["T̵̢̹̤͑̌h̵̗̹̞͉̼̠̲̚ę̸̩̼̘̀̐͜͝n̴͎̼̜͙̜̻̾̑̋̔r̸͎̬̱̻͚̓̋̊͊͝y̵̫̓̉̑͗̈́", 5238],
-                ["мя. Lємoиѕ", 2951], ["Duck Dino", 10679], ["benyaminaharon739", 109724],
-                ["ツ🅷🅰🅲🅺🅴🆁 🅿🅾🅳", 1342], ["❄PopsicleBoi❄", 4187], ["𝕀ℕ🔰𝔽𝕀𝕃𝕋ℝ𝔸𝕋𝕀𝕆ℕ", 4340],
-            ];
-            const top10 = leaderboard.sort((a, b) => b[1] - a[1]).slice(0, 10);
+/***************************************************************************************/
 
-            // --- Class Definitions ---
+var main = function(){
+//Thumbnail
+//{
+var thumbnail, getThumb = "";
+//}
 
-            /**
-             * @class Player
-             * Manages the ball's state, movement, and score.
-             */
-            class Player {
-                constructor() {
-                    this.begin = false;
-                    this.mode = "play";
-                    this.score = 0;
-                    this.highscore = 0;
-                    this.y = s.height * 0.4;
-                    this.prevLev = 0;
-                    this.level = 0;
-                    this.current = 0;
-                    this.goal = 15;
-                    this.jump = -s.height * 0.015;
-                    this.maxJump = s.height * 0.015;
-                    this.Level = 1;
-                    this.gameOver = false;
-                    this.splatter = [];
-                    this.fill = ball;
-                    this.bounce = 0;
+//Leaderboard
+//{
+var leaderboard = [
+    ["Arrowhead Co.", 13649],
+    ["Ethan Botha", 2324],
+    ["🐧 MrPenguin2 🐧", 4401],
+    ["Dancing Doggle", 5599],
+    ["Tsunamon", 1200],
+    ["noahware", 74655],
+    ["Clayton", 46587],
+    ["Kochendorfer,Zachary", 20134],
+    ["chris316213", 2326],
+    ["Star Traveler", 5039],
+    ["Lightning McCode", 2267],
+    ["Thanksbeardgod", 3789],
+    ["CHRISTIAN SCHOOL TRY HARD", 7160],
+    ["WWescoat", 5128],
+    ["DavidJAllen", 3821],
+    ["MaxWhitten", 3338],
+    ["20khagerty", 11169],
+    ["megamanwhiz", 13124],
+    ["ASSASSIN", 61723],
+    ["Gray Strickland", 4898],
+    ["raff", 5395],
+    ["20khagerty", 108821],
+    ["PriSSSSM", 4456],
+    ["Matias M", 11904],
+    ["HaZard_Luke", 27777],
+    ["Caleb Taylor", 15028],
+    ["Maria Alex", 23588],
+    ["Ellie Sexton", 13232],
+    ["GrantGoins", 46588],
+    ["Brady Beard", 1929],
+    ["iHack", 2145],
+    ["timestruck", 1827],
+    ["PanGalacticGargleBlaster", 6197],
+    ["Nalin Theodore", 2072],
+    ["Programster", 29080],
+    ["Imgbrentlinger", 5718],
+    ["Akiva Rosenberg", 65583],
+    ["HoneyBadger1015", 61456],
+    ["Jcofield.o", 17115],
+    ["Bowtieman", 72190],
+    ["Dylan721668", 6694],
+    ["Computer?", 125670],
+    ["Salamander Maniacs YT", 65576],
+    ["Nikyan", 33740],
+    ["braxtonbailey", 65386],
+    ["The#1Pr🥔grammer", 88321],
+    ["big sad", 62055],
+    ["Austin", 43236],
+    ["WWescoat", 9325],
+    ["manny benitez", 5559],
+    ["Robert McKenzie", 19898],
+    ["Flagilament", 7824],
+    ["angel.cruz", 40198],
+    ["ACAlfredo", 1544],
+    ["Devion Rennier", 6113],
+    ["Declan Ross", 559],
+    ["Andrew Karr", 3611],
+    ["cool guy 24", 6552],
+    ["misaboo918", 14925],
+    ["bcruse12", 4880],
+    ["xxxtentacion", 14891],
+    ["Lampony Snicket", 5000],
+    ["Aidan", 4276],
+    ["Ethan Lee", 20937],
+    ["Noah", 7785],
+    ["siddadi1819", 4222],
+    ["J.Ramirez", 1653],
+    ["anandb", 1578],
+    ["noarwhalmoo", 8173],
+    ["Ethan Carpintero", 3157],
+    ["511Slloth", 4699],
+    ["BloodyBaron", 7383],
+    ["HenryMcKeon3", 7649],
+    ["jelly135", 15934],
+    ["culobCoder", 30567],
+    ["samson nwobi", 80921],
+    ["LightningMc Code", 13198],
+    ["LiquidKetchup", 1772],
+    ["Declan Gibson", 2118],
+    ["DaZe_sneenzy", 2377],
+    ["Light in the Dark", 4114],
+    ["K G", 1712],
+    ["erand05", 5130],
+    ["Angus MacGyver", 5916],
+    ["CAMREN ALEXZANDER HUDSON", 8577],
+    ["jedielijaho0", 125890],
+    ["AnimTheTree", 5054],
+    ["EmilyGRidenour", 7038],
+    ["KikiNoelle", 1438],
+    ["~The Mailbox Programmer~", 1355],
+    ["Kochendorfer.Zackary", 40751],
+    ["Wolf Studios", 4867],
+    ["hmcknight01", 9685],
+    ["Jeremy", 5008],
+    ["elijah", 3998],
+    ["Jay Rosa", 1756],
+    ["Harrison P. Cevasco", 9127],
+    ["Hotrod", 14567],
+    ["A RANDOM GUY", 91094],
+    ["Jo$h", 71234],
+    ["Finder", 10919],
+    ["Sye", 6407],
+    ["Rohaam", 2268],
+    ["CubsFan41", 2515],
+    ["Benny", 13735],
+    ["KingSwords", 9168],
+    ["Alexander O.", 17030],
+    ["Jilian", 196],
+    ["Rebekah R.", 1243],
+    ["Israel", 11532],
+    ["Mr.JPrograms", 4851],
+    ["AuttumStar", 929],
+    ["Kingslay productions", 2113],
+    ["₱ⱤØ₲Ɽ₳₥₥ł₦₲ ₭ł₦₲", 114898],
+    ["👑👑👑Aidair Sanchez👑👑", 11657],
+    ["T̵̢̹̤͑̌h̵̗̹̞͉̼̠̲̚ę̸̩̼̘̀̐͜͝n̴͎̼̜͙̜̻̾̑̋̔r̸͎̬̱̻͚̓̋̊͊͝y̵̫̓̉̑͗̈́", 5238],
+    ["мя. Lємoиѕ", 2951],
+    ["Duck Dino", 10679],
+    ["benyaminaharon739", 109724],
+    ["ツ🅷🅰🅲🅺🅴🆁 🅿🆁🅾🅳", 1342],
+    ["❄PopsicleBoi❄", 4187],
+    ["𝕀ℕ𝔽𝕀𝕃𝕋ℝ𝔸𝕋𝕀𝕆ℕ", 4340],
+];
+var sortArr = function(arr, ind){
+    for(var i = 0; i < arr.length - 1; i++){
+        for(var j = i + 1; j < arr.length; j++){
+            if(arr[j][ind] >= arr[i][ind]){
+                var temp = arr[j];
+                arr[j] = arr[i];
+                arr[i] = temp;
+                if(arr[j][0] === arr[i][0]){
+                    arr.splice(i, 1);
                 }
+            }
+        }
+    }
+};
+sortArr(leaderboard, 1);
+//}
 
-                /**
-                 * Draws the player ball on the canvas.
-                 */
-                display() {
-                    s.push();
-                    s.translate(0, s.height * 0.4 - s.height/2, 0); // Correct for WEBGL coordinate system
-                    s.scale(1 + s.sin(s.radians(this.bounce)) / 5, 1 - s.sin(s.radians(this.bounce)) / 5);
+//Preliminary configurations
+//{
+smooth();
+noStroke();
+textAlign(CENTER, CENTER);
+
+var verify = 0;
+//}
+
+//Fonts
+//{
+var fonts = [createFont("calibri Bold"), createFont("arial black Bold Italic"), createFont("arial black Bold")];
+//}
+
+//Image for pillar
+//{
+background(255);
+background(0);
+
+fill(255);
+ellipse(125 / 2, 55, 125, 110);
+
+var Ellipse = get(0, 0, 125, 110);
+
+background(255);
+
+fill(0, 7.5);
+for(var i = 0; i < 9; i++){
+    rect(0, 0, i * 2, 110);
+}
+
+var ShadeEllipse = get(0, 0, 125, 110);
+//ShadeEllipse.mask(Ellipse);
+//}
+
+//Colors
+//{
+//Color schemes
+var palettes = [
+    //central column, platform color, background, ball, lava     
+    [color(255, 255, 255), color(249, 241, 219), color(252, 213, 129), color(213, 41, 65), color(153, 13, 53)],
+    [color(248, 244, 227), color(255, 137, 102), color(42, 43, 42), color(112, 108, 157), color(229, 68, 109)],
+    [color(255, 228, 250), color(225, 218, 189), color(71, 99, 152), color(141, 200, 178), color(255, 196, 35)],
+    [color(249, 234, 225), color(19, 190, 156), color(170, 153, 143), color(204, 139, 134), color(125, 79, 80)],
+    [color(228, 214, 167), color(200, 130, 196), color(28, 17, 10), color(80, 162, 167), color(155, 41, 21)],
+    [color(165, 196, 212), color(123, 109, 141), color(73, 59, 42), color(132, 153, 177), color(89, 63, 98)],
+    [color(255, 238, 242), color(255, 200, 251), color(89, 87, 88), color(185, 188, 223), color(255, 146, 194)],
+    [color(255, 253, 253), color(240, 225, 0), color(11, 60, 73), color(183, 190, 188), color(125, 35, 109)],
+    [color(203, 121, 58), color(154, 3, 30), color(50, 19, 37), color(95, 15, 64), color(252, 220, 77)],
+    [color(178, 221, 247), color(76, 181, 174), color(100, 180, 200), color(202, 186, 200), color(255, 32, 62)],
+    [color(178, 221, 247), color(48, 107, 172), color(20, 27, 65), color(11, 156, 235), color(145, 142, 244)],
+    [color(232, 233, 243), color(177, 229, 242), color(39, 38, 53), color(166, 166, 168), color(200, 200, 200)],
+    [color(247, 255, 221), color(219, 161, 89), color(232, 233, 155), color(239, 200, 128), color(208, 227, 204)],
+    [color(0, 117, 196), color(214, 81, 8), color(239, 160, 11), color(239, 160, 11), color(89, 31, 10)],
+    [color(240, 231, 216), color(166, 58, 80), color(177, 155, 150), color(186, 110, 110), color(201, 223, 74)],
+    [color(246, 216, 174), color(244, 211, 94), color(46, 64, 87), color(8, 61, 119), color(218, 65, 103)],
+    [color(241, 242, 235), color(86, 98, 70), color(74, 74, 72), color(164, 194, 165), color(216, 218, 211)],
+    [color(255, 194, 226), color(110, 68, 255), color(184, 146, 255), color(255, 144, 179), color(239, 122, 133)],
+    [color(228, 223, 218), color(115, 29, 216), color(193, 102, 107), color(72, 169, 166), color(212, 180, 131)],
+    [color(239, 214, 172), color(67, 37, 52), color(40, 61, 101), color(54, 88, 85), color(196, 73, 0)],
+    [color(145, 245, 173), color(116, 82, 150), color(99, 42, 80), color(139, 158, 183), color(194, 232, 18)],
+    [color(212, 228, 188), color(150, 172, 183), color(72, 35, 60), color(54, 85, 143), color(64, 55, 110)],
+    [color(161, 204, 165), color(65, 93, 67), color(17, 29, 19), color(112, 151, 117), color(143, 155, 190)],
+    [color(213, 230, 141), color(107, 5, 4), color(36, 16, 35), color(163, 50, 11), color(71, 160, 37)],
+    [color(251, 251, 249), color(166, 52, 70), color(0, 0, 4), color(126, 25, 70), color(12, 98, 145)],
+];
+var Cur_Pal = 1;
+//Colors of specific aspects
+var central = color(255), platform = color(255), bg = color(255), ball = color(255), lava = color(255);
+//Updates palette
+var switchCol = function(col1, col2){
+    var r = red(col1), g = green(col1), b = blue(col1);
+    
+    r -= (r - red(col2)) / 10;
+    g -= (g - green(col2)) / 10;
+    b -= (b - blue(col2)) / 10;
+    
+    var newCol = color(r, g, b);
+    return(newCol);
+};
+var updatePalette = function(index){
+    if(index === undefined){
+        index = Cur_Pal % (palettes.length - 1);
+    }
+    
+    central = switchCol(central, palettes[index][0]);
+    platform = switchCol(platform, palettes[index][1]);
+    bg = switchCol(bg, palettes[index][2]);
+    ball = switchCol(ball, palettes[index][3]);
+    lava = switchCol(lava, palettes[index][4]);
+};
+for(var i = 0; i < 25; i++){
+    updatePalette();
+}
+//}
+
+//Arrays
+//{
+//The different pages
+var scenes = [true, false, false, false];
+//Used for arrow keys
+var keys = [];
+//An array containing all layers
+var layers = [];
+//Shows this.points gained
+var ptsEarned = [];
+//For menu
+var titles = [["Endless", 0], ["Play", 0], ["Leaderboard", 0], ["Credits", 0]];
+//}
+
+//Player object
+//{
+var p = {
+    begin : false,
+    mode : "play",
+    score : 0, highscore : 0,
+    
+    y : 215,
+    prevLev : 0, level : 0,
+    current : 0, goal : 15,
+    
+    jump : -9, maxJump : 9,
+    
+    Level : 1, gameOver : false,
+    
+    splatter : [],
+    
+    display : function(){
+        pushMatrix();
+            translate(width / 2, this.y);
+            scale(1 + sin(this.bounce & 180) / 5, 1 - sin(this.bounce % 180) / 5);
+            
+            if(this.level - this.prevLev > 2){
+                fill(255, 100, 50);
+                ellipse(0, 0, 40, 40);
+                for(var i = 0; i < 5; i++){
+                    for(var j = 0; j < 2; j++){
+                        stroke(255, 100 * j, 50 * j, 180);
+                        strokeWeight(30 - i * 6);
+                        
+                        var randy = random(-3, 3) * i;
+                        line(randy, i * -15, randy, i * -15 - 10);
+                    }
+                }
+            }
+            noStroke();
+            
+            if(this.level - this.prevLev > 2){
+                fill(lerpColor(this.fill, color(255, 50, 0), 0.6));
+            } else {
+                fill(this.fill);
+            }
+            ellipse(0, 0, 30, 30);
+            
+            fill(255, 7.5);
+            for(var i = 0; i < 10; i++){
+                ellipse(2 + i / 2, -2 - i / 2, 20 - i / 2, 20 - i / 2);
+            }
+        popMatrix();
+        
+        for(var i = 0; i < this.splatter.length; i++){
+            fill(this.fill);
+            ellipse(this.splatter[i][0], this.splatter[i][1], this.splatter[i][4], this.splatter[i][4]);
+            
+            stroke(255, 50);
+            strokeWeight(this.splatter[i][4] / 3);
+            noFill();
+            arc(this.splatter[i][0], this.splatter[i][1], this.splatter[i][4] / 3, this.splatter[i][4] / 3, 270, 360);
+            noStroke();
+            
+            this.splatter[i][0] += this.splatter[i][2];
+            this.splatter[i][1] += this.splatter[i][3];
+            this.splatter[i][3] += 0.25;
+            
+            if(this.splatter[i][0] < 0 || this.splatter[i][0] > width || this.splatter[i][1] < 0 || this.splatter[i][1] > height){
+                this.splatter.splice(i, 1);
+            }
+        }
+        
+        if(!p.begin){
+            fill(0, 150);
+            rect(0, 100, width, 400);
+            
+            fill(255);
+            textFont(fonts[0], 36);
+            text("ARROW KEYS\nor SWIPE\nto move.\n\nAVOID discolored\n areas on the\nplatforms.", width / 2, height / 2 - 30);
+            fill(255, 200, 50);
+            text("> OK <", width / 2, height / 2 + 150);
+            
+            if(mouseY > height / 2 + 130 && mouseY < height / 2 + 170){
+                this.point = true;
+                if(mouseIsPressed && verify === 0){
+                    this.begin = true;
+                    this.point = false;
+                }
+            } else {
+                this.point = false;    
+            }
+        }
+        
+        if(this.point){ cursor("pointer"); } else { cursor("default"); }
+        
+        return this;
+    },
+    run : function(){
+        this.fill = ball;
+        
+        this.jump = constrain(this.jump, -this.maxJump, this.maxJump);
+        this.y += this.jump;
+        this.jump += 0.6;
+        
+        if(this.mode === "endless"){
+            this.goal = this.level + 10;
+        }
+        
+        this.bounce -= (this.bounce - 0) / 4;
+        
+        return this;
+    },
+    move : function(){
+        if(this.y >= 220){
+            this.y = 220;
+            for(var i = 0; i < layers.length; i++){
+                layers[i].l -= this.jump;
+            }
+            for(var i = 0; i < this.splatter.length; i++){
+                this.splatter[i][1] -= this.jump;
+            }
+        }
+        
+        if(keys[RIGHT]){
+            for(var i = 0; i < layers.length; i++){
+                layers[i].angle += 5;
+            }
+        }
+        if(keys[LEFT]){
+            for(var i = 0; i < layers.length; i++){
+                layers[i].angle -= 5;
+            }
+        }
+        
+        return this;
+    },
+    Score : function(){
+        textFont(fonts[0], 70);
+        pushMatrix();
+            translate(width / 2, 70);
+            
+            fill(0);
+            text(this.score, 0, 0);
+            fill(0, 100);
+            text(this.score, -2, 1);
+        popMatrix();
+        
+        this.highscore = max(this.score, this.highscore);
+        
+        if(this.mode === "play"){
+            fill(255, 50, 50);
+            rect(width - 20, 10, 40, height / 2 + 20, 100);
+            rect(width - 80, -20, 100, 50, 100);
+            
+            fill(255);
+            rect(width - 14, 12, 20, constrain(height / 2 * this. current / this.goal + 6, 0, height / 2 + 6), 100);
+            rect(width - 76, -22, 96, 46, 100);
+            
+            fill(lerpColor(color(255), color(0), 0.1));
+            rect(width - 10, 30, 6, constrain(height / 2 * this.current / this.goal - 20, 0, height / 2 - 20), 100);
+            
+            fill(0);
+            textFont(fonts[0], 18);
+            text("LVL " + this.Level, width - 35, 10);
+            
+            this.current -= (this.current - this.level) / 4;
+        }
+    },
+    GameOver : function(){
+        fill(0, 120);
+        rect(0, 0, width, height);
+        
+        fill(255);
+        rect(0, 120, width, 60);
+        textFont(fonts[2], 30);
+        text("HIGHSCORE : " + this.highscore, width / 2, 90);
+        
+        fill(255, 100, 20);
+        textFont(fonts[2], 50);
+        text("SCORE : " + this.score, width / 2, 150);
+        
+        fill(255);
+        rect(0, 467.5, width, 45);
+        textFont(fonts[2], 50);
+        text("Game Over", width / 2, 330);
+        text(">.<", width / 2, 270);
+        
+        fill(255, 100, 20);
+        textFont(fonts[2], 35);
+        text("RETRY    MENU", width / 2, 490);
+        
+        this.point = false;
+        if(mouseY > 470 && mouseY < 510){
+            if(mouseX > 230 && mouseX < 345){
+                this.point = true;
+                if(mouseIsPressed && verify === 0){
+                    scenes[1] = false;
+                    scenes[0] = true;
+                    this.point = false;
+                    this.Reset();
                     
-                    // Ball shadow (optional in 3D, could be a flat disc below)
-                    // s.push();
-                    // s.fill(s.color(0, 0, 0, 50));
-                    // s.ellipse(s.width * 0.01, s.height * 0.01, s.width * 0.075, s.height * 0.05);
-                    // s.pop();
-
-                    // Main ball body
-                    s.noStroke();
-                    s.fill(this.fill);
-                    s.sphere(s.width * 0.035);
-
-                    s.pop();
+                    verify++;
+                }
+            } else if(mouseX < 185 && mouseX > 55){
+                this.point = true;
+                if(mouseIsPressed && verify === 0){
+                    this.Reset();
+                    this.point = false;
+                }
+            } else {
+                this.point = false;
+            }
+        } else {
+            this.point = false;
+        }
+    },
+    Win : function(){
+        fill(0, 120);
+        rect(0, 0, width, height);
+        
+        fill(255);
+        rect(0, 120, width, 60);
+        textFont(fonts[2], 30);
+        text("HIGHSCORE : " + this.highscore, width / 2, 90);
+        
+        fill(255, 100, 20);
+        textFont(fonts[2], 50);
+        text("SCORE : " + this.score, width / 2, 150);
+        
+        fill(255);
+        rect(0, 467.5, width, 45);
+        textFont(fonts[2], 50);
+        text("Next Level", width / 2, 330);
+        text("^o^", width / 2, 270);
+        
+        fill(255, 100, 20);
+        textFont(fonts[2], 35);
+        text("NEXT     MENU", width / 2, 490);
+        
+        this.point = false;
+        if(mouseY > 470 && mouseY < 510){
+            if(mouseX > 225 && mouseX < 340){
+                this.point = true;
+                if(mouseIsPressed && verify === 0){
+                    this.Level++;
+                    scenes[1] = false;
+                    scenes[0] = true;
+                    this.point = false;
+                    this.Reset();
                     
-                    // Draw jump particles
-                    for (let i = particles.length - 1; i >= 0; i--) {
-                        let p = particles[i];
-                        s.push();
-                        s.fill(p.c, p.alpha);
-                        s.noStroke();
-                        s.translate(p.x - s.width/2, p.y - s.height/2, 0);
-                        s.sphere(p.size);
-                        s.pop();
-
-                        p.x += p.vx;
-                        p.y += p.vy;
-                        p.vy += p.gravity;
-                        p.alpha -= 5;
-                        p.size -= 0.1;
-                    }
+                    verify++;
                 }
-
-                /**
-                 * Updates the player's position and jump state.
-                 */
-                update() {
-                    this.jump = s.constrain(this.jump, -this.maxJump, this.maxJump);
-                    this.y += this.jump;
-                    this.jump += s.height * 0.001;
-                    this.bounce -= (this.bounce - 0) / 4;
-                    this.fill = s.lerpColor(this.fill, ball, 0.1);
-
-                    if (this.mode === "endless") {
-                        this.goal = this.level + 10;
-                    }
-
-                    if (this.y >= s.height * 0.4) {
-                        this.y = s.height * 0.4;
-                        for (let layer of layers) {
-                            layer.l -= this.jump;
-                        }
-                        for (let splatter of this.splatter) {
-                            splatter[1] -= this.jump;
-                        }
-                    }
+            } else if(mouseX < 185 && mouseX > 55){
+                this.point = true;
+                if(mouseIsPressed && verify === 0){
+                    this.Level++;
+                    this.Reset();
+                    this.point = false;
                 }
-
-                /**
-                 * Handles player scoring and level progression.
-                 */
-                displayScore() {
-                    // Temporarily switch back to 2D for text drawing
-                    s.push();
-                    s.camera(); // Reset camera for 2D UI
-                    s.textFont(CONFIG.fonts[0]);
-                    s.textSize(s.width * 0.175);
-                    s.textAlign(s.CENTER, s.CENTER);
-                    s.fill(0);
-                    s.text(this.score, 0, -s.height * 0.38);
-                    s.fill(0, 100);
-                    s.text(this.score, -s.width * 0.005, -s.height * 0.38 + s.height * 0.002);
-                    s.pop();
-                    this.highscore = s.max(this.score, this.highscore);
-                }
+            } else {
+                this.point = false;
             }
+        } else {
+            this.point = false;
+        }
+    },
+    Reset : function(){
+        this.score = 0;
+        this.y = 215;
+        this.prevLev = 0;
+        this.level = 0;
+        this.current = 0;
+        this.goal = constrain(this.Level + 15, 0, 30);
+        this.jump = -9;
+        this.gameOver = false;
+        this.splatter = [];
+        Cur_Pal = this.Level % (palettes.length - 1);
+        layers = [];
+    },
+};
+if(p.score !== 0 && p.highscore !== 0){
+    throw {message : "NO CHEATING!" };   
+}
+//}
 
-            /**
-             * @class Layer
-             * Represents a single platform layer of the helix.
-             */
-            class Layer {
-                constructor(l) {
-                    this.l = l;
-                    this.angle = s.random(360);
-                    this.num = s.floor(s.random(3, 7)); // 3 to 6 platforms
-                    this.space = s.floor(s.random(this.num));
-                    this.dis = s.floor(s.random(this.num));
-                    this.dist = 360 / this.num;
-                }
-
-                /**
-                 * Draws the layer and its platforms.
-                 */
-                display() {
-                    if (!p) return; // Prevent error if p is not yet initialized
-
-                    s.push();
-                    s.translate(0, this.l - s.height/2, 0);
-                    
-                    // Pillar (3D)
-                    s.push();
-                    s.fill(central);
-                    s.noStroke();
-                    s.rotateX(s.HALF_PI);
-                    s.cylinder(s.width * 0.035, s.height * 0.65, 16, 1);
-                    s.pop();
-
-                    // Platforms (3D)
-                    for (let i = 0; i < this.num; i++) {
-                        let ang = this.angle + this.dist * i;
-                        if (i !== this.space && (i !== this.dis || p.mode === "endless")) {
-                            s.push();
-                            s.rotateY(s.radians(ang));
-                            s.translate(0, 0, s.height * 0.22);
-                            if (i === this.dis && p.mode === "endless") {
-                                s.fill(255, 0, 50);
-                            } else {
-                                s.fill(platform);
-                            }
-                            s.noStroke();
-                            s.box(s.width * 0.35, s.height * 0.04, s.width * 0.02);
-                            s.pop();
-                        }
-                    }
-                    s.pop();
-                }
-
-                /**
-                 * Checks for collision with the player ball.
-                 */
-                checkCollision() {
-                    const angle = p.y - this.l;
-                    if (angle <= 0 && angle > p.jump && this.l < s.height * 0.5) {
-                        for (let i = 0; i < this.num; i++) {
-                            const platformAngle = (this.angle + this.dist * i + 360) % 360;
-                            if (i !== this.space) {
-                                if (platformAngle < 100 && platformAngle > 80) {
-                                    if (i === this.dis && p.mode === "endless") {
-                                        this.handleGameOver();
-                                    } else {
-                                        this.handleBounce();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                /**
-                 * Handles the ball bouncing on a platform.
-                 */
-                handleBounce() {
-                    p.jump = -s.height * 0.015;
-                    p.prevLev = p.level;
-                    p.level++;
-                    p.current++;
-                    p.bounce = 100;
-                    for (let k = 0; k < 15; k++) {
-                        particles.push(new Particle(s.width / 2, p.y, ball));
-                    }
-                    if (p.mode === "play" && p.current >= p.goal) {
-                        p.current = 0;
-                        p.Level++;
-                        Cur_Pal++;
-                        updatePalette(Cur_Pal);
-                        for (let j = 0; j < 10; j++) {
-                            ptsEarned.push([s.width / 2, -100, s.random(-10, 10), s.random(-10, -5), s.random(5, 10)]);
-                        }
-                    }
-                }
-
-                /**
-                 * Initiates the game over sequence.
-                 */
-                handleGameOver() {
-                    p.gameOver = true;
-                    isGameOverAnimating = true;
-                    shakeAmount = s.width * 0.025;
-                    screenFlashAlpha = 200;
-                    for (let k = 0; k < 50; k++) {
-                        explosionParticles.push(new ExplosionParticle(s.width / 2, p.y, s.color(255, 0, 0)));
-                    }
-                }
+//Layer object constructor
+//{
+var Layer = function(y, f, lf, l, lava, crax){
+    //The y-position of the layer
+    this.y = y;
+    //The "goal" y-position of the layer
+    this.l = l;
+    //Angle offset
+    this.angle = random() * 360;
+    
+    //Color
+    this.f = f;
+    this.lavaf = lf;
+    
+    //Open angles
+    if(crax !== undefined){
+        this.cracks = crax;
+    } else {
+        this.cracks = round(random() * 2 + 1);
+    }
+    //Location of "lava spots"
+    if(lava !== undefined){
+        this.lava = 0;
+    } else {
+        this.lava = constrain(round(random() * 3 + 1), 0, 6 - this.cracks);
+    }
+    this.lavaSpots = [[], [], [], [], []];
+    for(var i = 0; i < this.lava; i++){
+        var randy = round(random() * 330 * 6) / 6;
+        this.lavaSpots[i][0] = randy;
+        this.lavaSpots[i][1] = randy + 30;
+        for(var j = 0; j < this.cracks; j++){
+            if(j * 360 / this.cracks + 360 / this.cracks - 60 + 1 < this.lavaSpots[i][0] + 30){
+                this.lavaSpots[i][0] = j * 360 / this.cracks + 360 / this.cracks - 90;
+                this.lavaSpots[i][1] = j * 360 / this.cracks + 360 / this.cracks - 60;
             }
-
-            /**
-             * @class Particle
-             * Manages particles for regular jumps.
-             */
-            class Particle {
-                constructor(x, y, c) {
-                    this.x = x;
-                    this.y = y;
-                    this.c = c;
-                    this.vx = s.random(-2, 2);
-                    this.vy = s.random(-5, -1);
-                    this.size = s.random(2, 5);
-                    this.alpha = 255;
-                    this.gravity = 0.2;
-                }
+        }
+    }
+    
+    //Splatter
+    this.splat = []; 
+    
+    //Whether or not its destroyed
+    this.dead = false;
+    this.destroyed = false;
+};
+Layer.prototype.display = function() {
+    //The sides of the platform
+    if(!this.dead){
+        fill(lerpColor(this.f, color(0), 0.2));
+    } else if (this.destroyed){
+        fill(lerpColor(color(250, 50, 0), color(0), 0.2), this.y * 2);
+    } else {
+        fill(lerpColor(color(250, 200, 100), color(0), 0.2), this.y * 2);
+    }
+    for(var i = 0; i < 30; i++){
+        for(var j = 0; j < this.cracks; j++){
+            if(i * 12 > j * 360 / this.cracks - 12 && i * 12 < j * 360 / this.cracks + 360 / this.cracks - 60){
+                quad(cos(i * 12 + this.angle) * this.w + width / 2, sin(i * 12 + this.angle) * this.h + this.y, cos(i * 12 + this.angle) * this.w + width / 2, sin(i * 12 + this.angle) * this.h + 35 + this.y, cos(i * 12 + 13 + this.angle) * this.w + width / 2, sin(i * 12 + 13 + this.angle) * this.h + 35 + this.y, cos(i * 12 + 13 + this.angle) * this.w + width / 2, sin(i * 12 + 13 + this.angle) * this.h + this.y);
             }
-
-            /**
-             * @class ExplosionParticle
-             * Manages particles for the game over explosion.
-             */
-            class ExplosionParticle {
-                constructor(x, y, c) {
-                    this.x = x;
-                    this.y = y;
-                    this.c = c;
-                    this.vx = s.random(-5, 5);
-                    this.vy = s.random(-10, 0);
-                    this.size = s.random(5, 10);
-                    this.alpha = 255;
-                    this.gravity = 0.3;
-                }
+        }
+    }
+    
+    //To make sure there aren't side holes in the open angles
+    if(!this.dead){
+        fill(lerpColor(this.f, color(0), 0.4));
+    } else if (this.destroyed){
+        fill(lerpColor(color(250, 50, 0), color(0), 0.4), this.y * 2);
+    } else {
+        fill(lerpColor(color(250, 200, 100), color(0), 0.4), this.y * 2);
+    }
+    for(var i = 0; i < this.cracks; i++){
+        if((this.angle + i * 360 / this.cracks + 1) % 360 > 90 && (this.angle + i * 360 / this.cracks + 1) % 360 < 270){
+            quad(cos(this.angle + i * 360 / this.cracks) * (151 - this.y / 24) / 2 + width / 2, sin(this.angle + i * 360 / this.cracks) * (this.y / 10 + 51) / 2 + this.y, cos(this.angle + i * 360 / this.cracks) * (151 - this.y / 24) / 2 + width / 2, sin(this.angle + i * 360 / this.cracks) * (this.y / 10 + 51) / 2 + this.y + 35, cos(this.angle + i * 360 / this.cracks) * this.w + width / 2, sin(this.angle + i * 360 / this.cracks) * this.h + this.y + 35, cos(this.angle + i * 360 / this.cracks) * this.w + width / 2, sin(this.angle + i * 360 / this.cracks) * this.h + this.y);
+        }
+    }
+    for(var i = 0; i < this.cracks; i++){
+        if((this.angle + i * 360 / this.cracks + 360 / this.cracks - 60 + 1) % 360 < 90 || (this.angle + i * 360 / this.cracks + 360 / this.cracks - 60 + 1) % 360 > 270){
+            quad(cos(this.angle + i * 360 / this.cracks + 360 / this.cracks - 60 + 1) * (151 - this.y / 24) / 2 + width / 2, sin(this.angle + i * 360 / this.cracks + 360 / this.cracks - 60 + 1) * (this.y / 10 + 51) / 2 + this.y, cos(this.angle + i * 360 / this.cracks + 360 / this.cracks - 60 + 1) * (151 - this.y / 24) / 2 + width / 2, sin(this.angle + i * 360 / this.cracks + 360 / this.cracks - 60 + 1) * (this.y / 10 + 51) / 2 + this.y + 35, cos(this.angle + i * 360 / this.cracks + 360 / this.cracks - 60 + 1) * this.w + width / 2, sin(this.angle + i * 360 / this.cracks + 360 / this.cracks - 60 + 1) * this.h + this.y + 35, cos(this.angle + i * 360 / this.cracks + 360 / this.cracks - 60 + 1) * this.w + width / 2, sin(this.angle + i * 360 / this.cracks + 360 / this.cracks - 60 + 1) * this.h + this.y);
+        }
+    }
+    
+    //Used to know whether tha ball should bounce
+    this.inLine = 0;
+    //Used to know when the ball touches lava
+    this.onLava = 0;
+    
+    //Creates the top layer of the platform
+    if(!this.dead){
+        fill(this.f);
+    } else if (this.destroyed){
+        fill(250, 50, 0, this.y * 2);
+    } else {
+        fill(250, 200, 100, this.y * 2);
+    }
+    for(var i = 1; i <= this.cracks; i++){
+        arc(width / 2, this.y, 300 - this.y / 12, this.y / 5 + 100, this.angle + i * 360 / this.cracks + 1, this.angle + i * 360 / this.cracks + 360 / this.cracks - 60 + 1);
+        if((this.angle + i * 360 / this.cracks + 360 / this.cracks - 60 + 1) % 360 < 80 && (this.angle + i * 360 / this.cracks + 360 / this.cracks + 1) % 360 > 100){
+            this.inLine++;
+        }
+    }
+    if(!this.dead){
+        fill(this.lavaf);
+    } else if (this.destroyed){
+        fill(250, 50, 0, this.y * 2);
+    } else {
+        fill(250, 200, 100, this.y * 2);
+    }
+    for(var i = 1; i <= this.lava; i++){
+        arc(width / 2, this.y, 300 - this.y / 12, this.y / 5 + 100, this.angle + this.lavaSpots[i][0], this.angle + this.lavaSpots[i][1]);
+        if((this.angle + this.lavaSpots[i][0]) % 360 < 100 && (this.angle + this.lavaSpots[i][1]) % 360 > 80){
+            this.onLava++;
+        }
+    }
+    
+    if(this.cracks === 0){
+        fill(lerpColor(this.f, color(0), 0.2));
+        for(var i = 0; i < 7; i++){
+            ellipse(width / 2, this.y + i * 5, this.w * 2, this.h * 2);    
+        }
+        
+        fill(this.f);
+        ellipse(width / 2, this.y, this.w * 2, this.h * 2);
+    }
+    
+    //Splatter on the surface
+    for(var i = 0; i < this.splat.length; i++){
+        fill(p.fill, this.splat[i][1]);
+        ellipse(cos(this.splat[i][0] + this.angle + this.splat[i][2]) * this.w * (2 / 3 + this.splat[i][3] / 50) + width / 2, sin(this.splat[i][0] + this.angle + this.splat[i][2]) * this.h * (2 / 3 + this.splat[i][3] / 50) + this.y, this.w / this.splat[i][4], this.h / this.splat[i][4]); 
+        
+        if(!p.gameOver){
+            this.splat[i][1] -= 3;
+        }
+        if(this.splat[i][1] <= 0){
+            this.splat.splice(i, 1);
+        }
+    }
+    
+    //To make a uniform central column
+    
+    fill(central);
+    ellipse(width / 2, this.y, this.w, this.h);
+    quad(width / 2 - this.w / 2, this.y, width / 2 + this.w / 2, this.y, width / 2 + 75, 0, width / 2 - 75, 0);
+    
+    //Shade of the centraol column
+    fill(0, 7.5);
+    for(var i = 0; i < 10; i++){
+        quad(width / 2 - this.w / 2, this.y + 3, width / 2 - this.w / 2 + i * 2, this.y + pow(i, 0.05) * (this.y) / 15 + (height - this.y) / 50 + 2, width / 2 - 75 + i * 2, 0, width / 2 - 75, 0);
+    }
+    
+    return this;
+};
+Layer.prototype.run = function(){
+    if(this.y < 150){
+        this.dead = true;
+    }
+    
+    //Makes sure "this.angle" is between 0 and 360
+    if(this.angle < 0){
+        this.angle += 360;    
+    }
+    this.angle = this.angle % 360;
+    
+    //Checks for bouncing
+    if((this.inLine === 0 || this.onLava !== 0) && p.y > 215 && this.y <= 175 && this.y > 165 && !this.dead){
+        if(this.inLine === 0){
+            this.splat.push([(-this.angle + 90) % 360, 255, 0, 0, 5]);
+            for(var i = 0; i < 10; i++){
+                this.splat.push([(-this.angle + 90) % 360, 255, random(-10, 10), random(-10, 10), random() * 10 + 5]);
             }
-
-            // --- Game Objects ---
-            let p;
-
-            // --- Utility Functions ---
-
-            /**
-             * Custom function to draw multi-line text with alignment.
-             * @param {string} str - The text to draw.
-             * @param {number} x - The x-coordinate.
-             * @param {number} y - The y-coordinate.
-             * @param {object} c - The color object.
-             */
-            const drawText = (str, x, y, c) => {
-                if (c) {
-                    s.fill(c);
-                }
-                const lines = str.split('\n');
-                const lineHeight = (s.textSize() * 1.2);
-                const totalHeight = lines.length * lineHeight;
-                s.push();
-                if (s.textAlign() === s.CENTER) {
-                    s.translate(x, y - totalHeight / 2 + lineHeight / 2);
-                    for (let i = 0; i < lines.length; i++) {
-                        s.text(lines[i], 0, i * lineHeight);
-                    }
+            
+            for(var i = 0; i < layers.length; i++){
+                layers[i].l = (layers.length - i - 1) * 200 + 175;    
+            }
+            
+            for(var i = 0; i < 10; i++){
+                p.splatter.push([width / 2, p.y, random(-5, 5), random(-7, 5), random() * 10]);
+            }
+            
+            if(p.level - p.prevLev < 3 || this.cracks === 0){
+                p.y = 215;
+                p.jump = -p.maxJump;
+                p.bounce = 360;
+            } else {
+                p.level++;
+                if(p.mode === "play"){
+                    p.score += (p.level - p.prevLev) * 2 * p.Level;
+                    ptsEarned.push([(p.level - p.prevLev) * p.Level * 2, 255]);
                 } else {
-                    s.translate(x, y);
-                    for (let i = 0; i < lines.length; i++) {
-                        s.text(lines[i], 0, i * lineHeight);
-                    }
+                    p.score += (p.level - p.prevLev) * 2 * round(pow(log(p.level + 2), 2));
+                    ptsEarned.push([(p.level - p.prevLev) * 2 * round(pow(log(p.level + 2), 2)), 255]);
                 }
-                s.pop();
-            };
+                p.prevLev += 2;
+                this.destroyed = true;
+                this.dead = true;
+            }
+            p.prevLev = p.level;
+        }
+        if(this.onLava !== 0 && !this.dead){
+            p.jump = 0;
+            p.y = 215;
+            p.gameOver = true;
+        }
+    }
+    
+    //Makes sure width and height are updated
+    this.w = 150 - this.y / 24;
+    this.h = this.y / 10 + 50;
+    
+    //Updates the y-position
+    this.y -= (this.y - this.l) / 4;
+};
+//}
 
-            /**
-             * Updates the palette colors smoothly.
-             * @param {number} index - The index of the new color palette.
-             */
-            const updatePalette = (index) => {
-                if (index === undefined) {
-                    index = Cur_Pal % (CONFIG.palettes.length);
-                }
-                targetCentral = CONFIG.palettes[index][0];
-                targetPlatform = CONFIG.palettes[index][1];
-                targetBg = CONFIG.palettes[index][2];
-                targetBall = CONFIG.palettes[index][3];
-                targetLava = CONFIG.palettes[index][4];
-            };
+//Populates "layers" with instances of Layer
+//{
+for(var i = 0; i < 5; i++){
+    layers.unshift(new Layer(3000, platform, lava, i * 200 + 175, 0));
+}
+//}
 
-            /**
-             * Lerps the current colors towards the target colors.
-             */
-            const lerpColors = () => {
-                central = s.lerpColor(central, targetCentral, 0.05);
-                platform = s.lerpColor(platform, targetPlatform, 0.05);
-                bg = s.lerpColor(bg, targetBg, 0.05);
-                ball = s.lerpColor(ball, targetBall, 0.05);
-                lava = s.lerpColor(lava, targetLava, 0.05);
-            };
-
-            /**
-             * Initializes a new game.
-             * @param {string} mode - "play" or "endless".
-             */
-            const startGame = (mode) => {
-                p = new Player();
-                p.mode = mode;
-                layers = [];
-                for (let i = 0; i < 6; i++) {
-                    layers.push(new Layer(s.height * 0.3 - i * s.height * 0.25));
-                }
-                currentScene = SCENES.PLAY;
-                updatePalette(2);
-            };
-
-            // --- Scene Functions ---
-
-            /**
-             * Displays the main menu scene.
-             */
-            const menuScene = () => {
-                s.background(bg);
-                s.directionalLight(255, 255, 255, -0.5, -1, -0.5);
-                s.ambientLight(60);
-                lerpColors();
-                
-                s.push();
-                s.rotateX(s.map(s.mouseY, 0, s.height, -s.PI/8, s.PI/8));
-                s.rotateY(s.map(s.mouseX, 0, s.width, -s.PI/8, s.PI/8));
-
-                // Draw helix tower
-                s.push();
-                s.fill(central);
-                s.noStroke();
-                s.rotateX(s.HALF_PI);
-                s.cylinder(s.width * 0.035, s.height * 0.65, 16, 1);
-                s.pop();
-
-                for (let layer of layers) {
-                    layer.angle -= 60 * s.deltaTime / 1000;
-                    s.push();
-                    s.translate(0, layer.l - s.height/2, 0);
-                    s.specularMaterial(platform);
-                    for (let i = 0; i < layer.num; i++) {
-                        let ang = layer.angle + layer.dist * i;
-                        if (i !== layer.space) {
-                            s.push();
-                            s.rotateY(s.radians(ang));
-                            s.translate(0, 0, s.height * 0.22);
-                            s.box(s.width * 0.35, s.height * 0.04, s.width * 0.02);
-                            s.pop();
-                        }
-                    }
-                    s.pop();
-                }
-
-                p.update();
-                p.display();
-
-                s.pop();
-
-                // Draw UI texts (in 2D space)
-                s.camera();
-                s.ortho();
-                
-                s.textFont(CONFIG.fonts[1]);
-                s.textSize(s.width * 0.15);
-                s.textAlign(s.CENTER, s.CENTER);
-                drawText("Helix\nJump", s.width / 2, s.height * 0.2, s.color(50, 150, 250));
-
-                if (p.score !== 0) {
-                    s.textFont(CONFIG.fonts[0]);
-                    s.textSize(s.width * 0.07);
-                    drawText("YOUR SCORE: " + p.score + "\nBEST: " + p.highscore, s.width / 2, s.height * 0.4, s.color(50, 150, 250));
-                }
-
-                s.textFont(CONFIG.fonts[0]);
-                s.textSize(s.width * 0.06);
-                drawText("Level " + p.Level, s.width / 2, s.height * 0.5);
-
-                // Draw buttons
-                for (let i = 0; i < CONFIG.titles.length; i++) {
-                    const y = s.height * 0.6 + i * s.height * 0.08;
-                    const h = s.height * 0.06;
-                    const w = s.width * 0.6;
-                    const isHover = s.mouseX > s.width/2 - w/2 && s.mouseX < s.width/2 + w/2 &&
-                                    s.mouseY > y - h/2 && s.mouseY < y + h/2;
-                    s.push();
-                    if (isHover) {
-                        s.scale(1.05);
-                        s.translate(0, 0, 1); // Bring forward slightly
-                    }
-                    s.fill(0, CONFIG.titles[i][1]);
-                    s.noStroke();
-                    s.rect(s.width / 2, y, w, h, s.width * 0.02);
-                    s.pop();
-
-                    s.push();
-                    s.fill(255);
-                    s.textFont(CONFIG.fonts[0]);
-                    s.textSize(s.width * 0.06);
-                    drawText(CONFIG.titles[i][0], s.width / 2, y);
-                    s.pop();
-                }
-            };
-
-            /**
-             * Displays the main game scene.
-             */
-            const playScene = () => {
-                s.background(bg);
-                s.directionalLight(255, 255, 255, -0.5, -1, -0.5);
-                s.ambientLight(60);
-                lerpColors();
-
-                // Apply screen shake effect
-                if (shakeAmount > 0) {
-                    s.translate(s.random(-shakeAmount, shakeAmount), s.random(-shakeAmount, shakeAmount));
-                    shakeAmount *= 0.9;
-                }
-                
-                s.push();
-                s.camera();
-                s.ortho();
-
-                // Game Over animation and logic
-                if (p.gameOver) {
-                    // Draw explosion particles
-                    for (let i = explosionParticles.length - 1; i >= 0; i--) {
-                        let ep = explosionParticles[i];
-                        s.push();
-                        s.fill(ep.c, ep.alpha);
-                        s.noStroke();
-                        s.translate(ep.x - s.width/2, ep.y - s.height/2, 0);
-                        s.sphere(ep.size);
-                        s.pop();
-
-                        ep.x += ep.vx;
-                        ep.y += ep.vy;
-                        ep.vy += ep.gravity;
-                        ep.alpha -= 5;
-                        ep.size -= 0.2;
-                    }
-
-                    // Screen flash effect
-                    s.fill(255, 0, 0, screenFlashAlpha);
-                    s.rect(s.width / 2, s.height / 2, s.width, s.height);
-                    screenFlashAlpha = s.lerp(screenFlashAlpha, 0, 0.1);
-
-                    // Fade out
-                    s.fill(0, s.map(screenFlashAlpha, 200, 0, 0, 150));
-                    s.rect(s.width/2, s.height/2, s.width, s.height);
-
-                    // Display "Game Over" text
-                    s.fill(255, s.map(screenFlashAlpha, 200, 0, 0, 255));
-                    s.textFont(CONFIG.fonts[1]);
-                    s.textSize(s.width * 0.2);
-                    s.text("Game Over", s.width/2, s.height/2);
-
-                    p.display();
-                    p.displayScore();
-                    s.pop();
-
-                    // Check for end of animation to return to menu
-                    if (explosionParticles.length === 0 && screenFlashAlpha < 1) {
-                        currentScene = SCENES.MENU;
-                        p.gameOver = false;
-                    }
-                } else {
-                    // Regular game logic
-                    p.update();
-                    for (let i = layers.length - 1; i >= 0; i--) {
-                        layers[i].l -= p.jump;
-                        layers[i].checkCollision();
-                        layers[i].display();
-                    }
-                    p.display();
-                    p.displayScore();
-                    s.pop();
-                }
-                particles = particles.filter(p => p.alpha > 0 && p.size > 0);
-                explosionParticles = explosionParticles.filter(e => e.alpha > 0 && e.size > 0);
-            };
-
-            /**
-             * Displays the leaderboard scene.
-             */
-            const leaderboardScene = () => {
-                s.background(bg);
-                lerpColors();
-                
-                s.push();
-                s.camera();
-                s.ortho();
-
-                s.textFont(CONFIG.fonts[1]);
-                s.textSize(s.width * 0.1);
-                drawText("LEADERBOARD", s.width / 2, s.height * 0.1);
-
-                s.textFont(CONFIG.fonts[0]);
-                s.textSize(s.width * 0.045);
-                s.textAlign(s.LEFT);
-                for (let i = 0; i < top10.length; i++) {
-                    s.text(`${i + 1}. ${top10[i][0]}`, s.width * 0.25, s.height * 0.2 + i * s.height * 0.05);
-                    s.textAlign(s.RIGHT);
-                    s.text(top10[i][1], s.width * 0.75, s.height * 0.2 + i * s.height * 0.05);
-                    s.textAlign(s.LEFT);
-                }
-                s.textAlign(s.CENTER);
-
-                // Back button
-                s.fill(0, 100);
-                s.noStroke();
-                s.rect(s.width / 2, s.height * 0.9, s.width * 0.5, s.height * 0.08, s.width * 0.02);
-                s.fill(255);
-                s.textFont(CONFIG.fonts[0]);
-                s.textSize(s.width * 0.06);
-                drawText("BACK", s.width / 2, s.height * 0.9);
-                s.pop();
-            };
-
-            /**
-             * Displays the credits scene.
-             */
-            const creditsScene = () => {
-                s.background(bg);
-                lerpColors();
-                
-                s.push();
-                s.camera();
-                s.ortho();
-                
-                s.textFont(CONFIG.fonts[1]);
-                s.textSize(s.width * 0.1);
-                drawText("CREDITS", s.width / 2, s.height * 0.1);
-                s.textFont(CONFIG.fonts[0]);
-                s.textSize(s.width * 0.06);
-                drawText("All Code by\n    ARROWHEAD CO.\n\nBased on\nHELIX JUMP by\n    VOODOO", s.width / 2, s.height * 0.4);
-
-                // Back button
-                s.fill(0, 100);
-                s.noStroke();
-                s.rect(s.width / 2, s.height * 0.9, s.width * 0.5, s.height * 0.08, s.width * 0.02);
-                s.fill(255);
-                s.textFont(CONFIG.fonts[0]);
-                s.textSize(s.width * 0.06);
-                drawText("BACK", s.width / 2, s.height * 0.9);
-                s.pop();
-            };
-
-            // --- p5.js Core Functions ---
-
-            s.setup = () => {
-                s.createCanvas(s.windowWidth * 0.8, s.windowHeight * 0.8, s.WEBGL);
-                s.rectMode(s.CENTER);
-                s.textAlign(s.CENTER, s.CENTER);
-                s.smooth();
-
-                // Initial color setup
-                central = CONFIG.palettes[2][0];
-                platform = CONFIG.palettes[2][1];
-                bg = CONFIG.palettes[2][2];
-                ball = CONFIG.palettes[2][3];
-                lava = CONFIG.palettes[2][4];
-
-                targetCentral = central;
-                targetPlatform = platform;
-                targetBg = bg;
-                targetBall = ball;
-                targetLava = lava;
-
-                p = new Player();
-                for (let i = 0; i < 6; i++) {
-                    layers.push(new Layer(s.height * 0.3 - i * s.height * 0.25));
-                }
-            };
-
-            s.draw = () => {
-                switch (currentScene) {
-                    case SCENES.MENU:
-                        menuScene();
-                        break;
-                    case SCENES.PLAY:
-                        playScene();
-                        break;
-                    case SCENES.LEADERBOARD:
-                        leaderboardScene();
-                        break;
-                    case SCENES.CREDITS:
-                        creditsScene();
-                        break;
-                }
-            };
-
-            s.windowResized = () => {
-                s.resizeCanvas(s.windowWidth * 0.8, s.windowHeight * 0.8);
-                p.y = s.height * 0.4;
-                p.jump = -s.height * 0.015;
-                p.maxJump = s.height * 0.015;
-                for (let layer of layers) {
-                    layer.l = s.height * 0.3 - layers.indexOf(layer) * s.height * 0.25;
-                }
-            };
+//User-defined functions
+//{
+//Creates awesome text
+var Text = function(m, x, y, f){
+    pushMatrix();
+        translate(x, y);
+        
+        fill(f, 25);
+        for(var i = 1; i < 5; i++){
+            for(var j = 1; j < 5; j++){
+                pushMatrix();
+                    text(m, cos(i * 72) * j * 1.8, sin(i * 72) * j * 1.8);
+                popMatrix();
+            }
+        }
+        fill(0, 0, 0, 150);
+        text(m, 0, 0);
+    popMatrix();
+};
+//Handles and manages the layers
+var renderLayers = function(){
+    //Adds a new layer and makes sure "layers" is never lacking
+    if(layers.length < 6 && p.goal - p.level >= 5){
+        if(layers.length === 0){
+            for(var i = 0; i < 5; i++){
+                layers.unshift(new Layer(3000, platform, lava, i * 200 + 175, 0));
+            }
+        } else if(p.goal - p.level === 5){
+            layers.unshift(new Layer(1000, platform, lava, 1175, 0, 0));
+        } else {
+            layers.unshift(new Layer(1000, platform, lava, 1175));
+        }
+    }
+    
+    //Animates the layers
+    for(var i = 0; i < layers.length; i++){
+        layers[i].display().run();
+    }
+    
+    //Removes layers that go above boundary
+    for(var i = 0; i < layers.length; i++){
+        if(layers[i].y < 150 && !layers[i].dead){
+            p.level++;
+            if(p.mode === "play"){
+                p.score += (p.level - p.prevLev) * p.Level;
+                ptsEarned.push([(p.level - p.prevLev) * p.Level, 255]);
+            } else {
+                p.score += (p.level - p.prevLev) * round(pow(log(p.level + 2), 2));
+                ptsEarned.push([(p.level - p.prevLev) * round(pow(log(p.level + 2), 2)), 255]);
+            }
+        }
+        if(layers[i].y < 0){
+            layers.splice(i, 1);
+            if(p.mode === "endless" && p.level % 6 === 0){
+                Cur_Pal = round(random() * (palettes.length - 1));
+            }
+        }
+    }
+};
+//Handles and manages the player
+var renderPlayer = function(){
+    //Animates the player
+    p.display();
+    if(!p.gameOver && p.begin){
+        p.move().run();
+    }
+};
+//Handles the playing option
+var PlayScene = function(){
+    fill(bg);
+    rect(-1, -1, width + 2, height + 2);
+    
+    fill(255, 20);
+    quad(0, height - 180, width, -80, width, 40, 0, height - 60);
+    quad(0, height - 30, width, 70, width, 140, 0, height + 50);
+    
+    //Central column
+    fill(central);
+    quad(width / 2 - 125 / 2, height, width / 2 + 125 / 2, height, width / 2 + 75, 0, width / 2 - 75, 0);
+    
+    renderLayers();
+    renderPlayer();
+    
+    //Score
+    p.Score();
+    
+    //Pluses
+    for(var i = 0; i < ptsEarned.length; i++){
+        pushMatrix();
+            translate(width / 2, 120 + ptsEarned[i][1]);
+            scale(0.9 + ptsEarned[i][1] / 800);
             
-            // --- Input Handlers ---
-            s.mouseClicked = () => {
-                if (currentScene === SCENES.MENU) {
-                    for (let i = 0; i < CONFIG.titles.length; i++) {
-                        const y = s.height * 0.6 + i * s.height * 0.08;
-                        const h = s.height * 0.06;
-                        const w = s.width * 0.6;
-                        if (s.mouseY > y - h/2 && s.mouseY < y + h/2 && s.mouseX > s.width/2 - w/2 && s.mouseX < s.width/2 + w/2) {
-                            switch (i) {
-                                case 0:
-                                    startGame("endless");
-                                    break;
-                                case 1:
-                                    startGame("play");
-                                    break;
-                                case 2:
-                                    currentScene = SCENES.LEADERBOARD;
-                                    break;
-                                case 3:
-                                    currentScene = SCENES.CREDITS;
-                                    break;
-                            }
-                        }
+            fill(250, 200, 100, ptsEarned[i][1]);
+            textFont(fonts[1], 80);
+            text("+" + ptsEarned[i][0], 0, 0); 
+        popMatrix();
+        
+        ptsEarned[i][1] -= 10;
+        
+        if(ptsEarned[i][1] <= 0){
+            ptsEarned.splice(i, 1);
+        }
+    }
+    
+    //Updates color scheme
+    updatePalette();
+    
+    //Win scene
+    if(p.level === p.goal && layers.length === 1){
+        p.Win();    
+    }
+    
+    //Game over scene
+    if(p.gameOver){
+        p.GameOver();
+    }
+};
+//General background
+var BG = function(){
+    if(layers.length === 0){
+        for(var i = 0; i < 5; i++){
+            layers.unshift(new Layer(3000, platform, lava, i * 200 + 175, 0));
+        }
+    }
+    
+    fill(bg);
+    rect(-1, -1, width + 2, height + 2);
+    
+    fill(255, 20);
+    quad(0, height - 180, width, -80, width, 40, 0, height - 60);
+    quad(0, height - 30, width, 70, width, 140, 0, height + 50);
+    
+    //Central column
+    fill(central);
+    quad(width / 2 - 125 / 2, height, width / 2 + 125 / 2, height, width / 2 + 75, 0, width / 2 - 75, 0);
+    
+    for(var i = 0; i < layers.length; i++){
+        layers[i].display();
+        layers[i].run();
+    }
+    
+    if(!scenes[0]){
+        textFont(fonts[2], 40);
+        Text("Back", 70, 560, color(255, 150, 50));
+        
+        if(mouseX < 120 && mouseY > 540){
+            cursor("pointer");
+            if(mouseIsPressed && verify === 0){
+                for(var i = 0; i < scenes.length; i++){
+                    scenes[i] = false;    
+                }
+                scenes[0] = true;
+                
+                cursor("default");
+                verify++;
+            }
+        } else {
+            cursor("default");    
+        }
+    }
+};
+//Menu
+var MenuScene = function(){
+    textFont(fonts[2], 80);
+    Text("Helix\nJump", width / 2, height / 2 - 150, color(50, 150, 250));
+    
+    textAlign(LEFT, CENTER);    
+    textFont(fonts[2], 40);
+    
+    for(var i = 0; i < titles.length; i++){
+        fill(255, 100);
+        rect(width / 2 - 120 - titles[i][1] * width, height / 2 + i * 65 + 5 - 25, titles[i][1] * width * 5, 50);
+        
+        pushMatrix();
+            translate(width / 2 - 160, height / 2 + i * 65 + 5);
+            if(mouseY > height / 2 + i * 65 - 20 && mouseY < height / 2 + i * 65 + 20){
+                titles[i][1] -= (titles[i][1] - 0.2) / 4;
+                
+                if(mouseIsPressed && verify === 0){
+                    scenes[0] = false;
+                    scenes[constrain(i - 1, 0, 4) + 1] = true;
+                    if(i === 0){
+                        p.mode = "endless";
                     }
-                } else if (currentScene === SCENES.LEADERBOARD || currentScene === SCENES.CREDITS) {
-                    // Back button logic
-                    if (s.mouseY > s.height * 0.9 - s.height * 0.04 && s.mouseY < s.height * 0.9 + s.height * 0.04) {
-                        if (s.mouseX > s.width * 0.5 - s.width * 0.25 && s.mouseX < s.width * 0.5 + s.width * 0.25) {
-                            currentScene = SCENES.MENU;
-                        }
+                    if(i === 1){
+                        p.mode = "play";
                     }
                 }
-            };
+            } else {
+                titles[i][1] -= (titles[i][1]) / 4;
+            }
+            scale(titles[i][1] + 1);
             
-            s.mouseDragged = () => {
-                if (currentScene === SCENES.PLAY) {
-                    let mouseDelta = s.mouseX - s.pmouseX;
-                    for (let layer of layers) {
-                        layer.angle += mouseDelta / s.width * 360;
-                    }
-                }
-            };
+            Text(titles[i][0], 0, 0, color(255));
+        popMatrix();
+    }
+    textAlign(CENTER, CENTER);
+};
+//Ledaerboard
+var Leaderboard = function(){
+    textFont(fonts[2], 70);
+    Text("Leader\nboard", width / 2, height / 2 - 175, color(50, 150, 250));
+    
+    fill(0, 100);
+    rect(0, 240, width, height / 2 - 20);
+    
+    textAlign(LEFT, CENTER);    
+    textFont(fonts[2], 12);
+    for(var i = 0; i < leaderboard.length; i++){
+        fill(255, 255 - i * 15);
+        text((i + 1) + "]  " + leaderboard[i][0] + "     :     " + leaderboard[i][1], width / 2 - 150, i * 15 + 260);
+    }
+    textAlign(CENTER, CENTER);
+};
+//Credits
+var Credits = function(){
+    textFont(fonts[2], 80);
+    Text("Helix\nJump", width / 2, height / 2 - 150, color(50, 150, 250));
+    
+    textAlign(LEFT, CENTER);    
+    textFont(fonts[0], 30);
+    Text("All Code by\n    ARROWHEAD CO.\n\nBased on\nHELIX JUMP by\n    VOODOO", width / 2 - 160, height / 2 + 90, color(255, 255, 255));
+    textAlign(CENTER, CENTER);
+};
+//}
 
-            s.touchMoved = (event) => {
-                if (currentScene === SCENES.PLAY) {
-                    if (event.touches.length > 0) {
-                        let touchX = event.touches[0].clientX;
-                        let deltaX = touchX - lastTouchX;
-                        for (let layer of layers) {
-                            layer.angle += deltaX / s.width * 360;
-                        }
-                        lastTouchX = touchX;
-                    }
-                }
-                return false; // Prevent default browser behavior
-            };
+//Draw function
+//{
+draw = function() {
+    background(255);
+    
+    if(scenes[1]){
+        PlayScene();
+    } else {
+        BG();
+    }
+    
+    if(scenes[0]){
+        MenuScene();
+    }
+    if(scenes[2]){
+        Leaderboard();
+    }
+    if(scenes[3]){
+        Credits();
+    }
+    
+    if(getThumb === "saycheese;]"){
+        Cur_Pal = 17;
+        
+        thumbnail = get(0, 0, width, height);
+        
+        fill(255);
+        rect(0, 0, width, height);
+        image(thumbnail, width * width / height / 4, 0, width * width / height, height);
+    }
+    
+    verify++;
+};
+//}
 
-            s.touchStarted = (event) => {
-                if (currentScene === SCENES.PLAY) {
-                    if (event.touches.length > 0) {
-                        lastTouchX = event.touches[0].clientX;
-                    }
-                }
-            };
-            
-            s.keyPressed = () => {
-                if (currentScene === SCENES.PLAY) {
-                    if (s.keyCode === s.RIGHT_ARROW) {
-                        for (let layer of layers) {
-                            layer.angle += 5;
-                        }
-                    } else if (s.keyCode === s.LEFT_ARROW) {
-                        for (let layer of layers) {
-                            layer.angle -= 5;
-                        }
-                    }
-                }
-            };
-
-        });
+//Other functions
+//{
+//In case user chooses to use mouse
+mousePressed = function(){
+    verify = 0;
+};
+mouseDragged = function(){
+    if(!p.gameOver && scenes[1] && p.begin){
+        for(var i = 0; i < layers.length; i++){
+            layers[i].angle += (pmouseX - mouseX) * 2;    
+        }
+    }
+};
+//Used for arrow keys
+keyPressed = function(){ keys[keyCode] = true; if(getThumb !== "saycheese;]"){getThumb += key.toString();} };
+keyReleased = function(){ keys[keyCode] = false; };
+//}
+};
+main();
+//end of code :00
+        }
     </script>
 </body>
 </html>
