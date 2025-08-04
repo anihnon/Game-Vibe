@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>פורטפוליו המשחקים שלי</title>
+    <!-- קישור לפונט חדש מ-Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    <style>
+        /* איפוס בסיסי ועיצוב גוף הדף */
+        body {
+            font-family: 'Varela Round', sans-serif; /* פונט חדש */
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f4f4f9, #e0e0e5); /* רקע הדרגתי חדש */
+            color: #333;
+            line-height: 1.6;
+            direction: rtl; /* כיוון קריאה מימין לשמאל */
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        /* כותרת עליונה וניווט */
+        header {
+            background-color: #2c3e50; /* כהה יותר */
+            color: #fff;
+            padding: 1.5rem 0;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.8rem;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0 0 0;
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 8px 15px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            border-radius: 20px;
+        }
+
+        nav ul li a:hover {
+            background-color: #34495e;
+            transform: translateY(-2px);
+        }
+
+        /* כותרות סעיפים */
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* רשת גלריית המשחקים */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+            padding: 20px 0;
+        }
+
+        .game-card {
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); /* צל עמוק יותר */
+            overflow: hidden;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .game-card:hover {
+            transform: translateY(-8px); /* אפקט ריחוף בולט יותר */
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .game-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid #e0e0e5;
+        }
+
+        .game-card h3 {
+            font-size: 1.5rem;
+            margin: 20px 15px 5px 15px;
+            color: #2c3e50;
+        }
+        
+        .game-card .description {
+            font-size: 1rem;
+            color: #666;
+            padding: 0 15px;
+            flex-grow: 1;
+            margin-bottom: 15px;
+        }
+
+        .game-card .buttons {
+            margin-top: auto;
+            padding: 20px;
+            background-color: #f9f9fc;
+            border-top: 1px solid #e0e0e5;
+        }
+
+        .game-card .btn {
+            display: inline-block;
+            background: linear-gradient(45deg, #3498db, #2980b9); /* מעבר צבעים לכפתור */
+            color: #fff;
+            padding: 12px 25px;
+            border-radius: 30px;
+            text-decoration: none;
+            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .game-card .btn:hover {
+            background: linear-gradient(45deg, #2980b9, #3498db);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* עיצוב ספציפי לדף יצירת קשר */
+        #contact-info {
+            background-color: #fff;
+            padding: 50px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #contact-info p {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        #contact-info a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        #contact-info a:hover {
+            color: #2980b9;
+            text-decoration: underline;
+        }
+
+        /* כותרת תחתונה */
+        footer {
+            text-align: center;
+            padding: 25px 0;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            margin-top: 50px;
+        }
+
+        /* עיצוב רספונסיבי */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2.2rem;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .game-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .game-card img {
+                height: 180px;
+            }
+
+            .game-card .btn {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <h1>פורטפוליו המשחקים שלי</h1>
+            <ul>
+                <li><a href="#game-gallery">גלריה</a></li>
+                <li><a href="#contact-info">יצירת קשר</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section id="game-gallery">
+            <h2>המשחקים שלי</h2>
+            <div class="game-grid" id="game-grid">
+                <!-- המשחקים ייטענו כאן על ידי JavaScript -->
+            </div>
+        </section>
+
+        <section id="contact-info">
+            <h2>יצירת קשר</h2>
+            <p>אם יש לכם שאלות, אתם יכולים ליצור איתי קשר כאן:</p>
+            <p>דוא"ל: <a href="mailto:your.email@example.com">your.email@example.com</a></p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 פורטפוליו המשחקים שלי. כל הזכויות שמורות.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // מערך המשחקים, תוכל לערוך אותו ישירות כאן
+            const games = [
+                {
+                    "id": "game1",
+                    "title": "Space Invaders Clone",
+                    "image": "https://placehold.co/600x400/000000/FFFFFF?text=Space+Invaders",
+                    "description": "גרסה מחודשת למשחק הארקייד הקלאסי, עם גרפיקה משופרת וחוויה ממכרת.",
+                    "type": "web",
+                    "link": "https://en.wikipedia.org/wiki/Space_Invaders"
+                },
+                {
+                    "id": "game2",
+                    "title": "Platformer Adventure",
+                    "image": "https://placehold.co/600x400/556B2F/FFFFFF?text=Platformer+Game",
+                    "description": "הרפתקה מרתקת בעולם של קפיצות, ריצות ופתרון חידות בדרך.",
+                    "type": "web",
+                    "link": "https://en.wikipedia.org/wiki/Platform_game"
+                },
+                {
+                    "id": "game3",
+                    "title": "Puzzle Master",
+                    "image": "https://placehold.co/600x400/800080/FFFFFF?text=Puzzle+Master",
+                    "description": "אתגר את המוח שלך עם אוסף של חידות לוגיות, מתאים לכל הגילאים.",
+                    "type": "web",
+                    "link": "https://en.wikipedia.org/wiki/Puzzle_video_game"
+                },
+                {
+                    "id": "game4",
+                    "title": "Text Adventure RPG",
+                    "image": "https://placehold.co/600x400/8B4513/FFFFFF?text=Text+Adventure",
+                    "description": "צאו למסע אפוס מבוסס טקסט שבו הבחירות שלכם מעצבות את גורלכם.",
+                    "type": "web",
+                    "link": "https://en.wikipedia.org/wiki/Text-based_game"
+                }
+            ];
+
+            const gameGrid = document.getElementById('game-grid');
+
+            // פונקציה ליצירת והצגת כרטיסי המשחקים
+            function displayGames(gamesArray) {
+                gameGrid.innerHTML = ''; // מנקה תוכן קיים
+                gamesArray.forEach(game => {
+                    // יוצר כרטיס משחק רק אם הוא מסוג 'web'
+                    if (game.type === 'web') {
+                        const gameCard = document.createElement('div');
+                        gameCard.classList.add('game-card');
+
+                        gameCard.innerHTML = `
+                            <img src="${game.image}" alt="${game.title}">
+                            <h3>${game.title}</h3>
+                            <p class="description">${game.description}</p>
+                            <div class="buttons">
+                                <a href="${game.link}" target="_blank" class="btn play">שחק</a>
+                            </div>
+                        `;
+                        gameGrid.appendChild(gameCard);
+                    }
+                });
+            }
+
+            // קורא לפונקציה כדי להציג את המשחקים
+            if (gameGrid) {
+                displayGames(games);
+            }
+
+            // גולל בצורה חלקה לסעיפים השונים
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
