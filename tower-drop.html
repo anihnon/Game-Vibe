@@ -11,44 +11,701 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* איפוס בסיסי ועיצוב גוף הדף */
         body {
-            font-family: 'Varela Round', sans-serif; /* פונט חדש */
+            font-family: 'Varela Round', sans-serif;
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #f4f4f9, #e0e0e5); /* רקע הדרגתי חדש */
+            background: linear-gradient(135deg, #f4f4f9, #e0e0e5);
             color: #333;
             line-height: 1.6;
-            direction: rtl; /* כיוון קריאה מימין לשמאל */
+            direction: rtl;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             flex-direction: column;
         }
-        /* סגנון לקנבס, עכשיו עם יחס גובה-רוחב קבוע */
         canvas {
             width: 90vw;
-            height: calc(90vw * 1.5); /* יחס של 2:3, ניתן להתאמה */
+            height: calc(90vw * 1.5);
             max-width: 800px;
             max-height: 1200px;
-            border-radius: 0.5rem; /* rounded-lg */
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             border-width: 4px;
-            border-color: #374151; /* border-gray-700 */
+            border-color: #374151;
         }
     </style>
 </head>
 <body class="bg-gray-900 text-white flex flex-col items-center justify-center h-screen overflow-hidden p-4">
 
-    <!-- The game canvas -->
     <canvas id="gameCanvas" class="bg-gray-800 rounded-lg shadow-xl border-4 border-gray-700"></canvas>
-
-    <!-- Tone.js for audio -->
     <script src="https://cdn.jsdelivr.net/npm/tone@next/build/Tone.min.js"></script>
+    
+    <script type="module">
+        // game-script.js - כל לוגיקת המשחק עבור Tower Drop בעברית, עם שמירת נתונים ב-Firebase Firestore
+        // הקוד עודכן כדי לכלול את כל התכונות מהקוד המקורי שהועלה.
+        
+        // =================================================================
+        // קובץ זה נועד לעבוד עם קובץ HTML המכיל
+        // קנבס עם ה-ID 'gameCanvas'.
+        //
+        // כדי שהסאונד יעבוד, אנא וודא שה-HTML שלך כולל את הספרייה של Tone.js
+        // =================================================================
 
-    <!-- Script file for game logic, now with type="module" -->
-    <script src="tower-drop.js" type="module"></script>
+        // Firebase imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, query, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // Global variables from the canvas environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Initialize Firebase and Auth
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        let userId = null;
+        let isAuthReady = false;
+        
+        // פונקציה ליצירת משתמשים פיקטיביים ב-Firestore (אם הלוח ריק)
+        async function populateDummyScores() {
+            if (!isAuthReady) {
+                console.log("populateDummyScores: Auth not ready, waiting...");
+                setTimeout(populateDummyScores, 100);
+                return;
+            }
+            const leaderboardCollectionRef = collection(db, `artifacts/${appId}/public/data/leaderboard`);
+            const q = query(leaderboardCollectionRef);
+
+            try {
+                const querySnapshot = await getDocs(q);
+                if (querySnapshot.empty) {
+                    console.log("Leaderboard is empty. Populating with dummy scores.");
+                    const dummyUsers = [
+                        { name: "פיקטיבי 1", score: 10 },
+                        { name: "פיקטיבי 2", score: 100 },
+                        { name: "פיקטיבי 3", score: 200 },
+                        { name: "פיקטיבי 4", score: 300 },
+                        { name: "פיקטיבי 5", score: 400 },
+                        { name: "פיקטיבי 6", score: 500 },
+                        { name: "פיקטיבי 7", score: 600 },
+                        { name: "פיקטיבי 8", score: 700 },
+                        { name: "פיקטיבי 9", score: 800 },
+                        { name: "פיקטיבי 10", score: 900 }
+                    ];
+
+                    for (const user of dummyUsers) {
+                        await addDoc(leaderboardCollectionRef, {
+                            name: user.name,
+                            score: user.score,
+                            timestamp: new Date()
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error("Error populating dummy scores: ", e);
+            }
+        }
+        
+        // פונקציה לטעינת לוח התוצאות מ-Firestore בזמן אמת
+        function loadLeaderboardFromFirestore() {
+            if (!isAuthReady) {
+                console.log("loadLeaderboardFromFirestore: Auth not ready, waiting...");
+                setTimeout(loadLeaderboardFromFirestore, 100);
+                return;
+            }
+            const leaderboardCollectionRef = collection(db, `artifacts/${appId}/public/data/leaderboard`);
+            const q = query(leaderboardCollectionRef);
+
+            onSnapshot(q, (querySnapshot) => {
+                const tempLeaderboard = [];
+                querySnapshot.forEach((doc) => {
+                    tempLeaderboard.push(doc.data());
+                });
+
+                // מיון הנתונים לפי ניקוד בסדר יורד
+                leaderboard = tempLeaderboard.sort((a, b) => b.score - a.score);
+                console.log("Leaderboard loaded:", leaderboard);
+            }, (error) => {
+                console.error("Error loading leaderboard: ", error);
+            });
+        }
+        
+        // פונקציה לשמירת ניקוד חדש ב-Firestore
+        async function saveScoreToFirestore(name, score) {
+            if (!isAuthReady) {
+                console.log("saveScoreToFirestore: Auth not ready, waiting...");
+                return;
+            }
+            try {
+                const leaderboardCollectionRef = collection(db, `artifacts/${appId}/public/data/leaderboard`);
+                await addDoc(leaderboardCollectionRef, {
+                    name: name,
+                    score: score,
+                    timestamp: new Date(),
+                    userId: userId
+                });
+                console.log("Score saved successfully!");
+            } catch (e) {
+                console.error("Error saving score: ", e);
+            }
+        }
+
+        // משתנים גלובליים
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = window.innerWidth > 600 ? window.innerWidth * 0.8 : window.innerWidth * 0.95;
+        let height = window.innerHeight > 800 ? window.innerHeight * 0.8 : window.innerHeight * 0.9;
+        canvas.width = width;
+        canvas.height = height;
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        const fonts = ['Varela Round', 'arial black Bold Italic', 'arial black Bold'];
+        
+        // פלטות צבעים
+        const palettes = [
+            ["#22c55e", "#d1fae5", "#065f46", "#fef9c3", "#ef4444"], // Green theme with red lava
+            ["#ef4444", "#fecaca", "#dc2626", "#d9f99d", "#f59e0b"], // Red theme with yellow lava
+            ["#3b82f6", "#bfdbfe", "#1d4ed8", "#a5b4fc", "#f87171"], // Blue theme with red lava
+            ["#a855f7", "#e9d5ff", "#7e22ce", "#f5d0fe", "#f97316"], // Purple theme with orange lava
+            ["#f97316", "#fed7aa", "#ea580c", "#fcd34d", "#10b981"], // Orange theme with green lava
+        ];
+
+        let Cur_Pal = 0;
+        let userNameInput = "";
+        let hasSavedScore = false;
+
+        let scenes = [true, false, false, false, false]; // [menu, play, leaderboard, credits, save score]
+
+        let ball, platforms, score, isGameOver;
+        let rotationSpeed = 0;
+        let towerRotation = 0;
+        const GRAVITY = 0.5;
+
+        let leaderboard = [];
+
+        // Tone.js audio setup
+        let jumpSynth;
+        let gameOverNoise;
+        let isAudioInitialized = false;
+        let music = {
+            menu: null,
+            play: null,
+            leaderboard: null,
+            credits: null,
+        };
+        let currentMusic = null;
+
+        async function initAudio() {
+            if (!isAudioInitialized) {
+                await Tone.start();
+                console.log("AudioContext started.");
+
+                jumpSynth = new Tone.PolySynth().toDestination();
+                gameOverNoise = new Tone.NoiseSynth({
+                    noise: {
+                        type: "pink"
+                    },
+                    envelope: {
+                        attack: 0.005,
+                        decay: 0.1,
+                        sustain: 0.05
+                    }
+                }).toDestination();
+                
+                music.menu = new Tone.Sequence((time, note) => {
+                    new Tone.Synth({
+                        oscillator: { type: "triangle" },
+                        envelope: { attack: 0.1, decay: 0.5, sustain: 0.5, release: 0.2 },
+                    }).toDestination().triggerAttackRelease(note, "4n", time);
+                }, ["C4", "E4", "G4", "E4"]).start(0);
+
+                music.play = new Tone.Loop((time) => {
+                    new Tone.PolySynth().toDestination().triggerAttackRelease(["C3", "G3", "C4"], "8n", time);
+                }, "1n").start(0);
+
+                music.leaderboard = new Tone.Loop((time) => {
+                    new Tone.Synth({
+                        oscillator: { type: "sawtooth" },
+                        envelope: { attack: 0.1, decay: 0.5, sustain: 0.5, release: 0.2 },
+                    }).toDestination().triggerAttackRelease("A3", "1m", time);
+                }, "1m").start(0);
+
+                music.credits = new Tone.Loop((time) => {
+                    new Tone.MembraneSynth().toDestination().triggerAttackRelease("C2", "8n", time);
+                }, "4n").start(0);
+                
+                Tone.Transport.bpm.value = 120;
+                Tone.Transport.start();
+
+                isAudioInitialized = true;
+                
+                playMusic('menu');
+            }
+        }
+        
+        function playMusic(scene) {
+            if (currentMusic) {
+                currentMusic.stop();
+            }
+            if (music[scene]) {
+                music[scene].start();
+                currentMusic = music[scene];
+            }
+        }
+
+        // הגדרת המשחק מחדש
+        function setup() {
+            // בחר פלטה רנדומלית חדשה
+            Cur_Pal = Math.floor(Math.random() * palettes.length);
+
+            ball = {
+                x: width / 2,
+                y: height * 0.1,
+                radius: 15,
+                speedY: 0,
+                isJumping: false,
+            };
+            platforms = [];
+            score = 0;
+            isGameOver = false;
+            hasSavedScore = false;
+            towerRotation = 0;
+            rotationSpeed = 0;
+            
+            for (let i = 0; i < 15; i++) {
+                createPlatform(height - 100 - i * 150);
+            }
+        }
+
+        // יצירת פלטפורמה בודדת
+        function createPlatform(y) {
+            const segments = [];
+            const numSegments = 10;
+            const dangerousSegment = Math.floor(Math.random() * numSegments);
+            const startAngle = Math.random() * 2 * Math.PI;
+
+            for (let i = 0; i < numSegments; i++) {
+                const isDangerous = i === dangerousSegment;
+                segments.push({
+                    startAngle: startAngle + i * (2 * Math.PI / numSegments),
+                    endAngle: startAngle + (i + 1) * (2 * Math.PI / numSegments) - 0.2,
+                    isDangerous: isDangerous,
+                });
+            }
+            platforms.push({ y, segments, rotation: 0 });
+        }
+        
+        function drawButton(text, x, y, buttonWidth, buttonHeight, color, textColor, isHovered) {
+            const borderRadius = 10;
+            const scaleFactor = isHovered ? 1.1 : 1.0;
+            const scaledWidth = buttonWidth * scaleFactor;
+            const scaledHeight = buttonHeight * scaleFactor;
+            const scaledX = x - scaledWidth / 2;
+            const scaledY = y - (scaledHeight - buttonHeight) / 2;
+
+            ctx.fillStyle = color;
+            
+            ctx.beginPath();
+            ctx.roundRect(scaledX, scaledY, scaledWidth, scaledHeight, borderRadius);
+            ctx.fill();
+
+            ctx.fillStyle = textColor;
+            ctx.font = '24px Varela Round';
+            ctx.fillText(text, x, scaledY + scaledHeight / 2);
+            
+            return { x: scaledX, y: scaledY, w: scaledWidth, h: scaledHeight };
+        }
+
+        let mouseX = 0;
+        let mouseY = 0;
+
+        function drawMenu() {
+            ctx.fillStyle = palettes[Cur_Pal][2];
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.fillStyle = 'white';
+            ctx.font = '60px arial black Bold';
+            ctx.fillText("Tower Drop", width / 2, height / 4);
+
+            const playButton = { x: width / 2, y: height / 2, w: 200, h: 50 };
+            const leaderboardButton = { x: width / 2, y: height / 2 + 70, w: 200, h: 50 };
+            const creditsButton = { x: width / 2, y: height / 2 + 140, w: 200, h: 50 };
+            
+            drawButton("התחל משחק", playButton.x, playButton.y, playButton.w, playButton.h, palettes[Cur_Pal][0], 'white', isHovering(playButton, mouseX, mouseY));
+            drawButton("לוח תוצאות", leaderboardButton.x, leaderboardButton.y, leaderboardButton.w, leaderboardButton.h, palettes[Cur_Pal][0], 'white', isHovering(leaderboardButton, mouseX, mouseY));
+            drawButton("קרדיטים", creditsButton.x, creditsButton.y, creditsButton.w, creditsButton.h, palettes[Cur_Pal][0], 'white', isHovering(creditsButton, mouseX, mouseY));
+        }
+
+        function drawLeaderboard() {
+            ctx.fillStyle = palettes[Cur_Pal][2];
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.fillStyle = 'white';
+            ctx.font = '40px arial black Bold';
+            ctx.fillText("לוח תוצאות", width / 2, 50);
+
+            ctx.font = '20px Varela Round';
+            if (leaderboard.length > 0) {
+                for (let i = 0; i < Math.min(10, leaderboard.length); i++) {
+                    const entry = leaderboard[i];
+                    ctx.fillText(`${i + 1}. ${entry.name}: ${entry.score}`, width / 2, 120 + i * 30);
+                }
+            } else {
+                ctx.fillText("טוען לוח תוצאות...", width / 2, 150);
+            }
+
+            const backButton = { x: width / 2, y: height - 80, w: 200, h: 50 };
+            drawButton("חזור", backButton.x, backButton.y, backButton.w, backButton.h, palettes[Cur_Pal][0], 'white', isHovering(backButton, mouseX, mouseY));
+        }
+
+        function drawCredits() {
+            ctx.fillStyle = palettes[Cur_Pal][2];
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.fillStyle = 'white';
+            ctx.font = '40px arial black Bold';
+            ctx.fillText("קרדיטים", width / 2, 50);
+            ctx.font = '20px Varela Round';
+            ctx.fillText("כל הקוד נכתב על ידי Game Vibe", width / 2, 165);
+            ctx.fillText("מבוסס על המשחק Helix Jump של Voodoo", width / 2, 200);
+            ctx.fillText("תודה לכל הבודקים והתומכים!", width / 2, 235);
+
+
+            const backButton = { x: width / 2, y: height - 80, w: 200, h: 50 };
+            drawButton("חזור", backButton.x, backButton.y, backButton.w, backButton.h, palettes[Cur_Pal][0], 'white', isHovering(backButton, mouseX, mouseY));
+        }
+
+        function drawSaveScoreScene() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(0, 0, width, height);
+            ctx.fillStyle = 'white';
+            ctx.font = '30px Varela Round';
+            ctx.fillText("המשחק נגמר! הניקוד שלך: " + score, width / 2, height / 2 - 120);
+            
+            ctx.font = '24px Varela Round';
+            if (!hasSavedScore) {
+                ctx.fillText("הכנס את שמך:", width / 2, height / 2 + 10);
+                // ציור שדה הקלט
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.roundRect(width / 2 - 150, height / 2 + 40, 300, 40, 10);
+                ctx.fill();
+                ctx.fillStyle = 'black';
+                ctx.font = '24px Varela Round';
+                ctx.fillText(userNameInput, width / 2, height / 2 + 60);
+
+                // ציור כפתור
+                const saveScoreButton = { x: width / 2, y: height / 2 + 110, w: 200, h: 50 };
+                drawButton("שמור ניקוד", saveScoreButton.x, saveScoreButton.y, saveScoreButton.w, saveScoreButton.h, palettes[Cur_Pal][0], 'white', isHovering(saveScoreButton, mouseX, mouseY));
+            } else {
+                const restartButton = { x: width / 2, y: height / 2 + 70, w: 200, h: 50 };
+                drawButton("התחל מחדש", restartButton.x, restartButton.y, restartButton.w, restartButton.h, palettes[Cur_Pal][0], 'white', isHovering(restartButton, mouseX, mouseY));
+            }
+        }
+
+        function drawPlayScene() {
+            ctx.fillStyle = palettes[Cur_Pal][2];
+            ctx.fillRect(0, 0, width, height);
+            
+            // ציור המגדל
+            ctx.save();
+            ctx.translate(width / 2, height / 2);
+            ctx.rotate(towerRotation);
+            ctx.translate(-width / 2, -height / 2);
+            
+            // ציור הפלטפורמות עם מראה של גלגלי שיניים
+            platforms.forEach(platform => {
+                const innerRadius = 70;
+                const outerRadius = 150;
+                
+                // ציור הטבעת של הפלטפורמה
+                ctx.beginPath();
+                ctx.arc(width / 2, platform.y, outerRadius, 0, 2 * Math.PI);
+                ctx.arc(width / 2, platform.y, innerRadius, 2 * Math.PI, 0, true);
+                ctx.fillStyle = palettes[Cur_Pal][1];
+                ctx.fill();
+
+                // ציור שיני גלגל השיניים
+                platform.segments.forEach(segment => {
+                    const segmentStartAngle = segment.startAngle + towerRotation;
+                    const segmentEndAngle = segment.endAngle + towerRotation;
+
+                    ctx.beginPath();
+                    ctx.moveTo(width / 2 + innerRadius * Math.cos(segmentStartAngle), platform.y + innerRadius * Math.sin(segmentStartAngle));
+                    ctx.lineTo(width / 2 + outerRadius * Math.cos(segmentStartAngle), platform.y + outerRadius * Math.sin(segmentStartAngle));
+                    ctx.arc(width / 2, platform.y, outerRadius, segmentStartAngle, segmentEndAngle);
+                    ctx.lineTo(width / 2 + innerRadius * Math.cos(segmentEndAngle), platform.y + innerRadius * Math.sin(segmentEndAngle));
+                    ctx.arc(width / 2, platform.y, innerRadius, segmentEndAngle, segmentStartAngle, true);
+                    ctx.closePath();
+                    ctx.fillStyle = segment.isDangerous ? palettes[Cur_Pal][4] : palettes[Cur_Pal][1];
+                    ctx.fill();
+                });
+            });
+            
+            // ציור המוט המרכזי עם מראה של ציר
+            const centerCircleRadius = 30;
+            ctx.fillStyle = palettes[Cur_Pal][0];
+            ctx.beginPath();
+            ctx.arc(width / 2, height / 2, centerCircleRadius, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            for(let i = 0; i < 10; i++) {
+                ctx.beginPath();
+                ctx.arc(width / 2, height / 2, centerCircleRadius - 2 - i * 2, 0, 2 * Math.PI);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+
+            // ציור הכדור
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = palettes[Cur_Pal][3];
+            ctx.fill();
+
+            // ציור ציון
+            ctx.fillStyle = 'white';
+            ctx.font = '30px Varela Round';
+            ctx.fillText(`ניקוד: ${score}`, width / 2, 30);
+            
+            if (isGameOver) {
+                drawSaveScoreScene();
+            }
+        }
+        
+        function isHovering(button, mouseX, mouseY) {
+            const buttonX = button.x - button.w / 2;
+            const buttonY = button.y;
+            return mouseX > buttonX && mouseX < buttonX + button.w &&
+                   mouseY > buttonY && mouseY < buttonY + button.h;
+        }
+
+        function gameLoop() {
+            if (scenes[0]) {
+                drawMenu();
+            } else if (scenes[1]) {
+                if (!isGameOver) {
+                    update();
+                }
+                drawPlayScene();
+            } else if (scenes[2]) {
+                drawLeaderboard();
+            } else if (scenes[3]) {
+                drawCredits();
+            } else if (scenes[4]) {
+                drawSaveScoreScene();
+            }
+            requestAnimationFrame(gameLoop);
+        }
+
+        function update() {
+            ball.speedY += GRAVITY;
+            ball.y += ball.speedY;
+
+            towerRotation += rotationSpeed;
+            rotationSpeed *= 0.95;
+
+            platforms.forEach(platform => {
+                const platformY = platform.y;
+                const platformRadius = 150;
+                const innerRadius = 70;
+
+                if (ball.y + ball.radius >= platformY && ball.y + ball.radius <= platformY + 10) {
+                    const ballDistance = Math.sqrt(Math.pow(ball.x - width / 2, 2) + Math.pow(ball.y - platformY, 2));
+
+                    if (ballDistance > innerRadius && ballDistance < platformRadius) {
+                        const ballAngle = Math.atan2(ball.y - platformY, ball.x - width / 2) - towerRotation;
+                        let normalizedBallAngle = (ballAngle + 2 * Math.PI) % (2 * Math.PI);
+                        if (normalizedBallAngle < 0) normalizedBallAngle += 2 * Math.PI;
+
+                        let isDangerousHit = false;
+                        platform.segments.forEach(segment => {
+                            const segmentStart = (segment.startAngle + towerRotation) % (2 * Math.PI);
+                            const segmentEnd = (segment.endAngle + towerRotation) % (2 * Math.PI);
+
+                            // Handle wrap-around angles
+                            if (segmentStart > segmentEnd) {
+                                if (normalizedBallAngle >= segmentStart || normalizedBallAngle <= segmentEnd) {
+                                    if (segment.isDangerous) isDangerousHit = true;
+                                }
+                            } else {
+                                if (normalizedBallAngle >= segmentStart && normalizedBallAngle <= segmentEnd) {
+                                    if (segment.isDangerous) isDangerousHit = true;
+                                }
+                            }
+                        });
+
+                        if (isDangerousHit) {
+                            isGameOver = true;
+                            scenes = [false, false, false, false, true];
+                            if (isAudioInitialized) {
+                                gameOverNoise.triggerAttackRelease("16n");
+                            }
+                        } else {
+                            ball.speedY = -15;
+                            score += 10;
+                            if (isAudioInitialized) {
+                                jumpSynth.triggerAttackRelease(["C4"], "8n");
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (ball.y > height) {
+                isGameOver = true;
+                scenes = [false, false, false, false, true];
+                if (isAudioInitialized) {
+                    gameOverNoise.triggerAttackRelease("16n");
+                }
+            }
+        }
+
+        let touchStartX = null;
+        let lastMouseX = null;
+
+        canvas.addEventListener('mousedown', (e) => {
+            initAudio();
+            lastMouseX = e.clientX;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+            mouseY = e.clientY - rect.top;
+
+            if (lastMouseX !== null && scenes[1] && !isGameOver) {
+                const deltaX = e.clientX - lastMouseX;
+                rotationSpeed = deltaX * 0.005;
+                lastMouseX = e.clientX;
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            lastMouseX = null;
+        });
+
+        canvas.addEventListener('touchstart', (e) => {
+            initAudio();
+            touchStartX = e.touches[0].clientX;
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            if (touchStartX !== null && scenes[1] && !isGameOver) {
+                const deltaX = e.touches[0].clientX - touchStartX;
+                rotationSpeed = deltaX * 0.005;
+                touchStartX = e.touches[0].clientX;
+            }
+        });
+
+        canvas.addEventListener('touchend', () => {
+            touchStartX = null;
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (scenes[4] && !hasSavedScore) {
+                if (e.key === "Backspace") {
+                    userNameInput = userNameInput.slice(0, -1);
+                } else if (e.key.length === 1 && userNameInput.length < 15) {
+                    userNameInput += e.key;
+                } else if (e.key === "Enter") {
+                    if (userNameInput.trim() !== "" && !hasSavedScore) {
+                        saveScoreToFirestore(userNameInput, score);
+                        hasSavedScore = true;
+                        userNameInput = "";
+                    }
+                }
+            }
+        });
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const playButton = { x: width / 2, y: height / 2, w: 200, h: 50 };
+            const leaderboardButton = { x: width / 2, y: height / 2 + 70, w: 200, h: 50 };
+            const creditsButton = { x: width / 2, y: height / 2 + 140, w: 200, h: 50 };
+            const saveScoreButton = { x: width / 2, y: height / 2 + 110, w: 200, h: 50 };
+            const backButton = { x: width / 2, y: height - 80, w: 200, h: 50 };
+            const restartButton = { x: width / 2, y: height / 2 + 70, w: 200, h: 50 };
+
+            const isClicked = (button, x, y) => {
+                 const scaledWidth = button.w * 1.1;
+                 const scaledHeight = button.h * 1.1;
+                 const scaledX = button.x - scaledWidth / 2;
+                 const scaledY = button.y - (scaledHeight - button.h) / 2;
+                 
+                 return x > scaledX && x < scaledX + scaledWidth &&
+                        y > scaledY && y < scaledY + scaledHeight;
+            };
+
+            if (scenes[0]) { // תפריט
+                if (isClicked(playButton, mouseX, mouseY)) {
+                    scenes = [false, true, false, false, false];
+                    playMusic('play');
+                    setup();
+                }
+                if (isClicked(leaderboardButton, mouseX, mouseY)) {
+                    scenes = [false, false, true, false, false];
+                    playMusic('leaderboard');
+                }
+                if (isClicked(creditsButton, mouseX, mouseY)) {
+                    scenes = [false, false, false, true, false];
+                    playMusic('credits');
+                }
+            } else if (scenes[4]) { // מסך משחק שנגמר
+                if (isClicked(saveScoreButton, mouseX, mouseY) && !hasSavedScore) {
+                     if (userNameInput.trim() !== "") {
+                        saveScoreToFirestore(userNameInput, score);
+                        hasSavedScore = true;
+                        userNameInput = "";
+                    }
+                } else if (isClicked(restartButton, mouseX, mouseY) && hasSavedScore) {
+                    scenes = [true, false, false, false, false];
+                    playMusic('menu');
+                }
+            } else if (scenes[2] || scenes[3]) { // כפתור חזור
+                if (isClicked(backButton, mouseX, mouseY)) {
+                    scenes = [true, false, false, false, false];
+                    playMusic('menu');
+                }
+            }
+        });
+        
+        window.onload = async function() {
+            try {
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (e) {
+                console.error("שגיאת אימות, ממשיך באופן אנונימי:", e);
+                await signInAnonymously(auth);
+            }
+            
+            if (auth.currentUser) {
+                userId = auth.currentUser.uid;
+            } else {
+                userId = crypto.randomUUID();
+            }
+            isAuthReady = true;
+
+            loadLeaderboardFromFirestore();
+            populateDummyScores();
+
+            setup();
+            gameLoop();
+        }
+    </script>
 </body>
 </html>
