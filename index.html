@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>פורטפוליו המשחקים שלי</title>
+    <title>Vibe Games</title>
     <!-- קישור לפונט חדש מ-Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -48,6 +48,7 @@
             display: flex;
             justify-content: center;
             gap: 25px;
+            flex-wrap: wrap;
         }
 
         nav ul li a {
@@ -82,52 +83,78 @@
         }
 
         .game-card {
-            background-color: #fff;
             border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); /* צל עמוק יותר */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             text-align: center;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             display: flex;
             flex-direction: column;
         }
-
+        
         .game-card:hover {
-            transform: translateY(-8px); /* אפקט ריחוף בולט יותר */
+            transform: translateY(-8px);
             box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
         }
-
-        .game-card img {
-            width: 100%;
+        
+        /* חלק עליון של הכרטיס עם תמונת רקע וכותרת */
+        .game-card-header {
+            position: relative;
             height: 200px;
-            object-fit: cover;
-            border-bottom: 1px solid #e0e0e5;
-        }
-
-        .game-card h3 {
-            font-size: 1.5rem;
-            margin: 20px 15px 5px 15px;
-            color: #2c3e50;
+            background-size: cover;
+            background-position: center;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
         }
         
+        /* שכבת כיסוי כהה על התמונה לשיפור קריאות הטקסט */
+        .game-card-header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+            border-radius: 15px 15px 0 0;
+        }
+
+        .game-card-header h3 {
+            position: relative;
+            z-index: 2; /* מוודא שהטקסט יהיה מעל שכבת הכיסוי */
+            font-size: 1.5rem;
+            margin: 15px;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+        
+        /* החלק התחתון של הכרטיס עם התיאור והכפתור */
+        .game-card-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 0 0 15px 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
         .game-card .description {
             font-size: 1rem;
-            color: #666;
-            padding: 0 15px;
+            color: #555;
             flex-grow: 1;
             margin-bottom: 15px;
         }
 
         .game-card .buttons {
-            margin-top: auto;
-            padding: 20px;
-            background-color: #f9f9fc;
-            border-top: 1px solid #e0e0e5;
+            padding: 0;
         }
 
         .game-card .btn {
             display: inline-block;
-            background: linear-gradient(45deg, #3498db, #2980b9); /* מעבר צבעים לכפתור */
+            background: linear-gradient(45deg, #3498db, #2980b9);
             color: #fff;
             padding: 12px 25px;
             border-radius: 30px;
@@ -137,12 +164,26 @@
             cursor: pointer;
             font-size: 1.1rem;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            box-sizing: border-box; /* מוודא שהריפוד לא ירחיב את הכפתור */
         }
 
         .game-card .btn:hover {
             background: linear-gradient(45deg, #2980b9, #3498db);
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .content-section {
+            background-color: #fff;
+            padding: 50px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            margin-top: 50px;
+        }
+        
+        .content-section h2 {
+            margin-top: 0;
         }
 
         /* עיצוב ספציפי לדף יצירת קשר */
@@ -180,6 +221,25 @@
             color: #ecf0f1;
             margin-top: 50px;
         }
+        
+        footer .footer-links {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        footer .footer-links a {
+            color: #fff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        footer .footer-links a:hover {
+            color: #3498db;
+            text-decoration: underline;
+        }
 
         /* עיצוב רספונסיבי */
         @media (max-width: 768px) {
@@ -202,10 +262,6 @@
                 font-size: 2rem;
             }
 
-            .game-card img {
-                height: 180px;
-            }
-
             .game-card .btn {
                 padding: 10px 20px;
                 font-size: 1rem;
@@ -216,7 +272,7 @@
 <body>
     <header>
         <nav>
-            <h1>פורטפוליו המשחקים שלי</h1>
+            <h1>Vibe Games</h1>
             <ul>
                 <li><a href="#game-gallery">גלריה</a></li>
                 <li><a href="#contact-info">יצירת קשר</a></li>
@@ -240,7 +296,14 @@
     </main>
 
     <footer>
-        <p>&copy; 2025 פורטפוליו המשחקים שלי. כל הזכויות שמורות.</p>
+        <p>&copy; 2025 Vibe Games. כל הזכויות שמורות.</p>
+        <div class="footer-links">
+            <a href="privacy.html">מדיניות פרטיות</a>
+            <a href="terms.html">תנאי שימוש</a>
+            <a href="cookies.html">מדיניות עוגיות</a>
+            <a href="about.html">אודות</a>
+            <a href="faq.html">שאלות נפוצות</a>
+        </div>
     </footer>
 
     <script>
@@ -249,11 +312,11 @@
             const games = [
                 {
                     "id": "game1",
-                    "title": "Tower Drop",
-                    "image": "https://placehold.co/600x400/00bcd4/FFFFFF?text=Tower+Drop+Game",
-                    "description": "משחק קפיצות ממכר עם גרפיקה ועיצוב מחודשים.",
+                    "title": "Space Invaders Clone",
+                    "image": "https://placehold.co/600x400/000000/FFFFFF?text=Space+Invaders",
+                    "description": "גרסה מחודשת למשחק הארקייד הקלאסי, עם גרפיקה משופרת וחוויה ממכרת.",
                     "type": "web",
-                    "link": "tower-drop.html" // שינוי הקישור לקובץ HTML ייעודי למשחק
+                    "link": "https://en.wikipedia.org/wiki/Space_Invaders"
                 },
                 {
                     "id": "game2",
@@ -278,6 +341,22 @@
                     "description": "צאו למסע אפוס מבוסס טקסט שבו הבחירות שלכם מעצבות את גורלכם.",
                     "type": "web",
                     "link": "https://en.wikipedia.org/wiki/Text-based_game"
+                },
+                {
+                    "id": "game5",
+                    "title": "Racing Game",
+                    "image": "https://placehold.co/600x400/DC143C/FFFFFF?text=Racing+Game",
+                    "description": "משחק מירוצים מהיר ומלהיב עם מכוניות ספורט עוצמתיות.",
+                    "type": "web",
+                    "link": "https://en.wikipedia.org/wiki/Racing_video_game"
+                },
+                {
+                    "id": "game6",
+                    "title": "Tower Drop",
+                    "image": "https://placehold.co/600x400/00bcd4/FFFFFF?text=Falling+Blocks",
+                    "description": "משחק קפיצות ממכר עם גרפיקה ועיצוב מחודשים.",
+                    "type": "web",
+                    "link": "tower-drop.html"
                 }
             ];
 
@@ -292,14 +371,32 @@
                         const gameCard = document.createElement('div');
                         gameCard.classList.add('game-card');
 
-                        gameCard.innerHTML = `
-                            <img src="${game.image}" alt="${game.title}">
-                            <h3>${game.title}</h3>
-                            <p class="description">${game.description}</p>
-                            <div class="buttons">
-                                <a href="${game.link}" class="btn play">${game.title === 'Tower Drop' ? 'שחק עכשיו' : 'שחק'}</a>
-                            </div>
-                        `;
+                        // יצירת החלק העליון של הכרטיס עם תמונת הרקע והכותרת
+                        const gameCardHeader = document.createElement('div');
+                        gameCardHeader.classList.add('game-card-header');
+                        gameCardHeader.style.backgroundImage = `url('${game.image}')`;
+                        
+                        const gameTitle = document.createElement('h3');
+                        gameTitle.textContent = game.title;
+                        gameCardHeader.appendChild(gameTitle);
+                        
+                        // יצירת החלק התחתון של הכרטיס עם התיאור והכפתור
+                        const gameCardContent = document.createElement('div');
+                        gameCardContent.classList.add('game-card-content');
+                        
+                        const gameDescription = document.createElement('p');
+                        gameDescription.classList.add('description');
+                        gameDescription.textContent = game.description;
+                        gameCardContent.appendChild(gameDescription);
+                        
+                        const buttonsDiv = document.createElement('div');
+                        buttonsDiv.classList.add('buttons');
+                        buttonsDiv.innerHTML = `<a href="${game.link}" target="_blank" class="btn play">שחק</a>`;
+                        gameCardContent.appendChild(buttonsDiv);
+
+                        gameCard.appendChild(gameCardHeader);
+                        gameCard.appendChild(gameCardContent);
+                        
                         gameGrid.appendChild(gameCard);
                     }
                 });
