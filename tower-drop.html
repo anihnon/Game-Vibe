@@ -20,12 +20,11 @@
             color: #333;
             line-height: 1.6;
             direction: rtl; /* כיוון קריאה מימין לשמאל */
-        }
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 0 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
         }
         /* סגנון לקנבס, עכשיו עם יחס גובה-רוחב קבוע */
         canvas {
@@ -38,41 +37,18 @@
             border-width: 4px;
             border-color: #374151; /* border-gray-700 */
         }
-        /* סגנון חדש לכפתורים כדי שיראו מודרניים */
-        .btn {
-            display: inline-block;
-            padding: 12px 24px;
-            font-weight: bold;
-            text-align: center;
-            border-radius: 9999px; /* rounded-full */
-            transition: all 0.2s;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transform: scale(1);
-        }
-        .btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        .btn.play {
-            background-color: #3b82f6; /* bg-blue-600 */
-            color: white;
-        }
     </style>
 </head>
 <body class="bg-gray-900 text-white flex flex-col items-center justify-center h-screen overflow-hidden p-4">
 
-    <!-- The game canvas, now with fixed aspect ratio -->
+    <!-- The game canvas -->
     <canvas id="gameCanvas" class="bg-gray-800 rounded-lg shadow-xl border-4 border-gray-700"></canvas>
 
-    <!-- Message Box (hidden by default) -->
-    <div id="messageBox" class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-700 bg-opacity-90 text-white p-8 rounded-lg shadow-2xl z-50 text-center">
-        <span id="messageText" class="font-bold text-2xl"></span>
-        <button onclick="document.getElementById('messageBox').classList.add('hidden')" class="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full shadow-lg transition-transform transform hover:scale-105">אישור</button>
-    </div>
-
-    <!-- Script file for game logic -->
+    <!-- Tone.js for audio -->
     <script src="https://cdn.jsdelivr.net/npm/tone@next/build/Tone.min.js"></script>
-    <script src="tower-drop.js"></script>
+
+    <!-- Script file for game logic, now with type="module" -->
+    <script src="tower-drop.js" type="module"></script>
 
 </body>
 </html>
