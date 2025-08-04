@@ -92,47 +92,44 @@
     <p>כל הזכויות שמורות &copy; 2025 - Vibe Games</p>
   </footer>
 
-  <script>
-    // מביא את שם המשחק מה-URL
-    function getGameNameFromURL() {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get("game");
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const gameName = urlParams.get('game');
+  const gameTitle = document.getElementById('gameTitle');
+  const loading = document.getElementById('loading');
+  const gameContainer = document.getElementById('gameContainer');
+
+  if (!gameName) {
+    gameTitle.textContent = "שגיאה – אין שם משחק בקישור";
+    loading.textContent = "";
+  } else {
+    gameTitle.textContent = formatGameName(gameName);
+
+    let gameFile = gameName;
+    if (!gameFile.endsWith('.js')) {
+      gameFile += '.js';
     }
 
-    // פונקציה שמסירה סיומות וקווים ומחזירה שם קריא יותר
-    function formatGameName(fileName) {
-      if (!fileName) return "";
-      const name = fileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
-      return name.charAt(0).toUpperCase() + name.slice(1);
-    }
+    const script = document.createElement('script');
+    script.src = `games/${gameFile}`;  // תיקון הנתיב ל-'games' במקום 'game'
+    script.onload = () => {
+      loading.style.display = 'none';
+    };
+    script.onerror = () => {
+      loading.textContent = "שגיאה בטעינת המשחק.";
+      gameTitle.textContent = "משהו השתבש...";
+      console.error("Failed to load", script.src);
+    };
 
-    const gameName = getGameNameFromURL();
-    const gameTitle = document.getElementById("gameTitle");
-    const loading = document.getElementById("loading");
-    const gameContainer = document.getElementById("gameContainer");
+    console.log("מנסה לטעון:", script.src);
+    gameContainer.appendChild(script);
+  }
 
-    if (!gameName) {
-      gameTitle.textContent = "שגיאה – אין שם משחק בקישור";
-      loading.textContent = "";
-    } else {
-      gameTitle.textContent = formatGameName(gameName);
-
-      let gameFile = gameName;
-      if (!gameFile.endsWith(".js")) {
-        gameFile += ".js";
-      }
-      const script = document.createElement("script");
-      script.src = `../game/${gameFile}`;
-      script.onload = () => {
-        loading.style.display = "none";
-      };
-      script.onerror = () => {
-        loading.textContent = "שגיאה בטעינת המשחק.";
-        gameTitle.textContent = "משהו השתבש...";
-      };
-
-      gameContainer.appendChild(script);
-    }
-  </script>
+  // פונקציית עזר לדוגמה לשיפור הצגת השם:
+  function formatGameName(fileName) {
+    const name = fileName.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  }
+</script>
 </body>
 </html>
