@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vibe Games</title>
-    <!-- קישור לפונט חדש מ-Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
-    <style>
-        /* איפוס בסיסי ועיצוב גוף הדף */
-        body {
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vibe Games</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+  <style>
+    /* ...הסגנונות נשמרו בדיוק כמו שסיפקת */
+    /* נחתך כאן לקיצור */
+              body {
             font-family: 'Varela Round', sans-serif; /* פונט חדש */
             margin: 0;
             padding: 0;
@@ -267,156 +267,116 @@
                 font-size: 1rem;
             }
         }
-    </style>
+
+  </style>
 </head>
 <body>
-    <header>
-        <nav>
-            <h1>Vibe Games</h1>
-            <ul>
-                <li><a href="#game-gallery">גלריה</a></li>
-                <li><a href="#contact-info">יצירת קשר</a></li>
-            </ul>
-        </nav>
-    </header>
+  <header>
+    <nav>
+      <h1>Vibe Games</h1>
+      <ul>
+        <li><a href="#game-gallery">גלריה</a></li>
+        <li><a href="#contact-info">יצירת קשר</a></li>
+      </ul>
+    </nav>
+  </header>
 
-    <main class="container">
-        <section id="game-gallery">
-            <h2>המשחקים שלי</h2>
-            <div class="game-grid" id="game-grid">
-                <!-- המשחקים ייטענו כאן על ידי JavaScript -->
-            </div>
-        </section>
+  <main class="container">
+    <section id="game-gallery">
+      <h2>המשחקים שלי</h2>
+      <div class="game-grid" id="game-grid"></div>
+    </section>
 
-        <section id="contact-info">
-            <h2>יצירת קשר</h2>
-            <p>אם יש לכם שאלות, אתם יכולים ליצור איתי קשר כאן:</p>
-            <p>דוא"ל: <a href="mailto:your.email@example.com">your.email@example.com</a></p>
-        </section>
-    </main>
+    <section id="contact-info">
+      <h2>יצירת קשר</h2>
+      <p>אם יש לכם שאלות, אתם יכולים ליצור איתי קשר כאן:</p>
+      <p>דוא"ל: <a href="mailto:your.email@example.com">your.email@example.com</a></p>
+    </section>
+  </main>
 
-    <footer>
-        <p>&copy; 2025 Vibe Games. כל הזכויות שמורות.</p>
-        <div class="footer-links">
-            <a href="privacy.html">מדיניות פרטיות</a>
-            <a href="terms.html">תנאי שימוש</a>
-            <a href="cookies.html">מדיניות עוגיות</a>
-            <a href="about.html">אודות</a>
-            <a href="faq.html">שאלות נפוצות</a>
-        </div>
-    </footer>
+  <footer>
+    <p>&copy; 2025 Vibe Games. כל הזכויות שמורות.</p>
+    <div class="footer-links">
+      <a href="privacy.html">מדיניות פרטיות</a>
+      <a href="terms.html">תנאי שימוש</a>
+      <a href="cookies.html">מדיניות עוגיות</a>
+      <a href="about.html">אודות</a>
+      <a href="faq.html">שאלות נפוצות</a>
+    </div>
+  </footer>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // מערך המשחקים, תוכל לערוך אותו ישירות כאן
-            const games = [
-                {
-                    "id": "game1",
-                    "title": "Space Invaders Clone",
-                    "image": "https://placehold.co/600x400/000000/FFFFFF?text=Space+Invaders",
-                    "description": "גרסה מחודשת למשחק הארקייד הקלאסי, עם גרפיקה משופרת וחוויה ממכרת.",
-                    "type": "web",
-                    "link": "https://en.wikipedia.org/wiki/Space_Invaders"
-                },
-                {
-                    "id": "game2",
-                    "title": "Platformer Adventure",
-                    "image": "https://placehold.co/600x400/556B2F/FFFFFF?text=Platformer+Game",
-                    "description": "הרפתקה מרתקת בעולם של קפיצות, ריצות ופתרון חידות בדרך.",
-                    "type": "web",
-                    "link": "https://en.wikipedia.org/wiki/Platform_game"
-                },
-                {
-                    "id": "game3",
-                    "title": "Puzzle Master",
-                    "image": "https://placehold.co/600x400/800080/FFFFFF?text=Puzzle+Master",
-                    "description": "אתגר את המוח שלך עם אוסף של חידות לוגיות, מתאים לכל הגילאים.",
-                    "type": "web",
-                    "link": "https://en.wikipedia.org/wiki/Puzzle_video_game"
-                },
-                {
-                    "id": "game4",
-                    "title": "Text Adventure RPG",
-                    "image": "https://placehold.co/600x400/8B4513/FFFFFF?text=Text+Adventure",
-                    "description": "צאו למסע אפוס מבוסס טקסט שבו הבחירות שלכם מעצבות את גורלכם.",
-                    "type": "web",
-                    "link": "https://en.wikipedia.org/wiki/Text-based_game"
-                },
-                {
-                    "id": "game5",
-                    "title": "Racing Game",
-                    "image": "https://placehold.co/600x400/DC143C/FFFFFF?text=Racing+Game",
-                    "description": "משחק מירוצים מהיר ומלהיב עם מכוניות ספורט עוצמתיות.",
-                    "type": "web",
-                    "link": "https://en.wikipedia.org/wiki/Racing_video_game"
-                },
-                {
-                    "id": "game6",
-                    "title": "Tower Drop",
-                    "image": "https://placehold.co/600x400/00bcd4/FFFFFF?text=Falling+Blocks",
-                    "description": "משחק קפיצות ממכר עם גרפיקה ועיצוב מחודשים.",
-                    "type": "web",
-                    "link": "tower-drop.html"
-                }
-            ];
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const games = [
+        {
+          id: "helixJump",
+          title: "Helix Jump",
+          image: "https://placehold.co/600x400/ff6f61/FFFFFF?text=Helix+Jump",
+          description: "משחק קפיצות ממכר בו אתה מנווט כדור מבעד לפלטפורמות.",
+          type: "p5"
+        },
+        {
+          id: "snake",
+          title: "Snake Classic",
+          image: "https://placehold.co/600x400/4caf50/FFFFFF?text=Snake",
+          description: "הגרסה המחודשת של משחק הנחש הקלאסי.",
+          type: "p5"
+        },
+        {
+          id: "flappyBird",
+          title: "Flappy Bird",
+          image: "https://placehold.co/600x400/2196f3/FFFFFF?text=Flappy+Bird",
+          description: "העוף הקטן צריך לעבור בין צינורות מבלי להתרסק!",
+          type: "p5"
+        }
+      ];
 
-            const gameGrid = document.getElementById('game-grid');
+      const gameGrid = document.getElementById('game-grid');
 
-            // פונקציה ליצירת והצגת כרטיסי המשחקים
-            function displayGames(gamesArray) {
-                gameGrid.innerHTML = ''; // מנקה תוכן קיים
-                gamesArray.forEach(game => {
-                    // יוצר כרטיס משחק רק אם הוא מסוג 'web'
-                    if (game.type === 'web') {
-                        const gameCard = document.createElement('div');
-                        gameCard.classList.add('game-card');
+      function displayGames(gamesArray) {
+        gameGrid.innerHTML = '';
+        gamesArray.forEach(game => {
+          const card = document.createElement('div');
+          card.className = 'game-card';
 
-                        // יצירת החלק העליון של הכרטיס עם תמונת הרקע והכותרת
-                        const gameCardHeader = document.createElement('div');
-                        gameCardHeader.classList.add('game-card-header');
-                        gameCardHeader.style.backgroundImage = `url('${game.image}')`;
-                        
-                        const gameTitle = document.createElement('h3');
-                        gameTitle.textContent = game.title;
-                        gameCardHeader.appendChild(gameTitle);
-                        
-                        // יצירת החלק התחתון של הכרטיס עם התיאור והכפתור
-                        const gameCardContent = document.createElement('div');
-                        gameCardContent.classList.add('game-card-content');
-                        
-                        const gameDescription = document.createElement('p');
-                        gameDescription.classList.add('description');
-                        gameDescription.textContent = game.description;
-                        gameCardContent.appendChild(gameDescription);
-                        
-                        const buttonsDiv = document.createElement('div');
-                        buttonsDiv.classList.add('buttons');
-                        buttonsDiv.innerHTML = `<a href="${game.link}" target="_blank" class="btn play">שחק</a>`;
-                        gameCardContent.appendChild(buttonsDiv);
+          const header = document.createElement('div');
+          header.className = 'game-card-header';
+          header.style.backgroundImage = `url('${game.image}')`;
 
-                        gameCard.appendChild(gameCardHeader);
-                        gameCard.appendChild(gameCardContent);
-                        
-                        gameGrid.appendChild(gameCard);
-                    }
-                });
-            }
+          const h3 = document.createElement('h3');
+          h3.textContent = game.title;
+          header.appendChild(h3);
 
-            // קורא לפונקציה כדי להציג את המשחקים
-            if (gameGrid) {
-                displayGames(games);
-            }
+          const content = document.createElement('div');
+          content.className = 'game-card-content';
 
-            // גולל בצורה חלקה לסעיפים השונים
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    document.querySelector(this.getAttribute('href')).scrollIntoView({
-                        behavior: 'smooth'
-                    });
-                });
-            });
+          const desc = document.createElement('p');
+          desc.className = 'description';
+          desc.textContent = game.description;
+          content.appendChild(desc);
+
+          const btnDiv = document.createElement('div');
+          btnDiv.className = 'buttons';
+          btnDiv.innerHTML = `<a href="play.html?game=${game.id}" class="btn">שחק עכשיו</a>`;
+          content.appendChild(btnDiv);
+
+          card.appendChild(header);
+          card.appendChild(content);
+
+          gameGrid.appendChild(card);
         });
-    </script>
+      }
+
+      displayGames(games);
+
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+        });
+      });
+    });
+  </script>
 </body>
 </html>
+
