@@ -3,20 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tower Drop - המשחק</title>
+    <title>פורטפוליו המשחקים שלי - Tower Drop</title>
+    <!-- קישור לפונט חדש מ-Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Varela+Round&display=swap');
+        /* איפוס בסיסי ועיצוב גוף הדף */
         body {
-            font-family: 'Varela Round', sans-serif;
+            font-family: 'Varela Round', sans-serif; /* פונט חדש */
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f4f4f9, #e0e0e5); /* רקע הדרגתי חדש */
+            color: #333;
+            line-height: 1.6;
+            direction: rtl; /* כיוון קריאה מימין לשמאל */
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        /* סגנון לקנבס, עכשיו עם יחס גובה-רוחב קבוע */
+        canvas {
+            width: 90vw;
+            height: calc(90vw * 1.5); /* יחס של 2:3, ניתן להתאמה */
+            max-width: 800px;
+            max-height: 1200px;
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+            border-width: 4px;
+            border-color: #374151; /* border-gray-700 */
+        }
+        /* סגנון חדש לכפתורים כדי שיראו מודרניים */
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 9999px; /* rounded-full */
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transform: scale(1);
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .btn.play {
+            background-color: #3b82f6; /* bg-blue-600 */
+            color: white;
         }
     </style>
 </head>
-<body class="bg-gray-900 text-white flex items-center justify-center h-screen overflow-hidden">
+<body class="bg-gray-900 text-white flex flex-col items-center justify-center h-screen overflow-hidden p-4">
 
-    <!-- The game canvas, now larger -->
-    <canvas id="gameCanvas" class="bg-gray-800 rounded-lg shadow-xl border-4 border-gray-700 w-11/12 h-11/12"></canvas>
+    <!-- The game canvas, now with fixed aspect ratio -->
+    <canvas id="gameCanvas" class="bg-gray-800 rounded-lg shadow-xl border-4 border-gray-700"></canvas>
 
     <!-- Message Box (hidden by default) -->
     <div id="messageBox" class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-700 bg-opacity-90 text-white p-8 rounded-lg shadow-2xl z-50 text-center">
@@ -24,7 +70,7 @@
         <button onclick="document.getElementById('messageBox').classList.add('hidden')" class="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full shadow-lg transition-transform transform hover:scale-105">אישור</button>
     </div>
 
-    <!-- Updated script file for game logic with the new file name -->
+    <!-- Script file for game logic -->
     <script src="tower-drop.js"></script>
 
 </body>
