@@ -1,31 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- קובץ sitemap.xml לאתר "Game Vibe" -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-    <!-- דף הבית של האתר -->
+    <!-- דף הבית -->
     <url>
-        <loc>https://anihnon.github.io/Game-Vibe/</loc>
-        <lastmod>2025-08-04</lastmod> <!-- תאריך עדכון אחרון -->
-        <changefreq>weekly</changefreq> <!-- עדכון שבועי -->
-        <priority>1.0</priority> <!-- עדיפות הגבוהה ביותר -->
+        <loc>https://anihnon.github.io/Game-Vibe/index.html</loc>
+        <lastmod>2025-08-04</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>1.0</priority>
     </url>
 
-    <!-- דף המשחק Tower Drop -->
+    <!-- דף אודות -->
     <url>
-        <loc>https://anihnon.github.io/Game-Vibe/tower-drop.html</loc>
-        <lastmod>2025-08-04</lastmod> <!-- תאריך עדכון אחרון -->
-        <changefreq>monthly</changefreq> <!-- עדכון חודשי -->
-        <priority>0.8</priority> <!-- עדיפות גבוהה -->
-    </url>
-
-    <!-- הוסף כאן דפים של משחקים נוספים בצורה דומה: -->
-    <!--
-    <url>
-        <loc>https://anihnon.github.io/Game-Vibe/new-game-name.html</loc>
+        <loc>https://anihnon.github.io/Game-Vibe/about.html</loc>
         <lastmod>2025-08-04</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
-    -->
+
+    <!-- דף מדיניות עוגיות -->
+    <url>
+        <loc>https://anihnon.github.io/Game-Vibe/cookies.html</loc>
+        <lastmod>2025-08-04</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    
+    <!-- דף שאלות נפוצות -->
+    <url>
+        <loc>https://anihnon.github.io/Game-Vibe/faq.html</loc>
+        <lastmod>2025-08-04</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
+    </url>
+
+    <!-- דף מדיניות פרטיות -->
+    <url>
+        <loc>https://anihnon.github.io/Game-Vibe/privacy.html</loc>
+        <lastmod>2025-08-04</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.5</priority>
+    </url>
+
+    <!-- דף תנאי שימוש -->
+    <url>
+        <loc>https://anihnon.github.io/Game-Vibe/terms.html</loc>
+        <lastmod>2025-08-04</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    
+    <!-- דף המשחק Tower drop -->
+    <url>
+        <loc>https://anihnon.github.io/Game-Vibe/tower-drop.html</loc>
+        <lastmod>2025-08-04</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.9</priority>
+    </url>
 
 </urlset>
