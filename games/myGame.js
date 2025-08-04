@@ -1,5 +1,6 @@
 function setup() {
-  createCanvas(400, 400);
+  const canvas = createCanvas(400, 400);
+  canvas.parent('gameContainer'); // להכניס ידנית לתוך הקונטיינר
   background(30);
   textAlign(CENTER, CENTER);
   textSize(24);
