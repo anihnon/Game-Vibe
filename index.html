@@ -249,11 +249,11 @@
             const games = [
                 {
                     "id": "game1",
-                    "title": "Space Invaders Clone",
-                    "image": "https://placehold.co/600x400/000000/FFFFFF?text=Space+Invaders",
-                    "description": "גרסה מחודשת למשחק הארקייד הקלאסי, עם גרפיקה משופרת וחוויה ממכרת.",
+                    "title": "Tower Drop",
+                    "image": "https://placehold.co/600x400/00bcd4/FFFFFF?text=Tower+Drop+Game",
+                    "description": "משחק קפיצות ממכר עם גרפיקה ועיצוב מחודשים.",
                     "type": "web",
-                    "link": "https://en.wikipedia.org/wiki/Space_Invaders"
+                    "link": "tower-drop.html" // שינוי הקישור לקובץ HTML ייעודי למשחק
                 },
                 {
                     "id": "game2",
@@ -297,7 +297,7 @@
                             <h3>${game.title}</h3>
                             <p class="description">${game.description}</p>
                             <div class="buttons">
-                                <a href="${game.link}" target="_blank" class="btn play">שחק</a>
+                                <a href="${game.link}" class="btn play">${game.title === 'Tower Drop' ? 'שחק עכשיו' : 'שחק'}</a>
                             </div>
                         `;
                         gameGrid.appendChild(gameCard);
