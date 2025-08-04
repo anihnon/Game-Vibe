@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tower Drop</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #1e1e1e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+        canvas {
+            background-color: #f0f0f0;
+            border: 2px solid #555;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            max-width: 100%;
+            max-height: 100%;
+        }
+        .game-title {
+            position: absolute;
+            top: 20px;
+            font-size: 4em;
+            color: #fff;
+            text-shadow: 2px 2px 4px #000;
+        }
+        .message-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #fff;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            display: none;
+            z-index: 10;
+        }
+        .message-box button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-title">Tower Drop</div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="messageBox" class="message-box">
+        <span id="messageText"></span>
+        <button onclick="hideMessage()">OK</button>
+    </div>
+
+    <!-- וודא ששם הקובץ תואם בדיוק! -->
+    <script src="Tower Drop.js"></script>
+
+    <script>
+        function hideMessage() {
+            document.getElementById('messageBox').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
