@@ -114,6 +114,11 @@
     script.src = `games/${gameFile}`;  // תיקון הנתיב ל-'games' במקום 'game'
     script.onload = () => {
       loading.style.display = 'none';
+      const canvas = document.querySelector('canvas');
+if (canvas && canvas.parentNode !== gameContainer) {
+  gameContainer.appendChild(canvas);
+}
+
     };
     script.onerror = () => {
       loading.textContent = "שגיאה בטעינת המשחק.";
