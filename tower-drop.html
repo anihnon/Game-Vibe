@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tower drop</title>
+    <title>משחק בטעינה – Game Vibe</title>
+    <!-- פונט ועיצוב -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
     <style>
         body {
             font-family: 'Varela Round', sans-serif;
@@ -13,52 +15,113 @@
             padding: 0;
             background: linear-gradient(135deg, #f4f4f9, #e0e0e5);
             color: #333;
+            line-height: 1.6;
+            direction: rtl;
         }
-
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
         header {
             background-color: #2c3e50;
             color: #fff;
-            padding: 1rem;
+            padding: 1.5rem 0;
             text-align: center;
-            font-size: 2rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
-
-        main {
-            max-width: 900px;
-            margin: 30px auto;
-            padding: 20px;
-            background-color: #fff;
+        header h1 {
+            margin: 0;
+            font-size: 2.8rem;
+        }
+        header h1 a {
+            color: #fff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        header h1 a:hover {
+            color: #3498db;
+        }
+        .game-area {
+            margin-top: 40px;
+            background: #fff;
             border-radius: 15px;
+            padding: 20px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
-
+        footer {
+            text-align: center;
+            padding: 25px 0;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            margin-top: 50px;
+        }
+        footer .footer-links {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        footer .footer-links a {
+            color: #fff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        footer .footer-links a:hover {
+            color: #3498db;
+            text-decoration: underline;
+        }
         canvas {
-            margin-top: 20px;
+            max-width: 100%;
+            height: auto;
         }
     </style>
 </head>
 <body>
     <header>
-        ציור ב־P5.js
+        <nav>
+            <h1><a href="index.html">Game Vibe</a></h1>
+        </nav>
     </header>
 
-    <main>
-        <div id="p5-container"></div>
+    <main class="container">
+        <section class="game-area">
+            <h2 id="game-title">טוען משחק...</h2>
+            <div id="canvas-container"></div>
+        </section>
     </main>
 
-    <script>
-        // הדבק כאן את קוד ה־P5.js שלך
-        function setup() {
-            let canvas = createCanvas(400, 400);
-            canvas.parent('p5-container');
-        }
+    <footer>
+        <p>&copy; 2025 Game Vibe. כל הזכויות שמורות.</p>
+        <div class="footer-links">
+            <a href="privacy.html">מדיניות פרטיות</a>
+            <a href="terms.html">תנאי שימוש</a>
+            <a href="cookies.html">מדיניות עוגיות</a>
+            <a href="about.html">אודות</a>
+            <a href="faq.html">שאלות נפוצות</a>
+        </div>
+    </footer>
 
-        function draw() {
-            background(255);
-            // ציור לדוגמה – מחק או החלף כרצונך
-            fill(255, 0, 0);
-            ellipse(mouseX, mouseY, 100, 100);
+    <!-- ספריית P5 -->
+    <script src="https://cdn.jsdelivr.net/npm/p5/lib/p5.min.js"></script>
+    <script>
+        // חילוץ שם המשחק מה-URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const gameName = urlParams.get('game');
+
+        if (gameName) {
+            document.getElementById('game-title').textContent = `משחק: ${gameName}`;
+            const script = document.createElement('script');
+            script.src = `games/${gameName}.js`;
+            script.onerror = () => {
+                document.getElementById('game-title').textContent = 'אירעה שגיאה בטעינת המשחק.';
+            };
+            document.body.appendChild(script);
+        } else {
+            document.getElementById('game-title').textContent = 'לא נבחר משחק.';
         }
     </script>
 </body>
