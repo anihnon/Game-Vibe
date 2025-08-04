@@ -22,6 +22,12 @@ const fonts = ['Varela Round', 'arial black Bold Italic', 'arial black Bold'];
 
 let scenes = [true, false, false, false]; // [menu, play, leaderboard, credits]
 
+// משתנים של המשחק
+let ball, platforms, score, isGameOver;
+let rotationSpeed = 0;
+let towerRotation = 0;
+const GRAVITY = 0.5;
+
 // נתוני לוח תוצאות
 const leaderboard = [
     ["חברת Arrowhead", 13649],
@@ -188,18 +194,53 @@ const palettes = [
     ['#EFC4AC', '#432534', '#283D65', '#365855', '#C44900'],
 ];
 
-let Cur_Pal = 0; // The currently selected color palette
+let Cur_Pal = 0; // פלטת הצבעים הנוכחית
 
-// ... (The rest of the game logic would go here, translated to Hebrew) ...
-// ... (Here's a simplified version for demonstration) ...
+// הגדרת המשחק מחדש
+function setup() {
+    ball = {
+        x: width / 2,
+        y: height * 0.1,
+        radius: 15,
+        speedY: 0,
+        isJumping: false,
+    };
+    platforms = [];
+    score = 0;
+    isGameOver = false;
+    towerRotation = 0;
+
+    // יצירת פלטפורמות
+    for (let i = 0; i < 15; i++) {
+        createPlatform(height - 100 - i * 150);
+    }
+}
+
+// יצירת פלטפורמה בודדת
+function createPlatform(y) {
+    const segments = [];
+    const numSegments = 10;
+    const dangerousSegment = Math.floor(Math.random() * numSegments);
+    const startAngle = Math.random() * 2 * Math.PI;
+
+    for (let i = 0; i < numSegments; i++) {
+        const isDangerous = i === dangerousSegment;
+        segments.push({
+            startAngle: startAngle + i * (2 * Math.PI / numSegments),
+            endAngle: startAngle + (i + 1) * (2 * Math.PI / numSegments) - 0.2,
+            isDangerous: isDangerous,
+        });
+    }
+    platforms.push({ y, segments, rotation: 0 });
+}
 
 // פונקציות ציור
-function drawButton(text, x, y, width, height, color, textColor) {
+function drawButton(text, x, y, buttonWidth, buttonHeight, color, textColor) {
     ctx.fillStyle = color;
-    ctx.fillRect(x - width / 2, y, width, height);
+    ctx.fillRect(x - buttonWidth / 2, y, buttonWidth, buttonHeight);
     ctx.fillStyle = textColor;
     ctx.font = '24px Varela Round';
-    ctx.fillText(text, x, y + height / 2);
+    ctx.fillText(text, x, y + buttonHeight / 2);
 }
 
 function drawMenu() {
@@ -240,7 +281,7 @@ function drawCredits() {
     ctx.font = '40px arial black Bold';
     ctx.fillText("קרדיטים", width / 2, 50);
     ctx.font = '20px Varela Round';
-    ctx.fillText("כל הקוד נכתב על ידי Game Vibe", width / 2, 165); // Changed text to Game Vibe
+    ctx.fillText("כל הקוד נכתב על ידי Game Vibe", width / 2, 165);
 
     drawButton("חזור", width / 2, height - 80, 200, 50, 'gray', 'white');
 }
@@ -248,9 +289,58 @@ function drawCredits() {
 function drawPlayScene() {
     ctx.fillStyle = palettes[Cur_Pal][2];
     ctx.fillRect(0, 0, width, height);
+    
+    // ציור המגדל
+    ctx.save();
+    ctx.translate(width / 2, height / 2);
+    ctx.rotate(towerRotation);
+    ctx.translate(-width / 2, -height / 2);
+    
+    // ציור הפלטפורמות
+    platforms.forEach(platform => {
+        ctx.beginPath();
+        const innerRadius = 70;
+        const outerRadius = 150;
+        
+        platform.segments.forEach(segment => {
+            const segmentColor = segment.isDangerous ? palettes[Cur_Pal][4] : palettes[Cur_Pal][1];
+            ctx.fillStyle = segmentColor;
+            
+            ctx.beginPath();
+            ctx.arc(width / 2, platform.y, outerRadius, segment.startAngle, segment.endAngle);
+            ctx.arc(width / 2, platform.y, innerRadius, segment.endAngle, segment.startAngle, true);
+            ctx.closePath();
+            ctx.fill();
+        });
+    });
+    
+    // ציור המוט המרכזי
+    ctx.fillStyle = palettes[Cur_Pal][0];
+    ctx.fillRect(width / 2 - 20, 0, 40, height);
+
+    ctx.restore();
+
+    // ציור הכדור
+    ctx.beginPath();
+    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+    ctx.fillStyle = palettes[Cur_Pal][3];
+    ctx.fill();
+
+    // ציור ציון
     ctx.fillStyle = 'white';
-    ctx.font = '40px Varela Round';
-    ctx.fillText("משחק פעיל... לחץ כדי להתחיל", width / 2, height / 2);
+    ctx.font = '30px Varela Round';
+    ctx.fillText(`ניקוד: ${score}`, width / 2, 30);
+    
+    if (isGameOver) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, width, height);
+        ctx.fillStyle = 'white';
+        ctx.font = '50px arial black Bold';
+        ctx.fillText("המשחק נגמר!", width / 2, height / 2 - 50);
+        ctx.font = '30px Varela Round';
+        ctx.fillText(`הניקוד שלך: ${score}`, width / 2, height / 2);
+        drawButton("התחל מחדש", width / 2, height / 2 + 50, 200, 50, 'green', 'white');
+    }
 }
 
 // לולאת המשחק הראשית
@@ -258,6 +348,9 @@ function gameLoop() {
     if (scenes[0]) {
         drawMenu();
     } else if (scenes[1]) {
+        if (!isGameOver) {
+            update();
+        }
         drawPlayScene();
     } else if (scenes[2]) {
         drawLeaderboard();
@@ -266,6 +359,86 @@ function gameLoop() {
     }
     requestAnimationFrame(gameLoop);
 }
+
+// עדכון לוגיקת המשחק
+function update() {
+    // תנועת הכדור
+    ball.speedY += GRAVITY;
+    ball.y += ball.speedY;
+
+    // תנועת המגדל
+    towerRotation += rotationSpeed;
+    rotationSpeed *= 0.95; // האטה סיבובית
+
+    // בדיקת התנגשויות
+    platforms.forEach(platform => {
+        // בדיקה רק אם הכדור נמצא בקרבת הפלטפורמה
+        if (ball.y + ball.radius >= platform.y && ball.y + ball.radius <= platform.y + 10) {
+            
+            // המרת זווית הכדור לזווית יחסית למגדל
+            const ballAngle = Math.atan2(ball.y - platform.y, ball.x - width / 2) - towerRotation;
+            let normalizedBallAngle = (ballAngle + 2 * Math.PI) % (2 * Math.PI);
+            
+            // בדיקת התנגשות עם סגמנטים
+            platform.segments.forEach(segment => {
+                const segmentEnd = segment.endAngle;
+                const segmentStart = segment.startAngle;
+                
+                // בדיקה אם הכדור נמצא בתוך סגמנט
+                if (normalizedBallAngle > segmentStart && normalizedBallAngle < segmentEnd) {
+                    if (segment.isDangerous) {
+                        isGameOver = true;
+                    } else {
+                        // התנגשות עם סגמנט בטוח
+                        ball.speedY = -15; // קפיצה
+                        score += 10;
+                    }
+                }
+            });
+        }
+    });
+
+    // בדיקת נפילה מחוץ למסך
+    if (ball.y > height) {
+        isGameOver = true;
+    }
+}
+
+// טפל בסיבוב המגדל באמצעות עכבר/מגע
+let touchStartX = null;
+let lastMouseX = null;
+
+canvas.addEventListener('mousedown', (e) => {
+    lastMouseX = e.clientX;
+});
+
+canvas.addEventListener('mousemove', (e) => {
+    if (lastMouseX !== null && scenes[1]) {
+        const deltaX = e.clientX - lastMouseX;
+        rotationSpeed = deltaX * 0.005; // מהירות סיבוב
+        lastMouseX = e.clientX;
+    }
+});
+
+canvas.addEventListener('mouseup', () => {
+    lastMouseX = null;
+});
+
+canvas.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+});
+
+canvas.addEventListener('touchmove', (e) => {
+    if (touchStartX !== null && scenes[1]) {
+        const deltaX = e.touches[0].clientX - touchStartX;
+        rotationSpeed = deltaX * 0.005;
+        touchStartX = e.touches[0].clientX;
+    }
+});
+
+canvas.addEventListener('touchend', () => {
+    touchStartX = null;
+});
 
 // טפל בקליקים של עכבר על כפתורי התפריט
 canvas.addEventListener('click', (e) => {
@@ -278,7 +451,7 @@ canvas.addEventListener('click', (e) => {
         if (mouseX > width / 2 - 100 && mouseX < width / 2 + 100 &&
             mouseY > height / 2 && mouseY < height / 2 + 50) {
             scenes = [false, true, false, false];
-            // יתבצע כאן אתחול של שלב המשחק
+            setup();
         }
         // כפתור לוח תוצאות
         if (mouseX > width / 2 - 100 && mouseX < width / 2 + 100 &&
@@ -289,6 +462,12 @@ canvas.addEventListener('click', (e) => {
         if (mouseX > width / 2 - 100 && mouseX < width / 2 + 100 &&
             mouseY > height / 2 + 140 && mouseY < height / 2 + 190) {
             scenes = [false, false, false, true];
+        }
+    } else if (scenes[1] && isGameOver) {
+        // כפתור התחל מחדש
+        if (mouseX > width / 2 - 100 && mouseX < width / 2 + 100 &&
+            mouseY > height / 2 + 50 && mouseY < height / 2 + 100) {
+            scenes = [true, false, false, false]; // חזרה לתפריט הראשי
         }
     } else if (scenes[2] || scenes[3]) { // כפתור חזור
         if (mouseX > width / 2 - 100 && mouseX < width / 2 + 100 &&
