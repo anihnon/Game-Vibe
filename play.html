@@ -117,6 +117,10 @@
     } else {
       gameTitle.textContent = formatGameName(gameName);
 
+      let gameFile = gameName;
+      if (!gameFile.endsWith(".js")) {
+        gameFile += ".js";
+      }
       const script = document.createElement("script");
       script.src = `../game/${gameName}`;
       script.onload = () => {
