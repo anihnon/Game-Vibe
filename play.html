@@ -143,25 +143,15 @@
 script.onload = () => {
   clearTimeout(timeoutId);
   loading.classList.add('hidden');
-
-  const observer = new MutationObserver((mutations, obs) => {
-    for (const mutation of mutations) {
-      for (const node of mutation.addedNodes) {
-        if (node.nodeName === 'CANVAS') {
-          if (node.parentNode !== gameContainer) {
-            gameContainer.appendChild(node);
-            if (gameCard) {
-              gameCard.style.minHeight = (node.height + 150) + 'px';
-            }
-          }
-          obs.disconnect(); // מפסיקים לעקוב אחרי השינוי
-          return;
-        }
-      }
-    }
-  });
-
-  observer.observe(document.body, { childList: true, subtree: true });
+  // וודא שהקנבס נמצא בתוך gameContainer
+  const canvas = document.querySelector('canvas');
+  if (canvas && canvas.parentNode !== gameContainer) {
+    gameContainer.appendChild(canvas);
+  }
+  // אפשר להגדיל מינימום גובה של הבועה לפי הקנבס
+  if (canvas) {
+    gameCard.style.minHeight = (canvas.height + 150) + 'px';
+  }
 };
 
     script.onerror = () => {
