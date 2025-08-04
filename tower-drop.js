@@ -1,9 +1,83 @@
-// game-script.js - כל לוגיקת המשחק עבור Tower Drop בעברית
+// game-script.js - כל לוגיקת המשחק עבור Tower Drop בעברית, עם שמירת נתונים ב-Firebase Firestore
+// הקוד עודכן כדי לכלול את כל התכונות מהקוד המקורי שהועלה.
 
 // =================================================================
 // קובץ זה נועד לעבוד עם קובץ HTML המכיל
 // קנבס עם ה-ID 'gameCanvas'.
+//
+// כדי שהסאונד יעבוד, אנא ודא שה-HTML שלך כולל את השורה הבאה:
+// <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 // =================================================================
+
+// Firebase imports
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, onSnapshot, collection, query, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+// Global variables from the canvas environment
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+// Initialize Firebase and Auth
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+let userId = null;
+let isAuthReady = false;
+
+// Authenticate the user
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        userId = user.uid;
+    } else {
+        userId = crypto.randomUUID(); // Fallback for unauthenticated users
+    }
+    isAuthReady = true;
+    console.log("Authentication state changed. userId:", userId);
+    // Once authenticated, load the leaderboard and populate dummy data if needed
+    loadLeaderboardFromFirestore();
+    populateDummyScores();
+});
+
+// פונקציה ליצירת משתמשים פיקטיביים ב-Firestore (אם הלוח ריק)
+async function populateDummyScores() {
+    if (!isAuthReady) {
+        setTimeout(populateDummyScores, 100);
+        return;
+    }
+    const leaderboardCollectionRef = collection(db, `artifacts/${appId}/public/data/leaderboard`);
+    const q = query(leaderboardCollectionRef);
+
+    try {
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+            console.log("Leaderboard is empty. Populating with dummy scores.");
+            const dummyUsers = [
+                { name: "פיקטיבי 1", score: 10 },
+                { name: "פיקטיבי 2", score: 100 },
+                { name: "פיקטיבי 3", score: 200 },
+                { name: "פיקטיבי 4", score: 300 },
+                { name: "פיקטיבי 5", score: 400 },
+                { name: "פיקטיבי 6", score: 500 },
+                { name: "פיקטיבי 7", score: 600 },
+                { name: "פיקטיבי 8", score: 700 },
+                { name: "פיקטיבי 9", score: 800 },
+                { name: "פיקטיבי 10", score: 900 }
+            ];
+
+            for (const user of dummyUsers) {
+                await setDoc(doc(leaderboardCollectionRef), {
+                    name: user.name,
+                    score: user.score,
+                    timestamp: new Date()
+                });
+            }
+        }
+    } catch (e) {
+        console.error("Error populating dummy scores: ", e);
+    }
+}
 
 // משתנים גלובליים
 const canvas = document.getElementById('gameCanvas');
@@ -20,7 +94,7 @@ ctx.textBaseline = 'middle';
 
 const fonts = ['Varela Round', 'arial black Bold Italic', 'arial black Bold'];
 
-let scenes = [true, false, false, false]; // [menu, play, leaderboard, credits]
+let scenes = [true, false, false, false, false]; // [menu, play, leaderboard, credits, save score]
 
 // משתנים של המשחק
 let ball, platforms, score, isGameOver;
@@ -28,146 +102,50 @@ let rotationSpeed = 0;
 let towerRotation = 0;
 const GRAVITY = 0.5;
 
-// נתוני לוח תוצאות
-const leaderboard = [
-    ["חברת Arrowhead", 13649],
-    ["איתן בוטה", 2324],
-    ["🐧 מר פינגווין2 🐧", 4401],
-    ["דוגל הרוקד", 5599],
-    ["צונאמון", 1200],
-    ["noahware", 74655],
-    ["קלייטון", 46587],
-    ["קוכנדורפר,זאכרי", 20134],
-    ["כריס316213", 2326],
-    ["טייל כוכבים", 5039],
-    ["מקודד ברק", 2267],
-    ["Thanksbeardgod", 3789],
-    ["CHRISTIAN SCHOOL TRY HARD", 7160],
-    ["WWescoat", 5128],
-    ["דוד ג'יי אלן", 3821],
-    ["מקס וויטן", 3338],
-    ["20khagerty", 11169],
-    ["megamanwhiz", 13124],
-    ["המתנקש", 61723],
-    ["גריי סטריקלנד", 4898],
-    ["ראף", 5395],
-    ["20khagerty", 108821],
-    ["PriSSSSM", 4456],
-    ["מתיאס מ'", 11904],
-    ["HaZard_Luke", 27777],
-    ["כלב טיילור", 15028],
-    ["מריה אלכס", 23588],
-    ["אלי סקסטון", 13232],
-    ["GrantGoins", 46588],
-    ["בריידי בירד", 1929],
-    ["iHack", 2145],
-    ["timestruck", 1827],
-    ["PanGalacticGargleBlaster", 6197],
-    ["נאלין תאודור", 2072],
-    ["Programster", 29080],
-    ["Imgbrentlinger", 5718],
-    ["אקיבה רוזנברג", 65583],
-    ["HoneyBadger1015", 61456],
-    ["Jcofield.o", 17115],
-    ["Bowtieman", 72190],
-    ["דילן721668", 6694],
-    ["מחשב?", 125670],
-    ["סלמנדר מניאקס YT", 65576],
-    ["ניקיאן", 33740],
-    ["braxtonbailey", 65386],
-    ["המתכנת מספר 1🥔", 88321],
-    ["עצב גדול", 62055],
-    ["אוסטין", 43236],
-    ["WWescoat", 9325],
-    ["מני בניטז", 5559],
-    ["רוברט מקנזי", 19898],
-    ["דגלמנט", 7824],
-    ["angel.cruz", 40198],
-    ["ACAlfredo", 1544],
-    ["דביון רניר", 6113],
-    ["דקלאן רוס", 559],
-    ["אנדרו קאר", 3611],
-    ["בחור מגניב 24", 6552],
-    ["misaboo918", 14925],
-    ["bcruse12", 4880],
-    ["xxxtentacion", 14891],
-    ["למפוני סניקט", 5000],
-    ["איידן", 4276],
-    ["איתן לי", 20937],
-    ["נח", 7785],
-    ["siddadi1819", 4222],
-    ["ג'יי רמירז", 1653],
-    ["anandb", 1578],
-    ["noarwhalmoo", 8173],
-    ["איתן קרפינטרו", 3157],
-    ["511Slloth", 4699],
-    ["ברון דמים", 7383],
-    ["הנרי מק'קיון3", 7649],
-    ["jelly135", 15934],
-    ["culobCoder", 30567],
-    ["סמסון נוובי", 80921],
-    ["מקודד ברק", 13198],
-    ["קטשופ נוזלי", 1772],
-    ["דקלאן גיבסון", 2118],
-    ["DaZe_sneenzy", 2377],
-    ["אור בחושך", 4114],
-    ["ק' ג'", 1712],
-    ["erand05", 5130],
-    ["אנגוס מק'גייבר", 5916],
-    ["CAMREN ALEXZANDER HUDSON", 8577],
-    ["jedielijaho0", 125890],
-    ["AnimTheTree", 5054],
-    ["אמילי ג'י רידנור", 7038],
-    ["קיקי נואל", 1438],
-    ["~המתכנת של תיבת הדואר~", 1355],
-    ["קוכנדורפר.זאקרי", 40751],
-    ["וולף סטודיו", 4867],
-    ["hmcknight01", 9685],
-    ["ג'רמי", 5008],
-    ["אליהו", 3998],
-    ["ג'יי רוזה", 1756],
-    ["הריסון פ. סבאסקו", 9127],
-    ["הוטרוד", 14567],
-    ["בחור אקראי", 91094],
-    ["ג'וש", 71234],
-    ["מוצא", 10919],
-    ["סייה", 6407],
-    ["רואהם", 2268],
-    ["CubsFan41", 2515],
-    ["בני", 13735],
-    ["מלך החרבות", 9168],
-    ["אלכסנדר או'", 17030],
-    ["ג'יליאן", 196],
-    ["רבקה ר'", 1243],
-    ["ישראל", 11532],
-    ["מר. ג'יי מתכנת", 4851],
-    ["אוטום סטאר", 929],
-    ["הפקות Kingslay", 2113],
-    ["₱ⱤØ₲Ɽ₳₥₥ł₦₲ ₭ł₦₲", 114898],
-    ["👑👑👑אדאיר סאנצ'ז👑👑", 11657],
-    ["T̵̢̹̤͑̌h̵̗̹̞͉̼̠̲̚ę̸̩̼̘̀̐͜͝n̴͎̼̜͙̜̻̾̑̋̔r̸͎̬̱̻͚̓̋̊͊͝y̵̫̓̉̑͗̈́", 5238],
-    ["מר. לימונים", 2951],
-    ["ברווז דינו", 10679],
-    ["benyaminaharon739", 109724],
-    ["ツ🅷🅰🅲🅺🅴🆁 🅿🆁🅾🅳", 1342],
-    ["❄נער הקרחון❄", 4187],
-    ["𝕀ℕ𝔽𝕀𝕃𝕋ℝ𝔸𝕋𝕀𝕆ℕ", 4340],
-];
+// נתוני לוח תוצאות (נטען מ-Firestore)
+let leaderboard = [];
 
-// פונקציית מיון לוח התוצאות
-const sortArr = (arr, ind) => {
-    for (let i = 0; i < arr.length - 1; i++) {
-        for (let j = i + 1; j < arr.length; j++) {
-            if (arr[j][ind] >= arr[i][ind]) {
-                [arr[i], arr[j]] = [arr[j], arr[i]];
-                if (arr[j][0] === arr[i][0]) {
-                    arr.splice(i, 1);
-                }
-            }
-        }
-    }
+// פונקציית מיון לוח התוצאות (בזיכרון)
+const sortArr = (arr) => {
+    arr.sort((a, b) => b.score - a.score);
 };
-sortArr(leaderboard, 1);
+
+// טעינת נתונים מ-Firestore
+function loadLeaderboardFromFirestore() {
+    if (!isAuthReady) return;
+
+    const leaderboardCollectionRef = collection(db, `artifacts/${appId}/public/data/leaderboard`);
+    const q = query(leaderboardCollectionRef);
+
+    onSnapshot(q, (querySnapshot) => {
+        const scores = [];
+        querySnapshot.forEach((doc) => {
+            scores.push(doc.data());
+        });
+        leaderboard = scores;
+        sortArr(leaderboard);
+        console.log("Leaderboard updated from Firestore.");
+    }, (error) => {
+        console.error("Error fetching leaderboard: ", error);
+    });
+}
+
+// פונקציה לשמירת ניקוד ב-Firestore
+async function saveScoreToFirestore(userName, userScore) {
+    if (!isAuthReady) return;
+    const leaderboardCollectionRef = collection(db, `artifacts/${appId}/public/data/leaderboard`);
+    try {
+        await setDoc(doc(leaderboardCollectionRef), {
+            name: userName,
+            score: userScore,
+            timestamp: new Date()
+        });
+        console.log("Score saved successfully!");
+        scenes = [false, false, true, false, false]; // מעבר ללוח תוצאות
+    } catch (e) {
+        console.error("Error adding document: ", e);
+    }
+}
 
 // צבעים
 const palettes = [
@@ -195,9 +173,39 @@ const palettes = [
 ];
 
 let Cur_Pal = 0; // פלטת הצבעים הנוכחית
+let userNameInput = ""; // משתנה לשמירת קלט שם המשתמש
+let hasSavedScore = false; // Flag to ensure score is saved only once
+
+// Tone.js audio setup
+let jumpSynth;
+let gameOverNoise;
+let isAudioInitialized = false;
+
+// פונקציית אתחול אודיו
+async function initAudio() {
+    if (!isAudioInitialized) {
+        await Tone.start();
+        console.log("AudioContext started.");
+        jumpSynth = new Tone.PolySynth().toDestination();
+        gameOverNoise = new Tone.NoiseSynth({
+            noise: {
+                type: "pink"
+            },
+            envelope: {
+                attack: 0.005,
+                decay: 0.1,
+                sustain: 0.05
+            }
+        }).toDestination();
+        isAudioInitialized = true;
+    }
+}
 
 // הגדרת המשחק מחדש
 function setup() {
+    // בחר פלטה רנדומלית חדשה
+    Cur_Pal = Math.floor(Math.random() * palettes.length);
+
     ball = {
         x: width / 2,
         y: height * 0.1,
@@ -208,7 +216,9 @@ function setup() {
     platforms = [];
     score = 0;
     isGameOver = false;
+    hasSavedScore = false;
     towerRotation = 0;
+    rotationSpeed = 0;
 
     // יצירת פלטפורמות
     for (let i = 0; i < 15; i++) {
@@ -265,9 +275,13 @@ function drawLeaderboard() {
     ctx.fillText("לוח תוצאות", width / 2, 50);
 
     ctx.font = '20px Varela Round';
-    for (let i = 0; i < Math.min(10, leaderboard.length); i++) {
-        const [name, score] = leaderboard[i];
-        ctx.fillText(`${i + 1}. ${name}: ${score}`, width / 2, 120 + i * 30);
+    if (leaderboard.length > 0) {
+        for (let i = 0; i < Math.min(10, leaderboard.length); i++) {
+            const entry = leaderboard[i];
+            ctx.fillText(`${i + 1}. ${entry.name}: ${entry.score}`, width / 2, 120 + i * 30);
+        }
+    } else {
+        ctx.fillText("טוען לוח תוצאות...", width / 2, 150);
     }
 
     drawButton("חזור", width / 2, height - 80, 200, 50, 'gray', 'white');
@@ -282,8 +296,30 @@ function drawCredits() {
     ctx.fillText("קרדיטים", width / 2, 50);
     ctx.font = '20px Varela Round';
     ctx.fillText("כל הקוד נכתב על ידי Game Vibe", width / 2, 165);
+    ctx.fillText("מבוסס על המשחק Helix Jump של Voodoo", width / 2, 200);
+    ctx.fillText("תודה לכל הבודקים והתומכים!", width / 2, 235);
+
 
     drawButton("חזור", width / 2, height - 80, 200, 50, 'gray', 'white');
+}
+
+function drawSaveScoreScene() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = 'white';
+    ctx.font = '30px Varela Round';
+    ctx.fillText("המשחק נגמר! הניקוד שלך: " + score, width / 2, height / 2 - 80);
+    ctx.fillText("הכנס את שמך:", width / 2, height / 2 - 20);
+
+    // ציור שדה הקלט
+    ctx.fillStyle = 'white';
+    ctx.fillRect(width / 2 - 150, height / 2 + 10, 300, 40);
+    ctx.fillStyle = 'black';
+    ctx.font = '24px Varela Round';
+    ctx.fillText(userNameInput, width / 2, height / 2 + 30);
+
+    // ציור כפתור
+    drawButton("שמור ניקוד", width / 2, height / 2 + 70, 200, 50, 'green', 'white');
 }
 
 function drawPlayScene() {
@@ -332,14 +368,11 @@ function drawPlayScene() {
     ctx.fillText(`ניקוד: ${score}`, width / 2, 30);
     
     if (isGameOver) {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(0, 0, width, height);
-        ctx.fillStyle = 'white';
-        ctx.font = '50px arial black Bold';
-        ctx.fillText("המשחק נגמר!", width / 2, height / 2 - 50);
-        ctx.font = '30px Varela Round';
-        ctx.fillText(`הניקוד שלך: ${score}`, width / 2, height / 2);
-        drawButton("התחל מחדש", width / 2, height / 2 + 50, 200, 50, 'green', 'white');
+        if (!hasSavedScore) {
+            drawSaveScoreScene();
+        } else {
+            drawButton("התחל מחדש", width / 2, height / 2, 200, 50, 'green', 'white');
+        }
     }
 }
 
@@ -356,6 +389,8 @@ function gameLoop() {
         drawLeaderboard();
     } else if (scenes[3]) {
         drawCredits();
+    } else if (scenes[4]) {
+        drawSaveScoreScene();
     }
     requestAnimationFrame(gameLoop);
 }
@@ -372,26 +407,29 @@ function update() {
 
     // בדיקת התנגשויות
     platforms.forEach(platform => {
-        // בדיקה רק אם הכדור נמצא בקרבת הפלטפורמה
+        // בדוק אם הכדור נוחת על פלטפורמה
         if (ball.y + ball.radius >= platform.y && ball.y + ball.radius <= platform.y + 10) {
             
-            // המרת זווית הכדור לזווית יחסית למגדל
             const ballAngle = Math.atan2(ball.y - platform.y, ball.x - width / 2) - towerRotation;
             let normalizedBallAngle = (ballAngle + 2 * Math.PI) % (2 * Math.PI);
             
-            // בדיקת התנגשות עם סגמנטים
             platform.segments.forEach(segment => {
                 const segmentEnd = segment.endAngle;
                 const segmentStart = segment.startAngle;
                 
-                // בדיקה אם הכדור נמצא בתוך סגמנט
+                // וודא שהזווית נכונה
                 if (normalizedBallAngle > segmentStart && normalizedBallAngle < segmentEnd) {
                     if (segment.isDangerous) {
                         isGameOver = true;
+                        if (isAudioInitialized) {
+                            gameOverNoise.triggerAttackRelease("16n");
+                        }
                     } else {
-                        // התנגשות עם סגמנט בטוח
                         ball.speedY = -15; // קפיצה
                         score += 10;
+                        if (isAudioInitialized) {
+                            jumpSynth.triggerAttackRelease(["C4"], "8n");
+                        }
                     }
                 }
             });
@@ -401,6 +439,9 @@ function update() {
     // בדיקת נפילה מחוץ למסך
     if (ball.y > height) {
         isGameOver = true;
+        if (isAudioInitialized) {
+            gameOverNoise.triggerAttackRelease("16n");
+        }
     }
 }
 
@@ -409,13 +450,14 @@ let touchStartX = null;
 let lastMouseX = null;
 
 canvas.addEventListener('mousedown', (e) => {
+    initAudio(); // אתחל אודיו בלחיצה ראשונה
     lastMouseX = e.clientX;
 });
 
 canvas.addEventListener('mousemove', (e) => {
-    if (lastMouseX !== null && scenes[1]) {
+    if (lastMouseX !== null && scenes[1] && !isGameOver) {
         const deltaX = e.clientX - lastMouseX;
-        rotationSpeed = deltaX * 0.005; // מהירות סיבוב
+        rotationSpeed = deltaX * 0.005;
         lastMouseX = e.clientX;
     }
 });
@@ -425,11 +467,12 @@ canvas.addEventListener('mouseup', () => {
 });
 
 canvas.addEventListener('touchstart', (e) => {
+    initAudio(); // אתחל אודיו במגע ראשון
     touchStartX = e.touches[0].clientX;
 });
 
 canvas.addEventListener('touchmove', (e) => {
-    if (touchStartX !== null && scenes[1]) {
+    if (touchStartX !== null && scenes[1] && !isGameOver) {
         const deltaX = e.touches[0].clientX - touchStartX;
         rotationSpeed = deltaX * 0.005;
         touchStartX = e.touches[0].clientX;
@@ -438,6 +481,23 @@ canvas.addEventListener('touchmove', (e) => {
 
 canvas.addEventListener('touchend', () => {
     touchStartX = null;
+});
+
+// טיפול בקלט שם המשתמש
+document.addEventListener('keydown', (e) => {
+    if (scenes[4]) {
+        if (e.key === "Backspace") {
+            userNameInput = userNameInput.slice(0, -1);
+        } else if (e.key.length === 1 && userNameInput.length < 15) {
+            userNameInput += e.key;
+        } else if (e.key === "Enter") {
+            if (userNameInput.trim() !== "" && !hasSavedScore) {
+                saveScoreToFirestore(userNameInput, score);
+                hasSavedScore = true;
+                userNameInput = "";
+            }
+        }
+    }
 });
 
 // טפל בקליקים של עכבר על כפתורי התפריט
@@ -450,34 +510,59 @@ canvas.addEventListener('click', (e) => {
         // כפתור התחל משחק
         if (mouseX > width / 2 - 100 && mouseX < width / 2 + 100 &&
             mouseY > height / 2 && mouseY < height / 2 + 50) {
-            scenes = [false, true, false, false];
+            scenes = [false, true, false, false, false];
             setup();
         }
         // כפתור לוח תוצאות
         if (mouseX > width / 2 - 100 && mouseX < width / 2 + 100 &&
             mouseY > height / 2 + 70 && mouseY < height / 2 + 120) {
-            scenes = [false, false, true, false];
+            scenes = [false, false, true, false, false];
         }
         // כפתור קרדיטים
         if (mouseX > width / 2 - 100 && mouseX < width / 2 + 100 &&
             mouseY > height / 2 + 140 && mouseY < height / 2 + 190) {
-            scenes = [false, false, false, true];
+            scenes = [false, false, false, true, false];
         }
-    } else if (scenes[1] && isGameOver) {
-        // כפתור התחל מחדש
+    } else if (scenes[1] && isGameOver && !hasSavedScore) {
+        // כפתור שמור ניקוד במסך משחק שנגמר
+        if (mouseX > width / 2 - 100 && mouseX < width / 2 + 100 &&
+            mouseY > height / 2 + 70 && mouseY < height / 2 + 120) {
+            scenes = [false, false, false, false, true];
+        }
+    } else if (scenes[4]) { // מסך שמירת ניקוד
+        // כפתור שמור ניקוד
+        if (mouseX > width / 2 - 100 && mouseX < width / 2 + 100 &&
+            mouseY > height / 2 + 70 && mouseY < height / 2 + 120) {
+            if (userNameInput.trim() !== "" && !hasSavedScore) {
+                saveScoreToFirestore(userNameInput, score);
+                hasSavedScore = true;
+                userNameInput = "";
+            }
+        }
+    } else if (scenes[1] && isGameOver && hasSavedScore) {
+        // כפתור התחל מחדש (אחרי שהניקוד נשמר)
         if (mouseX > width / 2 - 100 && mouseX < width / 2 + 100 &&
             mouseY > height / 2 + 50 && mouseY < height / 2 + 100) {
-            scenes = [true, false, false, false]; // חזרה לתפריט הראשי
+            scenes = [true, false, false, false, false];
         }
     } else if (scenes[2] || scenes[3]) { // כפתור חזור
         if (mouseX > width / 2 - 100 && mouseX < width / 2 + 100 &&
             mouseY > height - 80 && mouseY < height - 30) {
-            scenes = [true, false, false, false];
+            scenes = [true, false, false, false, false];
         }
     }
 });
 
 // אתחל את לולאת המשחק
-window.onload = function() {
+window.onload = async function() {
+    // Sign in anonymously if no custom token is provided
+    if (initialAuthToken) {
+        await signInWithCustomToken(auth, initialAuthToken);
+    } else {
+        await signInAnonymously(auth);
+    }
+
+    // Set up initial state and start the game loop
+    setup();
     gameLoop();
 }
