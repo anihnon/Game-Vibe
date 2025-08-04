@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- קובץ sitemap.xml לאתר "Game Vibe" -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+    <!-- דף הבית של האתר -->
+    <url>
+        <loc>https://anihnon.github.io/Game-Vibe/</loc>
+        <lastmod>2025-08-04</lastmod> <!-- תאריך עדכון אחרון -->
+        <changefreq>weekly</changefreq> <!-- עדכון שבועי -->
+        <priority>1.0</priority> <!-- עדיפות הגבוהה ביותר -->
+    </url>
+
+    <!-- דף המשחק Tower Drop -->
+    <url>
+        <loc>https://anihnon.github.io/Game-Vibe/tower-drop.html</loc>
+        <lastmod>2025-08-04</lastmod> <!-- תאריך עדכון אחרון -->
+        <changefreq>monthly</changefreq> <!-- עדכון חודשי -->
+        <priority>0.8</priority> <!-- עדיפות גבוהה -->
+    </url>
+
+    <!-- הוסף כאן דפים של משחקים נוספים בצורה דומה: -->
+    <!--
+    <url>
+        <loc>https://anihnon.github.io/Game-Vibe/new-game-name.html</loc>
+        <lastmod>2025-08-04</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    -->
+
+</urlset>
