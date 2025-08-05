@@ -1,169 +1,163 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>טוען משחק...</title>
-  <style>
-    #gameContainer canvas {
-  position: relative !important;
-  display: block;
-  margin: 0 auto;
-  }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f0f0f0;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      direction: rtl;
-      color: #333;
-    }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- כותרת חדשה, יותר מגניבה ורלוונטית -->
+  <title>Vibe Games - משחקים איכותיים אונליין</title>
+  <!-- תגיות מטא למנועי חיפוש (SEO) -->
+  <meta name="description" content="Vibe Games - אוסף של משחקים אונליין איכותיים. בואו לשחק במשחקי רטרו, משחקי ארקייד ועוד."/>
+  <meta name="keywords" content="משחקים, משחקים אונליין, משחקי ארקייד, משחקי רטרו, Vibe Games, משחקים איכותיים"/>
+  <style>
+    #gameContainer canvas {
+     position: relative !important;
+      display: block;
+      margin: 0 auto;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      direction: rtl;
+      color: #333;
+    }
 
-    header, footer {
-      background: #333;
-      color: white;
-      text-align: center;
-      padding: 15px 0;
-      user-select: none;
-    }
+    header, footer {
+      background: #333;
+      color: white;
+      text-align: center;
+      padding: 15px 0;
+      user-select: none;
+    }
 
-    .container {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 30px 15px;
-    }
+    .container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 30px 15px;
+    }
 
-    .game-card {
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      padding: 30px 20px 40px;
-      text-align: center;
-      max-width: 90vw;
-      overflow-x: auto;
-      width: 800px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      transition: min-height 0.3s ease;
-    }
+    .game-card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      padding: 30px 20px 40px;
+      text-align: center;
+      max-width: 90vw;
+      overflow-x: auto;
+      width: 800px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: min-height 0.3s ease;
+    }
 
-    h1 {
-      font-size: 2em;
-      margin: 0 0 15px 0;
-      user-select: text;
-    }
+    h1 {
+      font-size: 2em;
+      margin: 0 0 15px 0;
+      user-select: text;
+    }
 
-    #gameContainer {
-      margin-top: 20px;
-      width: 100%;
-      display: flex;
-      justify-content: center;
-    }
+    #gameContainer {
+      margin-top: 20px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
 
-    #loading {
-      font-size: 1.2em;
-      color: gray;
-      margin-top: 10px;
-      transition: opacity 0.3s ease;
-    }
+    #loading {
+      font-size: 1.2em;
+      color: gray;
+      margin-top: 10px;
+      transition: opacity 0.3s ease;
+    }
 
-    #loading.hidden {
-      opacity: 0;
-      height: 0;
-      margin: 0;
-      pointer-events: none;
-    }
+    #loading.hidden {
+      opacity: 0;
+      height: 0;
+      margin: 0;
+      pointer-events: none;
+    }
 
-    canvas {
-      display: block;
-      margin: 0 auto;
-      max-width: 100%;
-      height: auto;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-  </style>
+    canvas {
+      display: block;
+      margin: 0 auto;
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <h2>Vibe Games</h2>
-  </header>
+  <header>
+    <h2>Vibe Games</h2>
+  </header>
 
-  <div class="container">
-    <div class="game-card" id="gameCard">
-      <h1 id="gameTitle">טוען משחק...</h1>
-      <div id="loading">טוען משחק…</div>
-      <div id="gameContainer"></div>
-    </div>
-  </div>
+  <div class="container">
+    <div class="game-card" id="gameCard">
+      <h1 id="gameTitle">טוען משחק...</h1>
+      <div id="loading">טוען משחק…</div>
+      <div id="gameContainer">
+        <canvas id="gameCanvas" width="400" height="600"></canvas>
+      </div>
+    </div>
+  </div>
 
-  <footer>
-    <p>כל הזכויות שמורות &copy; 2025 - Vibe Games</p>
-  </footer>
-<script src="https://cdn.jsdelivr.net/npm/p5/lib/p5.min.js"></script>
+  <footer>
+    <p>כל הזכויות שמורות &copy; 2025 - Vibe Games</p>
+  </footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/processing.js/1.6.6/processing.min.js"></script>
 <script>
-  const urlParams = new URLSearchParams(window.location.search);
-  const gameName = urlParams.get('game');
-  const gameTitle = document.getElementById('gameTitle');
-  const loading = document.getElementById('loading');
-  const gameContainer = document.getElementById('gameContainer');
-  const gameCard = document.getElementById('gameCard');
+  const urlParams = new URLSearchParams(window.location.search);
+  const gameName = urlParams.get('game');
+  const gameTitle = document.getElementById('gameTitle');
+  const loading = document.getElementById('loading');
+  const gameContainer = document.getElementById('gameContainer');
+  const gameCard = document.getElementById('gameCard');
+  const gameCanvas = document.getElementById('gameCanvas');
 
-  function formatGameName(fileName) {
-    const name = fileName.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
-    return name.charAt(0).toUpperCase() + name.slice(1);
-  }
+  function formatGameName(fileName) {
+    const name = fileName.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  }
 
-  if (!gameName) {
-    gameTitle.textContent = "שגיאה – אין שם משחק בקישור";
-    loading.textContent = "";
-  } else {
-    gameTitle.textContent = formatGameName(gameName);
+  if (!gameName) {
+    gameTitle.textContent = "שגיאה – אין שם משחק בקישור";
+    loading.textContent = "";
+  } else {
+    gameTitle.textContent = formatGameName(gameName);
+    document.title = `${formatGameName(gameName)} – שחק עכשיו!`;
 
-    let gameFile = gameName;
-    if (!gameFile.endsWith('.js')) {
-      gameFile += '.js';
-    }
+    let gameFile = gameName;
+    if (!gameFile.endsWith('.js')) {
+      gameFile += '.js';
+    }
 
-    const script = document.createElement('script');
-    script.src = `games/${gameFile}`;
-    
-    // טיימאוט אם הקנבס לא נטען תוך 5 שניות
-    const timeoutId = setTimeout(() => {
-      if (!document.querySelector('canvas')) {
-        loading.textContent = "שגיאה: המשחק לא טען את הקנבס.";
-      }
-    }, 5000);
+    // טוען את קובץ ה-.js כ-Processing
+    fetch(`games/${gameFile}`)
+      .then(r => r.text())
+      .then(src => {
+        const pjs = document.createElement('script');
+        pjs.type = 'application/processing';
+        pjs.setAttribute('data-processing-target', 'gameCanvas');
+        pjs.textContent = src;
+        gameContainer.appendChild(pjs);
 
-script.onload = () => {
-  clearTimeout(timeoutId);
-  loading.classList.add('hidden');
-  // וודא שהקנבס נמצא בתוך gameContainer
-  const canvas = document.querySelector('canvas');
-  if (canvas && canvas.parentNode !== gameContainer) {
-    gameContainer.appendChild(canvas);
-  }
-  // אפשר להגדיל מינימום גובה של הבועה לפי הקנבס
-  if (canvas) {
-    gameCard.style.minHeight = (canvas.height + 150) + 'px';
-  }
-};
-
-    script.onerror = () => {
-      clearTimeout(timeoutId);
-      loading.textContent = "שגיאה בטעינת המשחק.";
-      gameTitle.textContent = "משהו השתבש...";
-      console.error("Failed to load", script.src);
-    };
-
-    console.log("מנסה לטעון:", script.src);
-    gameContainer.appendChild(script);
-  }
+        // מסתיר את הטקסט "טוען משחק" לאחר טעינה מוצלחת
+        loading.classList.add('hidden');
+        gameCard.style.minHeight = (gameCanvas.height + 150) + 'px';
+      })
+      .catch(e => {
+        loading.textContent = "שגיאה בטעינת המשחק.";
+        gameTitle.textContent = "משהו השתבש...";
+        console.error("Failed to load game file", e);
+      });
+  }
 </script>
 </body>
 </html>
