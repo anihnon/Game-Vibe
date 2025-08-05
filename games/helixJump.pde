@@ -1,21 +1,21 @@
-// קובץ JavaScript מבוסס Processing.
-// יש לשמור קוד זה בקובץ בשם helix_jump.pde בתיקיית games.
+// קובץ JavaScript מבוסס Processing מתוקן.
+// קוד זה נכתב בתחביר JavaScript ישן כדי להיות תואם לספריית Processing.js.
 
 // פונקציות גלובליות לעוגיות
 // שמירת עוגייה
-const setCookie = (cname, cvalue, exdays) => {
-  const d = new Date();
+var setCookie = function(cname, cvalue, exdays) {
+  var d = new Date();
   d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-  const expires = "expires=" + d.toUTCString();
+  var expires = "expires=" + d.toUTCString();
   document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 };
 
 // קריאת עוגייה
-const getCookie = (cname) => {
-  const name = cname + "=";
-  const ca = document.cookie.split(';');
-  for (let i = 0; i < ca.length; i++) {
-    let c = ca[i];
+var getCookie = function(cname) {
+  var name = cname + "=";
+  var ca = document.cookie.split(';');
+  for (var i = 0; i < ca.length; i++) {
+    var c = ca[i];
     while (c.charAt(0) === ' ') {
       c = c.substring(1);
     }
@@ -27,7 +27,7 @@ const getCookie = (cname) => {
 };
 
 // טבלת מובילים - כעת דינמית
-let leaderboard = [
+var leaderboard = [
   ["טל", 13649], ["איתי", 2324], ["פינגווין מלך 🐧", 4401], ["דובי רוקד", 5599],
   ["שירלי", 1200], ["נועם", 74655], ["דן", 46587], ["זכריה", 20134],
   ["כריסטיאן", 2326], ["מטייל כוכבים", 5039], ["הבזק", 2267], ["ברקו", 3789],
@@ -62,21 +62,21 @@ let leaderboard = [
 ];
 
 // מיין את טבלת המובילים מהציון הגבוה לנמוך
-leaderboard.sort((a, b) => b[1] - a[1]);
+leaderboard.sort(function(a, b) { return b[1] - a[1]; });
 
 // תצורה ראשונית
-let verify = 0;
-let highScore = 0;
+var verify = 0;
+var highScore = 0;
 
 // פונטים
-const fonts = [createFont("calibri Bold"), createFont("arial black Bold Italic"), createFont("arial black Bold")];
+var fonts = [createFont("calibri Bold"), createFont("arial black Bold Italic"), createFont("arial black Bold")];
 
 // תמונה ממוזערת
-let thumbnail, getThumb = "";
+var thumbnail, getThumb = "";
 
 // צבעים
 // ערכות צבעים
-const colorPalettes = [
+var colorPalettes = [
   // עמוד מרכזי, צבע פלטפורמה, רקע, כדור, לבה
   [color(255, 255, 255), color(249, 241, 219), color(252, 213, 129), color(213, 41, 65), color(153, 13, 53)],
   [color(248, 244, 227), color(255, 137, 102), color(42, 43, 42), color(112, 108, 157), color(229, 68, 109)],
@@ -104,20 +104,20 @@ const colorPalettes = [
   [color(213, 230, 141), color(107, 5, 4), color(36, 16, 35), color(163, 50, 11), color(71, 160, 37)],
   [color(251, 251, 249), color(166, 52, 70), color(0, 0, 4), color(126, 25, 70), color(12, 98, 145)],
 ];
-let currentPaletteIndex = 1;
+var currentPaletteIndex = 1;
 // צבעי רכיבים ספציפיים
-let centralColor = color(255), platformColor = color(255), backgroundColor = color(255), ballColor = color(255), lavaColor = color(255);
+var centralColor = color(255), platformColor = color(255), backgroundColor = color(255), ballColor = color(255), lavaColor = color(255);
 
 // מעדכן את ערכת הצבעים
-const switchCol = (col1, col2) => {
-  let r = red(col1), g = green(col1), b = blue(col1);
+var switchCol = function(col1, col2) {
+  var r = red(col1), g = green(col1), b = blue(col1);
   r -= (r - red(col2)) / 10;
   g -= (g - green(col2)) / 10;
   b -= (b - blue(col2)) / 10;
   return color(r, g, b);
 };
 
-const updatePalette = (index) => {
+var updatePalette = function(index) {
   if (index === undefined) {
     index = currentPaletteIndex % (colorPalettes.length - 1);
   }
@@ -128,21 +128,21 @@ const updatePalette = (index) => {
   lavaColor = switchCol(lavaColor, colorPalettes[index][4]);
 };
 
-for (let i = 0; i < 25; i++) {
+for (var i = 0; i < 25; i++) {
   updatePalette();
 }
 
 // מערכים
 // הדפים השונים
-let gameScenes = [true, false, false, false];
+var gameScenes = [true, false, false, false];
 // משמש למקשי החיצים
-const keys = [];
+var keys = [];
 // מערך המכיל את כל השכבות
-let platforms = [];
+var platforms = [];
 // מציג נקודות שהושגו
-const pointsEarned = [];
+var pointsEarned = [];
 // לתפריט
-const menuItems = [
+var menuItems = [
   ["שחק", 0],
   ["טבלת מובילים", 0],
   ["קרדיטים", 0],
@@ -150,7 +150,7 @@ const menuItems = [
 ];
 
 // אובייקט שחקן
-const player = {
+var player = {
   begin: false,
   score: 0,
   y: 215,
@@ -164,7 +164,7 @@ const player = {
   fill: color(255),
   displayName: "שחקן חדש",
 
-  display() {
+  display: function() {
     pushMatrix();
     translate(width / 2, this.y);
     scale(1 + sin(this.bounce % 180) / 5, 1 - sin(this.bounce % 180) / 5);
@@ -172,11 +172,11 @@ const player = {
     if (this.level > 2) {
       fill(255, 100, 50);
       ellipse(0, 0, 40, 40);
-      for (let i = 0; i < 5; i++) {
-        for (let j = 0; j < 2; j++) {
+      for (var i = 0; i < 5; i++) {
+        for (var j = 0; j < 2; j++) {
           stroke(255, 100 * j, 50 * j, 180);
           strokeWeight(30 - i * 6);
-          const randy = random(-3, 3) * i;
+          var randy = random(-3, 3) * i;
           line(randy, i * -15, randy, i * -15 - 10);
         }
       }
@@ -186,12 +186,12 @@ const player = {
     fill(lerpColor(this.fill, color(255, 50, 0), this.level > 2 ? 0.6 : 0));
     ellipse(0, 0, 30, 30);
     fill(255, 7.5);
-    for (let i = 0; i < 10; i++) {
+    for (var i = 0; i < 10; i++) {
       ellipse(2 + i / 2, -2 - i / 2, 20 - i / 2, 20 - i / 2);
     }
     popMatrix();
 
-    for (let i = 0; i < this.splatter.length; i++) {
+    for (var i = 0; i < this.splatter.length; i++) {
       fill(this.fill);
       ellipse(this.splatter[i][0], this.splatter[i][1], this.splatter[i][4], this.splatter[i][4]);
       stroke(255, 50);
@@ -223,7 +223,7 @@ const player = {
     }
   },
 
-  fall() {
+  fall: function() {
     this.y += this.speed;
     this.speed += 0.25;
     if (this.speed >= 10) {
@@ -231,9 +231,9 @@ const player = {
     }
   },
 
-  collide() {
-    for (let i = platforms.length - 1; i >= 0; i--) {
-      const platform = platforms[i].platform[0];
+  collide: function() {
+    for (var i = platforms.length - 1; i >= 0; i--) {
+      var platform = platforms[i].platform[0];
       if (platform.y < this.y - 12.5 || platform.y > this.y + 12.5) {
         continue;
       }
@@ -251,7 +251,7 @@ const player = {
     this.bounce++;
   },
 
-  death() {
+  death: function() {
     if (this.y > height) {
       this.gameOver = true;
     }
@@ -259,7 +259,7 @@ const player = {
 };
 
 // אובייקט שכבות
-const Platform = function(y, safe) {
+var Platform = function(y, safe) {
   this.y = y;
   this.platform = [{ x: width / 2, y: this.y, width: 250, height: 20 }];
   this.rot = 0;
@@ -267,7 +267,7 @@ const Platform = function(y, safe) {
   this.hit = false;
   this.opacity = 255;
 
-  this.display = () => {
+  this.display = function() {
     pushMatrix();
     translate(this.platform[0].x, this.platform[0].y);
     this.rot += 1;
@@ -284,7 +284,7 @@ const Platform = function(y, safe) {
     noStroke();
     fill(platformColor);
 
-    for (let i = 0; i < 11; i++) {
+    for (var i = 0; i < 11; i++) {
       if (i !== 5 && this.safe && i !== 6) {
         pushMatrix();
         rotate(360 / 11 * i);
@@ -293,9 +293,9 @@ const Platform = function(y, safe) {
       }
     }
 
-    for (let i = 0; i < 2; i++) {
+    for (var i = 0; i < 2; i++) {
       if (!this.safe) {
-        for (let j = 0; j < 5; j++) {
+        for (var j = 0; j < 5; j++) {
           pushMatrix();
           if (i === 0) {
             rotate(360 / 11 * (j * 2 + 0.1));
@@ -313,14 +313,14 @@ const Platform = function(y, safe) {
 };
 
 // אובייקט נקודות
-const Points = function(x, y, s, life, text) {
+var Points = function(x, y, s, life, text) {
   this.x = x;
   this.y = y;
   this.s = s;
   this.life = life;
   this.text = text;
 
-  this.display = () => {
+  this.display = function() {
     noStroke();
     fill(255, 255, 255, this.life);
     this.y -= 1;
@@ -333,7 +333,7 @@ const Points = function(x, y, s, life, text) {
 
 // פונקציות מסך
 // רקע
-const backgroundScene = () => {
+var backgroundScene = function() {
   updatePalette(currentPaletteIndex);
   background(backgroundColor);
 
@@ -345,7 +345,7 @@ const backgroundScene = () => {
 
   noStroke();
 
-  for (let i = 0; i < 20; i++) {
+  for (var i = 0; i < 20; i++) {
     fill(100, 150);
     ellipse(width / 2 - 25, 55 + 55 * i, 50, 50);
     ellipse(width / 2 + 25, 55 + 55 * i, 50, 50);
@@ -356,13 +356,13 @@ const backgroundScene = () => {
 };
 
 // תפריט ראשי
-const menuScene = () => {
+var menuScene = function() {
   backgroundScene();
 
   fill(255, 100);
-  for (let i = 0; i < menuItems.length; i++) {
-    const item = menuItems[i];
-    const yPos = height / 2 + 150 / 4 * i - 130;
+  for (var i = 0; i < menuItems.length; i++) {
+    var item = menuItems[i];
+    var yPos = height / 2 + 150 / 4 * i - 130;
     rect(width / 2 - 150, yPos, 300, 60, 5);
     if (mouseX > width / 2 - 150 && mouseX < width / 2 + 150 && mouseY > yPos && mouseY < yPos + 60) {
       item[1] = 1;
@@ -371,7 +371,7 @@ const menuScene = () => {
     }
   }
 
-  for (let i = 0; i < menuItems.length; i++) {
+  for (var i = 0; i < menuItems.length; i++) {
     textFont(fonts[0], 36);
     fill(255, 150 - 50 * menuItems[i][1]);
     text(menuItems[i][0], width / 2, height / 2 + 150 / 4 * i - 100);
@@ -398,7 +398,7 @@ const menuScene = () => {
 };
 
 // משחק
-const playScene = () => {
+var playScene = function() {
   updatePalette(currentPaletteIndex);
   background(backgroundColor);
 
@@ -410,17 +410,17 @@ const playScene = () => {
     player.display();
 
     // עדכון מיקום פלטפורמות בהתאם למהירות השחקן
-    for (let platform of platforms) {
-      platform.platform[0].y += player.speed * -1;
+    for (var i = 0; i < platforms.length; i++) {
+      platforms[i].platform[0].y += player.speed * -1;
     }
 
     // יצירת פלטפורמה חדשה אם צריך
     if (platforms[platforms.length - 1].platform[0].y > 100) {
-      let safe = random(0, 1) > 0.25;
+      var safe = random(0, 1) > 0.25;
       platforms.push(new Platform(platforms[platforms.length - 1].platform[0].y - 50, safe));
     }
     // הסרת פלטפורמות שיצאו מהמסך
-    for (let i = platforms.length - 1; i >= 0; i--) {
+    for (var i = platforms.length - 1; i >= 0; i--) {
       if (platforms[i].platform[0].y > height) {
         platforms.splice(i, 1);
       }
@@ -458,7 +458,7 @@ const playScene = () => {
   text("ציון גבוה: " + highScore, width / 2, 90);
 
   // עדכון וצביעת נקודות שהושגו
-  for (let i = pointsEarned.length - 1; i >= 0; i--) {
+  for (var i = pointsEarned.length - 1; i >= 0; i--) {
     pointsEarned[i].display();
     if (pointsEarned[i].life <= 0) {
       pointsEarned.splice(i, 1);
@@ -467,14 +467,14 @@ const playScene = () => {
 };
 
 // טבלת מובילים
-const leaderboardScene = () => {
+var leaderboardScene = function() {
   backgroundScene();
 
   textFont(fonts[0], 36);
   fill(255);
   text("טבלת מובילים", width / 2, 50);
 
-  for (let i = 0; i < 15; i++) {
+  for (var i = 0; i < 15; i++) {
     textFont(fonts[0], 20);
     if (leaderboard[i]) {
       text(`${i + 1}. ${leaderboard[i][0]}`, width / 2 - 100, 100 + i * 30);
@@ -493,7 +493,7 @@ const leaderboardScene = () => {
 };
 
 // קרדיטים
-const creditsScene = () => {
+var creditsScene = function() {
   backgroundScene();
 
   fill(255);
@@ -510,7 +510,7 @@ const creditsScene = () => {
   }
 };
 
-const resetGame = () => {
+var resetGame = function() {
   player.gameOver = false;
   player.score = 0;
   player.y = 215;
@@ -529,7 +529,7 @@ function setup() {
   smooth();
   noStroke();
 
-  const saved = getCookie("highScore");
+  var saved = getCookie("highScore");
   if (saved !== "") {
     highScore = parseInt(saved, 10);
   }
@@ -569,7 +569,7 @@ function draw() {
     
     // הוסף את הציון החדש לטבלת המובילים
     leaderboard.push(["שחקן חדש", player.score]);
-    leaderboard.sort((a, b) => b[1] - a[1]);
+    leaderboard.sort(function(a, b) { return b[1] - a[1]; });
     if (leaderboard.length > 15) {
       leaderboard.pop();
     }
