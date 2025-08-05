@@ -289,7 +289,7 @@ async function main() {
 
     try {
         // שלב 1: טעינת קובץ ה-JSON עם כל נתוני המשחקים
-        const response = await fetch('games.json');
+        const response = await fetch('data.json');
         if (!response.ok) {
             throw new Error(`שגיאת רשת בטעינת קובץ הנתונים (status: ${response.status})`);
         }
