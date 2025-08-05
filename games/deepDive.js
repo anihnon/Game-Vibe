@@ -52,10 +52,6 @@ const GameCoreSystem = function() {
     let oceanWaveDirection = false;
     let oceanWaveFluctuationRange = random(50, 200);
 
-    // יצור נדיר (נמו) - הוסר מהמשחק
-    // let rareCreatureInstance = { x: -4000, y: 0, velocity: 0 };
-    // let isRareCreaturePresent = false;
-    
     // מערכת ירי
     let canPlayerInitiateFire = false;
     let weaponRecoilTimer = 0;
@@ -298,14 +294,9 @@ const GameCoreSystem = function() {
         }
     };
 
-    // יצור נדיר (נמו) - הפונקציה הוסרה
-    // const generateRareCreatureInstance = () => {
-    //     // לוגיקה הוסרה
-    // };
-
     // פונקציית setup() של P5.js
     this.setup = () => {
-        createCanvas(windowWidth, windowHeight);
+        createCanvas(windowWidth, windowHeight).parent('gameContainer'); // הקנבס ייווצר בתוך gameContainer
     };
 
     // פונקציית draw() של P5.js
