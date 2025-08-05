@@ -1,4 +1,5 @@
-// קובץ JavaScript מבוסס Processing מתוקן
+// קובץ JavaScript מבוסס Processing.
+// יש לשמור קוד זה בקובץ בשם helix_jump.pde בתיקיית games.
 
 // פונקציות גלובליות לעוגיות
 // שמירת עוגייה
