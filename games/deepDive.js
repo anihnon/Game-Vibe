@@ -31,9 +31,9 @@ const gameSketch = function(p) {
 
     // מאפייני יצור השחקן
     let playerCoordinates = { x: 0, y: 0 }; // יאותחל ב-setup
-    let playerRenderSize = 50 * (p.width / BASE_WIDTH); // גודל יחסי
+    let playerRenderSize; // יאותחל ב-setup, גודל יחסי
     let playerFacingAngle = 0;
-    let playerBaseMovementSpeed = 4 * (p.width / BASE_WIDTH); // מהירות יחסית
+    let playerBaseMovementSpeed; // יאותחל ב-setup, מהירות יחסית
     let playerPhantomEnergy = 100; // מד אנרגיה ליכולת רוח רפאים
     let playerPhasedState = false; // מצב חמקמק (בלתי פגיע)
 
@@ -55,9 +55,9 @@ const gameSketch = function(p) {
     let maxFoodSize = 0; // גודל הדג המקסימלי שניתן לאכול
 
     // מכניקת גלי הים
-    let oceanWavePosition = -140 * (p.height / BASE_HEIGHT); // מיקום יחסי
+    let oceanWavePosition; // יאותחל ב-setup, מיקום יחסי
     let oceanWaveDirection = false;
-    let oceanWaveFluctuationRange = 100 * (p.height / BASE_HEIGHT); // טווח תנודה יחסי
+    let oceanWaveFluctuationRange; // יאותחל ב-setup, טווח תנודה יחסי
 
     // אנימציות מעבר בין סצנות
     let sceneFadeOutAlpha = 0;
@@ -68,8 +68,6 @@ const gameSketch = function(p) {
     // פונקציית setup() של P5.js - מוגדרת בתוך המופע
     p.setup = () => {
         // יצירת הקנבס והצמדתו ל-div עם id 'gameContainer'
-        // נשתמש ב-p.windowWidth ו-p.windowHeight כדי להתאים לגודל המסך הזמין,
-        // אך נשמור על יחס גובה-רוחב קבוע.
         const canvas = p.createCanvas(BASE_WIDTH, BASE_HEIGHT); // גודל בסיסי
         canvas.parent('gameContainer'); 
         
@@ -85,6 +83,12 @@ const gameSketch = function(p) {
         // אתחול מיקום השחקן למרכז הקנבס
         playerCoordinates.x = p.width / 2;
         playerCoordinates.y = p.height / 2;
+
+        // אתחול גדלים ומהירויות יחסיות
+        playerRenderSize = 50 * (p.width / BASE_WIDTH);
+        playerBaseMovementSpeed = Math.max(1, 4 * (p.width / BASE_WIDTH)); // מהירות מינימלית של 1
+        oceanWavePosition = -140 * (p.height / BASE_HEIGHT);
+        oceanWaveFluctuationRange = 100 * (p.height / BASE_HEIGHT);
     };
 
     // פונקציית draw() של P5.js - מוגדרת בתוך המופע
@@ -152,6 +156,10 @@ const gameSketch = function(p) {
     // פונקציות קלט של P5.js - מוגדרות בתוך המופע
     p.keyPressed = () => {
         keyboardInputStates[p.keyCode] = true;
+        // מניעת גלילת הדף עבור מקשי חצים ורווח
+        if ([p.LEFT_ARROW, p.RIGHT_ARROW, p.UP_ARROW, p.DOWN_ARROW, 32].includes(p.keyCode)) {
+            return false; // מונע את פעולת ברירת המחדל של הדפדפן
+        }
     };
     
     p.keyReleased = () => {
@@ -206,10 +214,22 @@ const gameSketch = function(p) {
                     const currentSkinY = p.height * 0.25 + (skinsData.findIndex(s => s.name === skinName) * skinLineHeight);
                     if (p.dist(p.mouseX, p.mouseY, skinX, currentSkinY) < skinButtonRadius) {
                         if (activePlayerAvatar !== skinName) { // אם זה לא הסקין הפעיל כרגע
-                            if (!gamePersistenceData[skinsData.findIndex(s => s.name === skinName) + 1]) { // אם לא נרכש עדיין
+                            // בדיקה האם הסקין נרכש
+                            let isAcquired = false;
+                            if (acquiredFlag === "default") isAcquired = true;
+                            else if (acquiredFlag === "phantomSkinAcquired") isAcquired = phantomSkinAcquired;
+                            else if (acquiredFlag === "predatorSkinAcquired") isAcquired = predatorSkinAcquired;
+                            else if (acquiredFlag === "forgetfulSkinAcquired") isAcquired = forgetfulSkinAcquired;
+                            else if (acquiredFlag === "prismaticSkinAcquired") isAcquired = prismaticSkinAcquired;
+
+                            if (!isAcquired) { // אם לא נרכש עדיין
                                 if (currentCoinBalance >= cost) {
                                     currentCoinBalance -= cost;
-                                    gamePersistenceData[skinsData.findIndex(s => s.name === skinName) + 1] = true; // עדכון דגל הרכישה
+                                    // עדכון דגל הרכישה המתאים
+                                    if (acquiredFlag === "phantomSkinAcquired") phantomSkinAcquired = true;
+                                    else if (acquiredFlag === "predatorSkinAcquired") predatorSkinAcquired = true;
+                                    else if (acquiredFlag === "forgetfulSkinAcquired") forgetfulSkinAcquired = true;
+                                    else if (acquiredFlag === "prismaticSkinAcquired") prismaticSkinAcquired = true;
                                     activePlayerAvatar = skinName;
                                 }
                             } else { // אם כבר נרכש, פשוט הפעל אותו
@@ -256,7 +276,7 @@ const gameSketch = function(p) {
         playerCoordinates.y = p.height / 2;
         // עדכון גודל השחקן ביחס לגודל החדש של הקנבס
         playerRenderSize = 50 * (p.width / BASE_WIDTH);
-        playerBaseMovementSpeed = 4 * (p.width / BASE_WIDTH);
+        playerBaseMovementSpeed = Math.max(1, 4 * (p.width / BASE_WIDTH)); // וודא מהירות מינימלית גם בשינוי גודל
         oceanWavePosition = -140 * (p.height / BASE_HEIGHT);
         oceanWaveFluctuationRange = 100 * (p.height / BASE_HEIGHT);
     };
