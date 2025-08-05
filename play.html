@@ -6,8 +6,6 @@
 <title>טוען משחק...</title>
     <!-- טעינת ספריית p5.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
-    <!-- טעינת קובץ המשחק שלך ישירות. וודא שקובץ deepdive.js נמצא בנתיב games/deepdive.js -->
-    <script src="games/deepDive.js"></script>
 <style>
     body {
         margin: 0;
@@ -157,7 +155,7 @@ window.onload = function() {
     const loading = document.getElementById("loading");
     const gameContainer = document.getElementById("gameContainer");
     const fullscreenButton = document.getElementById("fullscreenButton");
-    const gameCard = document.getElementById("gameCard"); // קבלת אלמנט game-card
+    const gameCard = document.getElementById("gameCard");
 
     function getGameNameFromURL() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -165,20 +163,23 @@ window.onload = function() {
     }
 
     function isValidGameName(name) {
-        return /^[\w-]+$/.test(name);
+        // ודא ששם המשחק מכיל רק אותיות, מספרים, מקפים ותווים תחתונים
+        return /^[a-zA-Z0-9_-]+$/.test(name);
     }
 
     function formatGameName(fileName) {
         if (!fileName) return "";
+        // הסרת סיומת קובץ והחלפת מקפים/תחתונים ברווחים
         const name = fileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+        // הפיכת אות ראשונה לגדולה
         return name.charAt(0).toUpperCase() + name.slice(1);
     }
 
     const rawName = getGameNameFromURL();
     if (!rawName || !isValidGameName(rawName)) {
         gameTitle.textContent = "שגיאה – שם משחק לא חוקי";
-        loading.textContent = "";
-        return;
+        loading.textContent = "אנא ודא שכתובת ה-URL נכונה (לדוגמה: play.html?game=deepdive).";
+        return; // עצור את ביצוע הסקריפט אם שם המשחק לא חוקי
     }
 
     const gameName = rawName;
@@ -187,10 +188,29 @@ window.onload = function() {
     document.title = `${prettyName} שחקו עכשיו!`;
 
     // הסתרת הודעת הטעינה
-    loading.style.display = "none";
+    loading.style.display = "block"; // הצג שוב כדי לוודא שהוא גלוי לפני הטעינה
+    loading.textContent = "טוען משחק…";
 
-    // יצירת מופע חדש של p5.js עם הסקצ' שלנו
-    new p5(gameSketch, 'gameContainer');
+    // טעינה דינמית של קובץ ה-JS של המשחק
+    const script = document.createElement('script');
+    script.src = `games/${gameName}.js`; // נתיב לקובץ המשחק
+    script.onload = () => {
+        // ודא ש-gameSketch גלובלי או נגיש לאחר הטעינה
+        if (typeof gameSketch !== 'undefined') {
+            window.p5Instance = new p5(gameSketch, 'gameContainer');
+            loading.style.display = "none"; // הסתר הודעת הטעינה לאחר שהמשחק נטען
+        } else {
+            gameTitle.textContent = "שגיאה בטעינת המשחק";
+            loading.textContent = "קובץ המשחק נטען, אך סקצ' המשחק לא נמצא. ודא שהקובץ מכיל 'const gameSketch = function(p) { ... }'.";
+            console.error("gameSketch is not defined after script load.");
+        }
+    };
+    script.onerror = () => {
+        gameTitle.textContent = "שגיאה – המשחק לא נמצא";
+        loading.textContent = `לא ניתן לטעון את המשחק: games/${gameName}.js. אנא ודא שהקובץ קיים בנתיב הנכון.`;
+        console.error(`Failed to load game script: games/${gameName}.js`);
+    };
+    document.body.appendChild(script); // הוסף את הסקריפט לגוף הדף
 
     // לוגיקת כפתור מסך מלא
     fullscreenButton.addEventListener('click', () => {
@@ -214,24 +234,12 @@ window.onload = function() {
     function exitFullscreenHandler() {
         if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
             // אם יצאנו ממצב מסך מלא, נפעיל מחדש את שינוי גודל הקנבס
-            // פונקציית p.windowResized() בתוך קוד המשחק תטפל בזה
             if (window.p5Instance && window.p5Instance.windowResized) {
                 window.p5Instance.windowResized();
             }
         }
     }
 };
-
-// חשוב: כדי שפונקציית p.windowResized() תוכל להיקרא מחוץ למופע ה-p5,
-// נצטרך לשמור רפרנס למופע הגלובלי.
-// זה דורש שינוי קטן בקובץ deepdive.js - הוספת שורה אחת בסופו:
-// window.p5Instance = new p5(gameSketch, 'gameContainer');
-// (אבל אנחנו כבר עושים את זה ב-HTML, אז צריך רק לוודא שהפונקציה קיימת ונגישה)
-// למעשה, במבנה הנוכחי, p.windowResized() נקראת אוטומטית על ידי p5.js
-// כשחלון הדפדפן משנה גודל. אבל אם רוצים להפעיל אותה ידנית, צריך רפרנס למופע.
-// נשנה את קריאת new p5(gameSketch, 'gameContainer'); ל:
-// window.p5Instance = new p5(gameSketch, 'gameContainer');
-// כדי שנוכל לגשת אליו מחוץ לסקצ'
 </script>
 
 </body>
