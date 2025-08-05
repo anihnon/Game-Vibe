@@ -6,160 +6,163 @@
 <title>טוען משחק...</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
 <style>
-  /* ... שאר ה-CSS שלך כפי שהיה ... */
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f0f0f0;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    direction: rtl;
-    color: #333;
-  }
-  header, footer {
-    background: #333;
-    color: white;
-    text-align: center;
-    padding: 15px 0;
-    user-select: none;
-  }
-  .container {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 30px 15px;
-  }
-  .game-card {
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    padding: 30px 20px 40px;
-    text-align: center;
-    max-width: 90vw;
-    overflow-x: auto;
-    width: 800px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  h1 {
-    font-size: 2em;
-    margin: 0 0 15px 0;
-    user-select: text;
-  }
-  #gameContainer {
-    margin-top: 20px;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-  }
-  #loading {
-    font-size: 1.2em;
-    color: gray;
-    margin-top: 10px;
-  }
-  canvas {
-    display: block;
-    margin: 0 auto;
-    max-width: 100%;
-    height: auto;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  }
-  header h2 a {
-    color: inherit;
-    text-decoration: none;
-  }
+    /* ... שאר ה-CSS שלך כפי שהיה ... */
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f0f0f0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        direction: rtl;
+        color: #333;
+    }
+    header, footer {
+        background: #333;
+        color: white;
+        text-align: center;
+        padding: 15px 0;
+        user-select: none;
+    }
+    .container {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 30px 15px;
+    }
+    .game-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        padding: 30px 20px 40px;
+        text-align: center;
+        max-width: 90vw;
+        overflow-x: auto;
+        width: 800px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    h1 {
+        font-size: 2em;
+        margin: 0 0 15px 0;
+        user-select: text;
+    }
+    #gameContainer {
+        margin-top: 20px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+    #loading {
+        font-size: 1.2em;
+        color: gray;
+        margin-top: 10px;
+    }
+    canvas {
+        display: block;
+        margin: 0 auto;
+        max-width: 100%;
+        height: auto;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    header h2 a {
+        color: inherit;
+        text-decoration: none;
+    }
 </style>
 </head>
 <body>
-  <header>
-    <h2><a href="https://anihnon.github.io/Game-Vibe/">Vibe Games</a></h2>
-  </header>
+    <header>
+        <h2><a href="https://anihnon.github.io/Game-Vibe/">Vibe Games</a></h2>
+    </header>
 
-  <div class="container">
-    <div class="game-card">
-      <h1 id="gameTitle">טוען משחק...</h1>
-      <div id="loading">טוען משחק…</div>
-      <div id="gameContainer"></div>
-      <canvas id="gameCanvas"></canvas>
+    <div class="container">
+        <div class="game-card">
+            <h1 id="gameTitle">טוען משחק...</h1>
+            <div id="loading">טוען משחק…</div>
+            <div id="gameContainer"></div>
+            <!-- הסרנו את תגית הקנבס, p5.js תיצור אותה אוטומטית -->
+        </div>
     </div>
-  </div>
 
-  <footer>
-    <p>כל הזכויות שמורות &copy; 2025 - Vibe Games</p>
-  </footer>
+    <footer>
+        <p>כל הזכויות שמורות &copy; 2025 - Vibe Games</p>
+    </footer>
 
 <script>
 window.onload = function() {
-  const gameTitle = document.getElementById("gameTitle");
-  const loading = document.getElementById("loading");
-  const gameContainer = document.getElementById("gameContainer");
-  const canvas = document.getElementById("gameCanvas");
+    const gameTitle = document.getElementById("gameTitle");
+    const loading = document.getElementById("loading");
+    const gameContainer = document.getElementById("gameContainer");
+    // const canvas = document.getElementById("gameCanvas"); // אין צורך יותר להפניה ישירה לקנבס
 
-  function getGameNameFromURL() {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get("game");
-  }
+    function getGameNameFromURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get("game");
+    }
 
-  function isValidGameName(name) {
-    return /^[\w-]+$/.test(name);
-  }
+    function isValidGameName(name) {
+        return /^[\w-]+$/.test(name);
+    }
 
-  function formatGameName(fileName) {
-    if (!fileName) return "";
-    const name = fileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
-    return name.charAt(0).toUpperCase() + name.slice(1);
-  }
+    function formatGameName(fileName) {
+        if (!fileName) return "";
+        const name = fileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+        return name.charAt(0).toUpperCase() + name.slice(1);
+    }
 
-  function resizeCanvas() {
-    const rect = gameContainer.getBoundingClientRect();
-    canvas.width = rect.width;
-    const aspectRatio = 600 / 400;
-    canvas.height = rect.width * aspectRatio;
-  }
+    // פונקציה זו כבר לא נחוצה כאן, כי p5.js תנהל את גודל הקנבס באופן אוטומטי
+    // כאשר היא תיצור אותו בתוך ה-body, וקוד המשחק שלך כבר מכיל resizeCanvas
+    // function resizeCanvas() {
+    //     const rect = gameContainer.getBoundingClientRect();
+    //     canvas.width = rect.width;
+    //     const aspectRatio = 600 / 400;
+    //     canvas.height = rect.width * aspectRatio;
+    // }
 
-  const rawName = getGameNameFromURL();
-  if (!rawName || !isValidGameName(rawName)) {
-    gameTitle.textContent = "שגיאה – שם משחק לא חוקי";
-    loading.textContent = "";
-    return; // עצירה מפני טעינת משחק
-  }
+    const rawName = getGameNameFromURL();
+    if (!rawName || !isValidGameName(rawName)) {
+        gameTitle.textContent = "שגיאה – שם משחק לא חוקי";
+        loading.textContent = "";
+        return; // עצירה מפני טעינת משחק
+    }
 
-  const gameName = rawName;
-  const prettyName = formatGameName(gameName);
-  gameTitle.textContent = prettyName;
-  document.title = `${prettyName} שחקו עכשיו!`;
+    const gameName = rawName;
+    const prettyName = formatGameName(gameName);
+    gameTitle.textContent = prettyName;
+    document.title = `${prettyName} שחקו עכשיו!`;
 
-  let gameFile = gameName;
-  if (!gameFile.endsWith(".js")) {
-    gameFile += ".js";
-  }
+    let gameFile = gameName;
+    if (!gameFile.endsWith(".js")) {
+        gameFile += ".js";
+    }
 
-  // התאמת גודל קנבס ראשונית
-  resizeCanvas();
+    // הסרנו את קריאת resizeCanvas() הראשונית כאן
 
-  // התאמת גודל קנבס בעת שינוי חלון
-  window.addEventListener("resize", resizeCanvas);
+    // הסרנו את ה-event listener resizeCanvas() כאן, כי הוא כבר בתוך קוד המשחק
 
-  // טעינת קוד המשחק
-  fetch(`games/${gameFile}`)
-    .then(res => {
-      if (!res.ok) throw new Error("Failed to load game file");
-      return res.text();
-    })
-.then(code => {
-  resizeCanvas();
-  new Processing(canvas, code);
-  loading.style.display = "none";
-})
-    .catch(err => {
-      loading.textContent = "שגיאה בטעינת המשחק.";
-      gameTitle.textContent = "משהו השתבש...";
-      console.error(err);
-    });
+    // טעינת קוד המשחק
+    fetch(`games/${gameFile}`)
+        .then(res => {
+            if (!res.ok) throw new Error("Failed to load game file");
+            return res.text();
+        })
+        .then(code => {
+            // יצירת אלמנט סקריפט חדש והזרקת הקוד לתוכו
+            const script = document.createElement('script');
+            script.textContent = code;
+            document.body.appendChild(script); // הוספת הסקריפט לדף
+            
+            loading.style.display = "none";
+        })
+        .catch(err => {
+            loading.textContent = "שגיאה בטעינת המשחק.";
+            gameTitle.textContent = "משהו השתבש...";
+            console.error(err);
+        });
 };
 </script>
 
