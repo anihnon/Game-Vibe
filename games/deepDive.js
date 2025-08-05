@@ -269,8 +269,12 @@ const gameSketch = function(p) {
         }
         
         if (activeGameScene === "death") {
-            const buttonSize = 100 * (p.width / BASE_WIDTH);
-             if(p.dist(p.mouseX, p.mouseY, p.width/2, p.height/2 + (150 * (p.height / BASE_HEIGHT))) <= buttonSize / 2) {
+            const buttonWidth = 200 * (p.width / BASE_WIDTH); // רוחב כפתור
+            const buttonHeight = 60 * (p.height / BASE_HEIGHT); // גובה כפתור
+            const buttonY = p.height/2 + (150 * (p.height / BASE_HEIGHT)); // מיקום Y של הכפתור
+
+            if (p.mouseX > p.width/2 - buttonWidth/2 && p.mouseX < p.width/2 + buttonWidth/2 &&
+                p.mouseY > buttonY - buttonHeight/2 && p.mouseY < buttonY + buttonHeight/2) {
                 isSceneTransitionUnderway = true;
                 nextSceneTarget = "home";
                 playerAccumulatedScore = 0;
@@ -582,6 +586,13 @@ const gameSketch = function(p) {
         p.fill(255);
         p.textSize(40 * (p.width / BASE_WIDTH)); // גודל טקסט יחסי
         p.text("אווטארים", p.width/2, skinsY);
+
+        // מונה מטבעות במסך הבית
+        p.fill(255);
+        p.textSize(25 * (p.width / BASE_WIDTH));
+        p.textAlign(p.LEFT);
+        p.text(`מטבעות: ${currentCoinBalance}`, p.width * 0.05, p.height * 0.05);
+        p.textAlign(p.CENTER); // החזרת יישור למרכז
     };
 
     const renderGamePlayScreen = () => {
@@ -606,7 +617,7 @@ const gameSketch = function(p) {
         playerCoordinates.y = p.constrain(playerCoordinates.y, playerRenderSize / 2, p.height - playerRenderSize / 2);
         
         // לוגיקת יכולת מצב חמקמק (Ghost)
-        if (activePlayerAvatar === "Phantom") { // רק אם סקין רוח רפאים נבחר
+        if (activePlayerAvatar === "רוח רפאים") { // רק אם סקין רוח רפאים נבחר
             phantomAbilityActive = true; // הפעלת היכולת
             if (p.mouseIsPressed && playerPhantomEnergy > 0) {
                 playerPhasedState = true;
@@ -750,28 +761,28 @@ const gameSketch = function(p) {
         
         // ציור אווטאר השחקן הנוכחי
         switch (activePlayerAvatar) {
-            case "Azure Fin": // כחול
+            case "סנפיר תכלת": // כחול
                 renderAzureFin(playerCoordinates.x, playerCoordinates.y, playerRenderSize, playerFacingAngle);
                 break;
-            case "Crimson Fin": // אדום
+            case "סנפיר ארגמן": // אדום
                 renderCrimsonFin(playerCoordinates.x, playerCoordinates.y, playerRenderSize, playerFacingAngle);
                 break;
-            case "Golden Fin": // צהוב
+            case "סנפיר זהב": // צהוב
                 renderGoldenFin(playerCoordinates.x, playerCoordinates.y, playerRenderSize, playerFacingAngle);
                 break;
-            case "Rose Fin": // ורוד
+            case "סנפיר ורד": // ורוד
                 renderRoseFin(playerCoordinates.x, playerCoordinates.y, playerRenderSize, playerFacingAngle);
                 break;
-            case "Phantom": // רוח רפאים
+            case "רוח רפאים": // רוח רפאים
                 renderPhantomFin(playerCoordinates.x, playerCoordinates.y, playerRenderSize, playerFacingAngle);
                 break;
-            case "Predator": // טורף
+            case "טורף": // טורף
                 renderPredatorFin(playerCoordinates.x, playerCoordinates.y, playerRenderSize, playerFacingAngle);
                 break;
-            case "Forgetful": // שכחן
+            case "שכחן": // שכחן
                 renderForgetfulFin(playerCoordinates.x, playerCoordinates.y, playerRenderSize, playerFacingAngle);
                 break;
-            case "Prismatic": // פריזמטי
+            case "פריזמטי": // פריזמטי
                 renderPrismaticFin(playerCoordinates.x, playerCoordinates.y, playerRenderSize, playerFacingAngle);
                 break;
         }
@@ -870,6 +881,11 @@ const gameSketch = function(p) {
             achievementLogEntryTen = true;
         }
 
+        // מונה מטבעות בלוח ההישגים
+        p.fill(255);
+        p.textSize(25 * (p.width / BASE_WIDTH));
+        p.textAlign(p.LEFT);
+        p.text(`מטבעות: ${currentCoinBalance}`, p.width * 0.05, p.height * 0.05);
         p.textAlign(p.CENTER); // החזרת יישור למרכז
         
         // כפתור חזרה למסך הראשי
@@ -957,6 +973,12 @@ const gameSketch = function(p) {
             if (p.dist(p.mouseX, p.mouseY, skinX, currentSkinY) < buttonRadius) { p.cursor(p.HAND); } else { p.cursor(p.ARROW); }
         });
 
+        // מונה מטבעות במסך האווטארים
+        p.fill(255);
+        p.textSize(25 * (p.width / BASE_WIDTH));
+        p.textAlign(p.LEFT);
+        p.text(`מטבעות: ${currentCoinBalance}`, p.width * 0.05, p.height * 0.05);
+        p.textAlign(p.CENTER); // החזרת יישור למרכז
 
         // כפתור חזרה למסך הראשי
         const backButtonSize = 100 * (p.width / BASE_WIDTH);
@@ -982,18 +1004,29 @@ const gameSketch = function(p) {
         p.text(`ניקוד סופי: ${playerAccumulatedScore}`, p.width/2, p.height/2 + (50 * (p.height / BASE_HEIGHT)));
         
         // כפתור חזרה למסך הכותרת
-        const buttonSize = 100 * (p.width / BASE_WIDTH);
+        const buttonWidth = 200 * (p.width / BASE_WIDTH); // רוחב כפתור
+        const buttonHeight = 60 * (p.height / BASE_HEIGHT); // גובה כפתור
+        const buttonY = p.height/2 + (150 * (p.height / BASE_HEIGHT)); // מיקום Y של הכפתור
+
         p.fill(255, 0, 0);
-        if (p.dist(p.mouseX, p.mouseY, p.width/2, p.height/2 + (150 * (p.height / BASE_HEIGHT))) < buttonSize / 2) {
+        if (p.mouseX > p.width/2 - buttonWidth/2 && p.mouseX < p.width/2 + buttonWidth/2 &&
+            p.mouseY > buttonY - buttonHeight/2 && p.mouseY < buttonY + buttonHeight/2) {
             p.fill(200, 0, 0);
             p.cursor(p.HAND);
         } else {
             p.fill(255, 0, 0);
             p.cursor(p.ARROW);
         }
-        p.ellipse(p.width/2, p.height/2 + (150 * (p.height / BASE_HEIGHT)), buttonSize, buttonSize);
+        p.rect(p.width/2, buttonY, buttonWidth, buttonHeight, 10 * (p.width / BASE_WIDTH)); // כפתור מלבני עם פינות מעוגלות
         p.fill(255);
         p.textSize(40 * (p.width / BASE_WIDTH)); // גודל טקסט יחסי
-        p.text("חזרה לתפריט", p.width/2, p.height/2 + (150 * (p.height / BASE_HEIGHT)));
+        p.text("חזרה לתפריט", p.width/2, buttonY);
+
+        // מונה מטבעות במסך הסיום
+        p.fill(255);
+        p.textSize(25 * (p.width / BASE_WIDTH));
+        p.textAlign(p.LEFT);
+        p.text(`מטבעות: ${currentCoinBalance}`, p.width * 0.05, p.height * 0.05);
+        p.textAlign(p.CENTER); // החזרת יישור למרכז
     };
 };
