@@ -1,132 +1,169 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>טוען משחק...</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>טוען משחק...</title>
     <!-- טעינת ספריית p5.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
-<style>
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background: #f0f0f0;
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-        direction: rtl;
-        color: #333;
-    }
-    header, footer {
-        background: #333;
-        color: white;
-        text-align: center;
-        padding: 15px 0;
-        user-select: none;
-    }
-    .container {
-        flex: 1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 30px 15px;
-    }
-    .game-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        padding: 30px 20px 40px;
-        text-align: center;
-        max-width: 90vw;
-        overflow: hidden; /* מונע גלילה פנימית אם הקנבס גדול מדי */
-        width: 800px; /* רוחב בסיסי */
-        height: 600px; /* גובה בסיסי */
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center; /* מרכז את התוכן בתוך הכרטיס */
-    }
-    /* סגנון למצב מסך מלא */
-    .game-card:-webkit-full-screen {
-        width: 100% !important;
-        height: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        background: black !important; /* רקע שחור במסך מלא */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    .game-card:-moz-full-screen {
-        width: 100% !important;
-        height: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        background: black !important;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    .game-card:fullscreen {
-        width: 100% !important;
-        height: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        background: black !important;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.4.0/lib/p5.js"></script>
+    <!-- טעינת Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;700&display=swap');
+        body {
+            font-family: 'Heebo', sans-serif;
+            direction: rtl;
+            background-color: #1a202c; /* bg-gray-900 */
+            color: #e2e8f0; /* text-gray-200 */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+        }
+        header, footer {
+            background-color: #2d3748; /* bg-gray-800 */
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+            user-select: none;
+        }
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column; /* Changed to column for better responsiveness */
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1rem;
+            gap: 2rem; /* Space between game card and info card */
+        }
+        .game-card, .info-card {
+            background-color: #2d3748; /* bg-gray-800 */
+            border-radius: 1rem; /* rounded-xl */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+            padding: 1.5rem; /* p-6 */
+            text-align: center;
+            max-width: 90vw;
+            width: 800px; /* Max width for desktop */
+            min-width: 320px; /* Minimum width for mobile */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-    h1 {
-        font-size: 2em;
-        margin: 0 0 15px 0;
-        user-select: text;
-    }
-    #gameContainer {
-        margin-top: 20px;
-        width: 100%;
-        height: 100%; /* יתפוס את כל הגובה הזמין בתוך game-card */
-        display: flex;
-        justify-content: center;
-        align-items: center; /* מרכז את הקנבס בתוך המיכל */
-    }
-    #loading {
-        font-size: 1.2em;
-        color: gray;
-        margin-top: 10px;
-    }
-    canvas {
-        display: block;
-        margin: 0 auto;
-        max-width: 100%;
-        max-height: 100%; /* חשוב לשמור על יחס גובה-רוחב במסך מלא */
-        width: auto; /* יתאים את עצמו לרוחב המיכל תוך שמירה על יחס */
-        height: auto; /* יתאים את עצמו לגובה המיכל תוך שמירה על יחס */
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        background-color: #141464; /* צבע רקע למשחק, כדי שיהיה גלוי */
-    }
-    header h2 a {
-        color: inherit;
-        text-decoration: none;
-    }
-    /* סגנון כפתור מסך מלא */
-    #fullscreenButton {
-        background-color: #007bff; /* כחול */
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 8px;
-        font-size: 1.1em;
-        cursor: pointer;
-        margin-top: 20px;
-        transition: background-color 0.3s ease;
-    }
-    #fullscreenButton:hover {
-        background-color: #0056b3;
-    }
-</style>
+        /* Fullscreen styles for game-card */
+        .game-card:-webkit-full-screen,
+        .game-card:-moz-full-screen,
+        .game-card:fullscreen {
+            width: 100vw !important;
+            height: 100vh !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background-color: black !important;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 2.5rem; /* text-4xl */
+            font-weight: bold;
+            margin-bottom: 1rem; /* mb-4 */
+            color: #f7fafc; /* text-gray-100 */
+        }
+        /* New style for description paragraph within game-card */
+        .game-card p.game-description-text {
+            font-size: 1.125rem; /* text-lg */
+            line-height: 1.75; /* leading-relaxed */
+            margin-bottom: 1.5rem; /* mb-6 */
+            color: #cbd5e0; /* text-gray-300 */
+            text-align: center; /* Center align description */
+            max-width: 90%; /* Constrain width */
+        }
+        h2 {
+            font-size: 1.75rem; /* text-3xl */
+            font-weight: bold;
+            margin-bottom: 1rem; /* mb-4 */
+            color: #f7fafc; /* text-gray-100 */
+        }
+        #gameContainer {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1rem; /* mb-4 */
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.75rem; /* rounded-lg */
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            background-color: #141464; /* Game background color */
+        }
+        .game-button {
+            background-color: #4299e1; /* blue-500 */
+            color: white;
+            padding: 0.75rem 1.5rem; /* py-3 px-6 */
+            border-radius: 0.5rem; /* rounded-lg */
+            font-size: 1.25rem; /* text-xl */
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            min-width: 120px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-top: 1rem; /* mt-4 */
+        }
+        .game-button:hover {
+            background-color: #3182ce; /* blue-600 */
+            transform: translateY(-2px);
+        }
+        .game-button:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+        header h2 a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* Info Card Specific Styles */
+        .info-card {
+            text-align: right; /* Align text right for Hebrew */
+            padding: 2rem;
+        }
+        .info-card p, .info-card ul {
+            font-size: 1.125rem; /* text-lg */
+            line-height: 1.75; /* leading-relaxed */
+            margin-bottom: 1rem;
+            color: #cbd5e0; /* text-gray-300 */
+        }
+        .info-card ul {
+            list-style-type: disc;
+            padding-right: 1.5rem; /* For bullet points */
+        }
+        .info-card li {
+            margin-bottom: 0.5rem;
+        }
+        .info-card .toggle-button {
+            background-color: #48bb78; /* green-500 */
+            margin-top: 1rem;
+        }
+        .info-card .toggle-button:hover {
+            background-color: #38a169; /* green-600 */
+        }
+        .info-section {
+            display: none; /* Hidden by default */
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #4a5568; /* border-gray-600 */
+            text-align: right; /* For Hebrew */
+        }
+        .info-section.active {
+            display: block;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -136,12 +173,32 @@
     <div class="container">
         <div class="game-card" id="gameCard">
             <h1 id="gameTitle">טוען משחק...</h1>
-            <div id="loading">טוען משחק…</div>
+            <!-- Description moved here -->
+            <p id="gameDescription" class="game-description-text"></p>
+            <div id="gameImageContainer" class="mb-4">
+                <img id="gameImage" src="" alt="תמונת המשחק" class="rounded-lg max-w-full h-auto mx-auto" style="display: none;">
+            </div>
+            <div id="loading" class="text-gray-400 text-lg mb-4">טוען משחק…</div>
             <div id="gameContainer">
                 <!-- הקנבס של p5.js ייווצר כאן באופן דינמי ע"י קוד המשחק -->
             </div>
-            <!-- כפתור מסך מלא -->
-            <button id="fullscreenButton">מסך מלא</button>
+            <button id="fullscreenButton" class="game-button">מסך מלא</button>
+        </div>
+
+        <div class="info-card">
+            <!-- Description removed from here -->
+            
+            <button id="toggleInstructionsButton" class="game-button toggle-button">הצג הוראות</button>
+            <div id="gameInstructionsSection" class="info-section">
+                <h3>הוראות המשחק:</h3>
+                <ul id="gameInstructions"></ul>
+            </div>
+
+            <button id="toggleStoryButton" class="game-button toggle-button">הצג סיפור</button>
+            <div id="gameStorySection" class="info-section">
+                <h3>הסיפור מאחורי המשחק:</h3>
+                <p id="gameStory"></p>
+            </div>
         </div>
     </div>
 
@@ -151,81 +208,151 @@
 
 <script>
 window.onload = function() {
-    const gameTitle = document.getElementById("gameTitle");
-    const loading = document.getElementById("loading");
-    const gameContainer = document.getElementById("gameContainer");
+    const gameTitleElement = document.getElementById("gameTitle");
+    const gameImageElement = document.getElementById("gameImage");
+    const gameImageContainer = document.getElementById("gameImageContainer");
+    const loadingElement = document.getElementById("loading");
+    const gameContainerElement = document.getElementById("gameContainer");
     const fullscreenButton = document.getElementById("fullscreenButton");
     const gameCard = document.getElementById("gameCard");
 
-    function getGameNameFromURL() {
+    const gameDescriptionElement = document.getElementById("gameDescription"); // Now a <p> tag
+    const gameStoryElement = document.getElementById("gameStory");
+    const gameInstructionsList = document.getElementById("gameInstructions");
+    const toggleStoryButton = document.getElementById("toggleStoryButton");
+    const gameStorySection = document.getElementById("gameStorySection");
+    const toggleInstructionsButton = document.getElementById("toggleInstructionsButton");
+    const gameInstructionsSection = document.getElementById("gameInstructionsSection");
+
+    // Array containing all game data, embedded directly in the HTML
+    const allGamesData = [
+        {
+            id: "Fruit Quest",
+            title: "מסע הפירות",
+            image: "https://placehold.co/400x300/FF5733/FFFFFF?text=Fruit+Quest", // Placeholder image
+            description: "צאו למסע פיקסלים מרתק במבוך הפירות! אספו את כל הפירות, התחמקו ממכשולים ופתחו יכולות חדשות בדרך לחופש.",
+            story: "בעתיד הרחוק, כשהאנושות התפשטה בין הכוכבים, אתם, אסטרונאוט אמיץ בשם קפטן פרי, יצאתם למשימת חקר שגרתית בגלקסיה הלא נודעת. הכל הלך כשורה עד שסופת קוסמית בלתי צפויה פגעה בחללית שלכם, וגרמה לה להתרסק על פלנטה מוזרה, שכולה שופעת צמחייה ססגונית ופירות ענקיים. כשהתעוררתם, גיליתם שאתם לכודים במבוך תת-קרקעי אפל, שנראה כאילו נבנה על ידי יצורים עתיקים וחובבי פירות. החללית שלכם, מקור התקווה היחיד לחזור הביתה, נראית רחוקה ובלתי מושגת.\n\nהמבוך מלא במכשולים מסוכנים, פלטפורמות מתמוטטות ויצורים מסתוריים, אך גם בפירות נוצצים המכילים אנרגיה קוסמית. עליכם לאסוף את כל הפירות בכל שלב כדי לפתוח את השערים המובילים עמוק יותר אל תוך המבוך. ככל שתתקדמו, תגלו יכולות חדשות שיעזרו לכם להתגבר על האתגרים – כמו קפיצה כפולה שתאפשר לכם להגיע לגבהים חדשים, ויכולת מיוחדת לבטל את כוח המשיכה, המאפשרת לכם לרחף בחופשיות דרך מעברים צרים ומסוכנים. זכרו, כל פרי הוא צעד נוסף לעבר החופש, וכל שלב הוא מבחן לאומץ ולכישוריכם. האם תצליחו לפענח את סודות מבוך הפירות, לאסוף את כל האנרגיה הקוסמית ולחזור לחללית שלכם לפני שיהיה מאוחר מדי? גורלכם תלוי בכך!",
+            instructions: [
+                "השתמשו במקשי החיצים (או WASD) כדי לזוז.",
+                "אתם יכולים לבצע קפיצה כפולה כדי להגיע למקומות גבוהים יותר.",
+                "החל משלב 3, תוכלו ללחוץ על מקש רווח (Space) כדי לבטל את כוח המשיכה ולרחף. לחיצה חוזרת תפעיל מחדש את כוח המשיכה.",
+                "איסוף כל הפירות בשלב פותח את היציאה לשלב הבא.",
+                "היזהרו מליפול מהמפה - נפילה תוביל לסיום המשחק!"
+            ],
+            jsFile: "fruit-quest.js" // The JavaScript file for this specific game
+        },
+        // Add more game objects here as needed
+        // {
+        //     id: "Another Game",
+        //     title: "משחק אחר",
+        //     image: "https://placehold.co/400x300/33A3FF/FFFFFF?text=Another+Game",
+        //     description: "תיאור קצר למשחק אחר.",
+        //     story: "הסיפור המלא של המשחק האחר...",
+        //     instructions: ["הוראה 1", "הוראה 2"],
+        //     jsFile: "another-game.js"
+        // }
+    ];
+
+    // Function to get game ID from URL
+    function getGameIdFromURL() {
         const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get("game");
+        return urlParams.get("game"); // e.g., ?game=Fruit Quest
     }
 
-    function isValidGameName(name) {
-        // ודא ששם המשחק מכיל רק אותיות, מספרים, מקפים ותווים תחתונים
-        return /^[a-zA-Z0-9_-]+$/.test(name);
+    const gameId = getGameIdFromURL();
+
+    if (!gameId) {
+        gameTitleElement.textContent = "שגיאה – לא צוין משחק";
+        loadingElement.textContent = "אנא ציין את שם המשחק בכתובת ה-URL (לדוגמה: index.html?game=Fruit Quest).";
+        return;
     }
 
-    function formatGameName(fileName) {
-        if (!fileName) return "";
-        // הסרת סיומת קובץ והחלפת מקפים/תחתונים ברווחים
-        const name = fileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
-        // הפיכת אות ראשונה לגדולה
-        return name.charAt(0).toUpperCase() + name.slice(1);
+    loadingElement.style.display = "block";
+    loadingElement.textContent = "טוען נתוני משחק...";
+
+    // Find the specific game by ID from the embedded data
+    const gameInfo = allGamesData.find(game => game.id === gameId);
+
+    if (!gameInfo) {
+        gameTitleElement.textContent = "שגיאה – משחק לא נמצא";
+        loadingElement.textContent = `המשחק "${gameId}" לא נמצא בנתונים המוטמעים.`;
+        return;
     }
 
-    const rawName = getGameNameFromURL();
-    if (!rawName || !isValidGameName(rawName)) {
-        gameTitle.textContent = "שגיאה – שם משחק לא חוקי";
-        loading.textContent = "אנא ודא שכתובת ה-URL נכונה (לדוגמה: play.html?game=deepdive).";
-        return; // עצור את ביצוע הסקריפט אם שם המשחק לא חוקי
+    // Populate game information
+    gameTitleElement.textContent = gameInfo.title;
+    document.title = `${gameInfo.title} שחקו עכשיו!`;
+
+    // Populate description
+    gameDescriptionElement.textContent = gameInfo.description;
+
+    if (gameInfo.image) {
+        gameImageElement.src = gameInfo.image;
+        gameImageElement.alt = `תמונה של ${gameInfo.title}`;
+        gameImageElement.style.display = 'block'; // Show the image
+    } else {
+        gameImageContainer.style.display = 'none'; // Hide container if no image
     }
 
-    const gameName = rawName;
-    const prettyName = formatGameName(gameName);
-    gameTitle.textContent = prettyName;
-    document.title = `${prettyName} שחקו עכשיו!`;
+    gameStoryElement.textContent = gameInfo.story;
 
-    // הסתרת הודעת הטעינה
-    loading.style.display = "block"; // הצג שוב כדי לוודא שהוא גלוי לפני הטעינה
-    loading.textContent = "טוען משחק…";
+    // Populate instructions list
+    gameInstructionsList.innerHTML = ''; // Clear existing
+    if (gameInfo.instructions && gameInfo.instructions.length > 0) {
+        gameInfo.instructions.forEach(instruction => {
+            const li = document.createElement('li');
+            li.textContent = instruction;
+            gameInstructionsList.appendChild(li);
+        });
+    } else {
+        gameInstructionsList.innerHTML = '<li>אין הוראות זמינות למשחק זה.</li>';
+    }
 
-    // טעינה דינמית של קובץ ה-JS של המשחק
+    // Toggle functionality for story and instructions
+    toggleStoryButton.addEventListener('click', () => {
+        gameStorySection.classList.toggle('active');
+        toggleStoryButton.textContent = gameStorySection.classList.contains('active') ? 'הסתר סיפור' : 'הצג סיפור';
+    });
+
+    toggleInstructionsButton.addEventListener('click', () => {
+        gameInstructionsSection.classList.toggle('active');
+        toggleInstructionsButton.textContent = gameInstructionsSection.classList.contains('active') ? 'הסתר הוראות' : 'הצג הוראות';
+    });
+
+    // --- Game Script Loading Logic ---
+    loadingElement.textContent = "טוען קובץ משחק...";
     const script = document.createElement('script');
-    script.src = `games/${gameName}.js`; // נתיב לקובץ המשחק
+    script.src = gameInfo.jsFile; // Use jsFile from gameInfo
     script.onload = () => {
-        // ודא ש-gameSketch גלובלי או נגיש לאחר הטעינה
-        if (typeof gameSketch !== 'undefined') {
-            window.p5Instance = new p5(gameSketch, 'gameContainer');
-            loading.style.display = "none"; // הסתר הודעת הטעינה לאחר שהמשחק נטען
+        if (typeof sketch !== 'undefined') { // 'sketch' is the global variable from the p5.js game code
+            window.p5Instance = new p5(sketch, gameContainerElement);
+            loadingElement.style.display = "none";
         } else {
-            gameTitle.textContent = "שגיאה בטעינת המשחק";
-            loading.textContent = "קובץ המשחק נטען, אך סקצ' המשחק לא נמצא. ודא שהקובץ מכיל 'const gameSketch = function(p) { ... }'.";
-            console.error("gameSketch is not defined after script load.");
+            gameTitleElement.textContent = "שגיאה בטעינת המשחק";
+            loadingElement.textContent = `קובץ המשחק נטען, אך סקצ' המשחק לא נמצא. ודא שהקובץ מכיל 'let sketch = function(p) { ... }'.`;
+            console.error("sketch is not defined after script load.");
         }
     };
     script.onerror = () => {
-        gameTitle.textContent = "שגיאה – המשחק לא נמצא";
-        loading.textContent = `לא ניתן לטעון את המשחק: games/${gameName}.js. אנא ודא שהקובץ קיים בנתיב הנכון.`;
-        console.error(`Failed to load game script: games/${gameName}.js`);
+        gameTitleElement.textContent = "שגיאה – קובץ משחק לא נמצא";
+        loadingElement.textContent = `לא ניתן לטעון את קובץ המשחק: ${gameInfo.jsFile}. אנא ודא שהקובץ קיים בנתיב הנכון.`;
+        console.error(`Failed to load game script: ${gameInfo.jsFile}`);
     };
-    document.body.appendChild(script); // הוסף את הסקריפט לגוף הדף
+    document.body.appendChild(script);
 
-    // לוגיקת כפתור מסך מלא
+    // Fullscreen button logic (remains the same)
     fullscreenButton.addEventListener('click', () => {
         if (gameCard.requestFullscreen) {
             gameCard.requestFullscreen();
-        } else if (gameCard.mozRequestFullScreen) { /* Firefox */
+        } else if (gameCard.mozRequestFullScreen) {
             gameCard.mozRequestFullScreen();
-        } else if (gameCard.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+        } else if (gameCard.webkitRequestFullscreen) {
             gameCard.webkitRequestFullscreen();
-        } else if (gameCard.msRequestFullscreen) { /* IE/Edge */
+        } else if (gameCard.msRequestFullscreen) {
             gameCard.msRequestFullscreen();
         }
     });
 
-    // הקשבה לאירועי יציאה ממסך מלא כדי להתאים את גודל הקנבס בחזרה
     document.addEventListener('fullscreenchange', exitFullscreenHandler);
     document.addEventListener('webkitfullscreenchange', exitFullscreenHandler);
     document.addEventListener('mozfullscreenchange', exitFullscreenHandler);
@@ -233,7 +360,6 @@ window.onload = function() {
 
     function exitFullscreenHandler() {
         if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
-            // אם יצאנו ממצב מסך מלא, נפעיל מחדש את שינוי גודל הקנבס
             if (window.p5Instance && window.p5Instance.windowResized) {
                 window.p5Instance.windowResized();
             }
