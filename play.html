@@ -150,15 +150,11 @@ window.onload = function() {
       if (!res.ok) throw new Error("Failed to load game file");
       return res.text();
     })
-    .then(code => {
-      resizeCanvas();
-      const pScript = document.createElement("script");
-      pScript.type = "application/processing";
-      pScript.setAttribute("data-processing-target", "gameCanvas");
-      pScript.textContent = code;
-      document.body.appendChild(pScript);
-      loading.style.display = "none";
-    })
+.then(code => {
+  resizeCanvas();
+  new Processing(canvas, code);
+  loading.style.display = "none";
+})
     .catch(err => {
       loading.textContent = "שגיאה בטעינת המשחק.";
       gameTitle.textContent = "משהו השתבש...";
