@@ -3,112 +3,80 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-<!-- תיאור קצר שמופיע בתוצאות חיפוש -->
-<meta name="description" content="Vibe Games – אוסף משחקים איכותיים אונליין, שחקו עכשיו והתחברו לעולם הכיף!" />
-
-<!-- מילות מפתח רלוונטיות -->
-<meta name="keywords" content="משחקים, משחקים אונליין, משחקי ארקייד, משחקי רטרו, משחקים חינמיים, Vibe Games" />
-
-<!-- מחבר / בעל האתר -->
-<meta name="author" content="שם שלך או שם החברה" />
-
-<!-- האם מנועי חיפוש יסרקו ויעקבו אחר קישורים -->
-<meta name="robots" content="index, follow" />
-
-<!-- שפה של הדף -->
-<meta http-equiv="Content-Language" content="he" />
-
-<!-- קביעת נושא הדף -->
-<meta name="theme-color" content="#333333" />
-
-<!-- Open Graph: שיתוף בפייסבוק ורשתות חברתיות -->
-<meta property="og:title" content="Vibe Games – אוסף משחקים איכותיים אונליין" />
-<meta property="og:description" content="שחקו במשחקים כיפיים, רטרו, ארקייד ועוד באתר Vibe Games!" />
-<meta property="og:type" content="website" />
-
-<!-- Twitter Card: שיתוף בטוויטר -->
-<meta name="twitter:title" content="Vibe Games – אוסף משחקים איכותיים אונליין" />
-<meta name="twitter:description" content="שחקו במשחקים כיפיים, רטרו, ארקייד ועוד באתר Vibe Games!" />
-
-<!-- למנועי חיפוש מתקדמים -->
-<meta name="googlebot" content="index, follow" />
-   <title>טוען משחק...</title>
-  <script src="https://cdn.jsdelivr.net/processing.js/1.4.8/processing.min.js"></script>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f0f0f0;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      direction: rtl;
-      color: #333;
-    }
-
-    header, footer {
-      background: #333;
-      color: white;
-      text-align: center;
-      padding: 15px 0;
-      user-select: none;
-    }
-
-    .container {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 30px 15px;
-    }
-
-    .game-card {
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      padding: 30px 20px 40px;
-      text-align: center;
-      max-width: 90vw;
-      overflow-x: auto;
-      width: 800px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    h1 {
-      font-size: 2em;
-      margin: 0 0 15px 0;
-      user-select: text;
-    }
-
-    #gameContainer {
-      margin-top: 20px;
-      width: 100%;
-      display: flex;
-      justify-content: center;
-    }
-
-    #loading {
-      font-size: 1.2em;
-      color: gray;
-      margin-top: 10px;
-    }
-
-    canvas {
-      display: block;
-      margin: 0 auto;
-      max-width: 100%;
-      height: auto;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-  </style>
+<title>טוען משחק...</title>
+<script src="https://cdn.jsdelivr.net/processing.js/1.4.8/processing.min.js"></script>
+<style>
+  /* ... שאר ה-CSS שלך כפי שהיה ... */
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    direction: rtl;
+    color: #333;
+  }
+  header, footer {
+    background: #333;
+    color: white;
+    text-align: center;
+    padding: 15px 0;
+    user-select: none;
+  }
+  .container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 30px 15px;
+  }
+  .game-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    padding: 30px 20px 40px;
+    text-align: center;
+    max-width: 90vw;
+    overflow-x: auto;
+    width: 800px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  h1 {
+    font-size: 2em;
+    margin: 0 0 15px 0;
+    user-select: text;
+  }
+  #gameContainer {
+    margin-top: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  #loading {
+    font-size: 1.2em;
+    color: gray;
+    margin-top: 10px;
+  }
+  canvas {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  header h2 a {
+    color: inherit;
+    text-decoration: none;
+  }
+</style>
 </head>
 <body>
   <header>
-<h2><a href="https://anihnon.github.io/Game-Vibe/" style="color: inherit; text-decoration: none;">Vibe Games</a></h2>
+    <h2><a href="https://anihnon.github.io/Game-Vibe/">Vibe Games</a></h2>
   </header>
 
   <div class="container">
@@ -124,28 +92,64 @@
     <p>כל הזכויות שמורות &copy; 2025 - Vibe Games</p>
   </footer>
 
-  <script>
-     function resizeCanvas() {
-    const container = document.getElementById("gameContainer");
-    const canvas    = document.getElementById("gameCanvas");
-    const rect      = container.getBoundingClientRect();
+<script>
+window.onload = function() {
+  const gameTitle = document.getElementById("gameTitle");
+  const loading = document.getElementById("loading");
+  const gameContainer = document.getElementById("gameContainer");
+  const canvas = document.getElementById("gameCanvas");
 
-    // נגדיר רוחב שווה לרוחב המיכל
-    canvas.width  = rect.width;
+  function getGameNameFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get("game");
+  }
 
-    // נשמור יחס גובה:רוחב של 3:2 (למשל) – אפשר לשנות בהתאם למשחק
+  function isValidGameName(name) {
+    return /^[\w-]+$/.test(name);
+  }
+
+  function formatGameName(fileName) {
+    if (!fileName) return "";
+    const name = fileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  }
+
+  function resizeCanvas() {
+    const rect = gameContainer.getBoundingClientRect();
+    canvas.width = rect.width;
     const aspectRatio = 600 / 400;
     canvas.height = rect.width * aspectRatio;
   }
 
-  // קריאה ראשונית
+  const rawName = getGameNameFromURL();
+  if (!rawName || !isValidGameName(rawName)) {
+    gameTitle.textContent = "שגיאה – שם משחק לא חוקי";
+    loading.textContent = "";
+    return; // עצירה מפני טעינת משחק
+  }
+
+  const gameName = rawName;
+  const prettyName = formatGameName(gameName);
+  gameTitle.textContent = prettyName;
+  document.title = `${prettyName} שחקו עכשיו!`;
+
+  let gameFile = gameName;
+  if (!gameFile.endsWith(".pde")) {
+    gameFile += ".pde";
+  }
+
+  // התאמת גודל קנבס ראשונית
   resizeCanvas();
-  // בכל שינוי גודל חלון
+
+  // התאמת גודל קנבס בעת שינוי חלון
   window.addEventListener("resize", resizeCanvas);
 
-  // כשמטעינים עם Processing.js – ודאו שזה קורה אחרי resizeCanvas
+  // טעינת קוד המשחק
   fetch(`../game/${gameFile}`)
-    .then(res => { if (!res.ok) throw new Error(); return res.text(); })
+    .then(res => {
+      if (!res.ok) throw new Error("Failed to load game file");
+      return res.text();
+    })
     .then(code => {
       resizeCanvas();
       const pScript = document.createElement("script");
@@ -155,68 +159,13 @@
       document.body.appendChild(pScript);
       loading.style.display = "none";
     })
-    .catch(err => { /* ... */ });
-
-  // פונקציה לקבלת שם המשחק מה-URL
- function getGameNameFromURL() {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get("game");
-  }
-
-  function isValidGameName(name) {
-    // מותר: a–z, A–Z, 0–9, קו תחתון וקו מקף
-    return /^[\w-]+$/.test(name);
-  }
-
-  const rawName = getGameNameFromURL();
-  if (!rawName || !isValidGameName(rawName)) {
-    document.getElementById("gameTitle").textContent = "שגיאה – שם משחק לא חוקי";
-    document.getElementById("loading").textContent = "";
-    throw new Error("Invalid game name in URL");
-  }
-  // מעכשיו rawName בטוח לשימוש
-
-  // פונקציה לעיצוב שם קריא של המשחק
-  function formatGameName(fileName) {
-    if (!fileName) return "";
-    const name = fileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
-    return name.charAt(0).toUpperCase() + name.slice(1);
-  }
-
-  const gameName = rawName;
-  const gameTitle = document.getElementById("gameTitle");
-  const loading = document.getElementById("loading");
-  const gameContainer = document.getElementById("gameContainer");
-
-  if (!gameName) {
-    gameTitle.textContent = "שגיאה – אין שם משחק בקישור";
-    loading.textContent = "";
-  } else {
-    const prettyName = formatGameName(gameName);
-    gameTitle.textContent = prettyName;
-    document.title = `${prettyName} שחקו עכשיו!`;
-
-    let gameFile = gameName;
-    if (!gameFile.endsWith(".pde")) {
-      gameFile += ".pde";
-    }
-
-    fetch(`../game/${gameFile}`)
-      .then(res => res.text())
-      .then(code => {
-        const pScript = document.createElement("script");
-        pScript.type = "application/processing";
-        pScript.setAttribute("data-processing-target", "gameCanvas");
-        pScript.textContent = code;
-        document.body.appendChild(pScript);
-        loading.style.display = "none";
-      })
-      .catch(err => {
-        loading.textContent = "שגיאה בטעינת המשחק.";
-        gameTitle.textContent = "משהו השתבש...";
-        console.error(err);
-      });
-  }
+    .catch(err => {
+      loading.textContent = "שגיאה בטעינת המשחק.";
+      gameTitle.textContent = "משהו השתבש...";
+      console.error(err);
+    });
+};
 </script>
+
 </body>
 </html>
