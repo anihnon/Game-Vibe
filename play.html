@@ -145,7 +145,7 @@ window.onload = function() {
   window.addEventListener("resize", resizeCanvas);
 
   // טעינת קוד המשחק
-  fetch(`../game/${gameFile}`)
+  fetch(`../games/${gameFile}`)
     .then(res => {
       if (!res.ok) throw new Error("Failed to load game file");
       return res.text();
