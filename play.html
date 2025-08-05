@@ -26,19 +26,14 @@
 <meta property="og:title" content="Vibe Games – אוסף משחקים איכותיים אונליין" />
 <meta property="og:description" content="שחקו במשחקים כיפיים, רטרו, ארקייד ועוד באתר Vibe Games!" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://yourwebsite.com/" />
-<meta property="og:image" content="https://yourwebsite.com/path-to-image.jpg" />
 
 <!-- Twitter Card: שיתוף בטוויטר -->
-<meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Vibe Games – אוסף משחקים איכותיים אונליין" />
 <meta name="twitter:description" content="שחקו במשחקים כיפיים, רטרו, ארקייד ועוד באתר Vibe Games!" />
-<meta name="twitter:image" content="https://yourwebsite.com/path-to-image.jpg" />
 
 <!-- למנועי חיפוש מתקדמים -->
 <meta name="googlebot" content="index, follow" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>טוען משחק...</title>
+   <title>טוען משחק...</title>
   <script src="https://cdn.jsdelivr.net/processing.js/1.4.8/processing.min.js"></script>
   <style>
     body {
@@ -130,11 +125,56 @@
   </footer>
 
   <script>
+     function resizeCanvas() {
+    const container = document.getElementById("gameContainer");
+    const canvas    = document.getElementById("gameCanvas");
+    const rect      = container.getBoundingClientRect();
+
+    // נגדיר רוחב שווה לרוחב המיכל
+    canvas.width  = rect.width;
+
+    // נשמור יחס גובה:רוחב של 3:2 (למשל) – אפשר לשנות בהתאם למשחק
+    const aspectRatio = 600 / 400;
+    canvas.height = rect.width * aspectRatio;
+  }
+
+  // קריאה ראשונית
+  resizeCanvas();
+  // בכל שינוי גודל חלון
+  window.addEventListener("resize", resizeCanvas);
+
+  // כשמטעינים עם Processing.js – ודאו שזה קורה אחרי resizeCanvas
+  fetch(`../game/${gameFile}`)
+    .then(res => { if (!res.ok) throw new Error(); return res.text(); })
+    .then(code => {
+      resizeCanvas();
+      const pScript = document.createElement("script");
+      pScript.type = "application/processing";
+      pScript.setAttribute("data-processing-target", "gameCanvas");
+      pScript.textContent = code;
+      document.body.appendChild(pScript);
+      loading.style.display = "none";
+    })
+    .catch(err => { /* ... */ });
+
   // פונקציה לקבלת שם המשחק מה-URL
-  function getGameNameFromURL() {
+ function getGameNameFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get("game");
   }
+
+  function isValidGameName(name) {
+    // מותר: a–z, A–Z, 0–9, קו תחתון וקו מקף
+    return /^[\w-]+$/.test(name);
+  }
+
+  const rawName = getGameNameFromURL();
+  if (!rawName || !isValidGameName(rawName)) {
+    document.getElementById("gameTitle").textContent = "שגיאה – שם משחק לא חוקי";
+    document.getElementById("loading").textContent = "";
+    throw new Error("Invalid game name in URL");
+  }
+  // מעכשיו rawName בטוח לשימוש
 
   // פונקציה לעיצוב שם קריא של המשחק
   function formatGameName(fileName) {
@@ -143,7 +183,7 @@
     return name.charAt(0).toUpperCase() + name.slice(1);
   }
 
-  const gameName = getGameNameFromURL();
+  const gameName = rawName;
   const gameTitle = document.getElementById("gameTitle");
   const loading = document.getElementById("loading");
   const gameContainer = document.getElementById("gameContainer");
