@@ -68,8 +68,8 @@ leaderboard.sort(function(a, b) { return b[1] - a[1]; });
 var verify = 0;
 var highScore = 0;
 
-// פונטים
-var fonts = ["Arial", "Arial", "Arial"]; 
+// פונטים - שורה זו הוחלפה. כעת משתמשים בשמות פונטים סטנדרטיים.
+var fonts = ["Arial", "Arial Black", "Arial Black"]; 
 
 // תמונה ממוזערת
 var thumbnail, getThumb = "";
@@ -131,7 +131,6 @@ var updatePalette = function(index) {
 for (var i = 0; i < 25; i++) {
   updatePalette();
 }
-
 // מערכים
 // הדפים השונים
 var gameScenes = [true, false, false, false];
