@@ -7,7 +7,7 @@
     <!-- טעינת ספריית p5.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
     <!-- טעינת קובץ המשחק שלך ישירות. וודא שקובץ deepdive.js נמצא בנתיב games/deepdive.js -->
-    <script src="games/deepDive.js"></script>
+    <script src="games/deepdive.js"></script>
 <style>
     body {
         margin: 0;
@@ -40,12 +40,46 @@
         padding: 30px 20px 40px;
         text-align: center;
         max-width: 90vw;
-        overflow-x: auto;
-        width: 800px;
+        overflow: hidden; /* מונע גלילה פנימית אם הקנבס גדול מדי */
+        width: 800px; /* רוחב בסיסי */
+        height: 600px; /* גובה בסיסי */
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: center; /* מרכז את התוכן בתוך הכרטיס */
     }
+    /* סגנון למצב מסך מלא */
+    .game-card:-webkit-full-screen {
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: black !important; /* רקע שחור במסך מלא */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .game-card:-moz-full-screen {
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: black !important;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .game-card:fullscreen {
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: black !important;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
     h1 {
         font-size: 2em;
         margin: 0 0 15px 0;
@@ -54,7 +88,7 @@
     #gameContainer {
         margin-top: 20px;
         width: 100%;
-        min-height: 400px; /* גובה מינימלי כדי שיהיה מקום לקנבס */
+        height: 100%; /* יתפוס את כל הגובה הזמין בתוך game-card */
         display: flex;
         justify-content: center;
         align-items: center; /* מרכז את הקנבס בתוך המיכל */
@@ -68,7 +102,9 @@
         display: block;
         margin: 0 auto;
         max-width: 100%;
-        height: auto; /* חשוב לשמור על יחס גובה-רוחב */
+        max-height: 100%; /* חשוב לשמור על יחס גובה-רוחב במסך מלא */
+        width: auto; /* יתאים את עצמו לרוחב המיכל תוך שמירה על יחס */
+        height: auto; /* יתאים את עצמו לגובה המיכל תוך שמירה על יחס */
         border-radius: 10px;
         box-shadow: 0 0 10px rgba(0,0,0,0.1);
         background-color: #141464; /* צבע רקע למשחק, כדי שיהיה גלוי */
@@ -76,6 +112,21 @@
     header h2 a {
         color: inherit;
         text-decoration: none;
+    }
+    /* סגנון כפתור מסך מלא */
+    #fullscreenButton {
+        background-color: #007bff; /* כחול */
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1em;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: background-color 0.3s ease;
+    }
+    #fullscreenButton:hover {
+        background-color: #0056b3;
     }
 </style>
 </head>
@@ -85,12 +136,14 @@
     </header>
 
     <div class="container">
-        <div class="game-card">
+        <div class="game-card" id="gameCard">
             <h1 id="gameTitle">טוען משחק...</h1>
             <div id="loading">טוען משחק…</div>
             <div id="gameContainer">
                 <!-- הקנבס של p5.js ייווצר כאן באופן דינמי ע"י קוד המשחק -->
             </div>
+            <!-- כפתור מסך מלא -->
+            <button id="fullscreenButton">מסך מלא</button>
         </div>
     </div>
 
@@ -103,6 +156,8 @@ window.onload = function() {
     const gameTitle = document.getElementById("gameTitle");
     const loading = document.getElementById("loading");
     const gameContainer = document.getElementById("gameContainer");
+    const fullscreenButton = document.getElementById("fullscreenButton");
+    const gameCard = document.getElementById("gameCard"); // קבלת אלמנט game-card
 
     function getGameNameFromURL() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -135,10 +190,48 @@ window.onload = function() {
     loading.style.display = "none";
 
     // יצירת מופע חדש של p5.js עם הסקצ' שלנו
-    // gameSketch הוא שם הפונקציה בקובץ deepdive.js ששכתבנו למצב מופע
-    // 'gameContainer' הוא ה-ID של ה-div שאליו הקנבס יצורף
-    new p5(gameSketch, 'gameContainer'); 
+    new p5(gameSketch, 'gameContainer');
+
+    // לוגיקת כפתור מסך מלא
+    fullscreenButton.addEventListener('click', () => {
+        if (gameCard.requestFullscreen) {
+            gameCard.requestFullscreen();
+        } else if (gameCard.mozRequestFullScreen) { /* Firefox */
+            gameCard.mozRequestFullScreen();
+        } else if (gameCard.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+            gameCard.webkitRequestFullscreen();
+        } else if (gameCard.msRequestFullscreen) { /* IE/Edge */
+            gameCard.msRequestFullscreen();
+        }
+    });
+
+    // הקשבה לאירועי יציאה ממסך מלא כדי להתאים את גודל הקנבס בחזרה
+    document.addEventListener('fullscreenchange', exitFullscreenHandler);
+    document.addEventListener('webkitfullscreenchange', exitFullscreenHandler);
+    document.addEventListener('mozfullscreenchange', exitFullscreenHandler);
+    document.addEventListener('MSFullscreenChange', exitFullscreenHandler);
+
+    function exitFullscreenHandler() {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
+            // אם יצאנו ממצב מסך מלא, נפעיל מחדש את שינוי גודל הקנבס
+            // פונקציית p.windowResized() בתוך קוד המשחק תטפל בזה
+            if (window.p5Instance && window.p5Instance.windowResized) {
+                window.p5Instance.windowResized();
+            }
+        }
+    }
 };
+
+// חשוב: כדי שפונקציית p.windowResized() תוכל להיקרא מחוץ למופע ה-p5,
+// נצטרך לשמור רפרנס למופע הגלובלי.
+// זה דורש שינוי קטן בקובץ deepdive.js - הוספת שורה אחת בסופו:
+// window.p5Instance = new p5(gameSketch, 'gameContainer');
+// (אבל אנחנו כבר עושים את זה ב-HTML, אז צריך רק לוודא שהפונקציה קיימת ונגישה)
+// למעשה, במבנה הנוכחי, p.windowResized() נקראת אוטומטית על ידי p5.js
+// כשחלון הדפדפן משנה גודל. אבל אם רוצים להפעיל אותה ידנית, צריך רפרנס למופע.
+// נשנה את קריאת new p5(gameSketch, 'gameContainer'); ל:
+// window.p5Instance = new p5(gameSketch, 'gameContainer');
+// כדי שנוכל לגשת אליו מחוץ לסקצ'
 </script>
 
 </body>
