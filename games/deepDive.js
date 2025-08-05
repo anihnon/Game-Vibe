@@ -72,12 +72,23 @@ const gameSketch = function(p) {
     // פונקציית setup() של P5.js - מוגדרת בתוך המופע
     p.setup = () => {
         // יצירת הקנבס והצמדתו ל-div עם id 'gameContainer'
-        const canvas = p.createCanvas(BASE_WIDTH, BASE_HEIGHT); // גודל בסיסי
+        const container = document.getElementById('gameContainer');
+        const containerRect = container.getBoundingClientRect();
+        
+        let canvasWidth = containerRect.width;
+        let canvasHeight = containerRect.width * (BASE_HEIGHT / BASE_WIDTH);
+
+        if (canvasHeight > containerRect.height) {
+            canvasHeight = containerRect.height;
+            canvasWidth = containerRect.height * (BASE_WIDTH / BASE_HEIGHT);
+        }
+
+        const canvas = p.createCanvas(canvasWidth, canvasHeight);
         canvas.parent('gameContainer'); 
         
-        // התאמת גודל הקנבס למיכל שלו באופן מיידי
-        const containerRect = document.getElementById('gameContainer').getBoundingClientRect();
-        p.resizeCanvas(containerRect.width, containerRect.width * (BASE_HEIGHT / BASE_WIDTH)); // שמירה על יחס גובה-רוחב
+        // מרכז את הקנבס בתוך ה-div שלו
+        canvas.style('display', 'block');
+        canvas.style('margin', 'auto');
 
         // אתחול מצבי רינדור של p5.js
         p.rectMode(p.CENTER);
@@ -161,9 +172,10 @@ const gameSketch = function(p) {
     p.keyPressed = () => {
         keyboardInputStates[p.keyCode] = true;
         // מניעת גלילת הדף עבור מקשי חצים ורווח
-        // הוספתי בדיקה ל-p.keyIsPressed כדי למנוע גלילה גם במעבר מהיר
+        // שימוש ב-p.preventDefault() כדי לוודא עצירה מוחלטת של פעולת ברירת המחדל
         if ([p.LEFT_ARROW, p.RIGHT_ARROW, p.UP_ARROW, p.DOWN_ARROW, 32].includes(p.keyCode)) {
-            return false; // מונע את פעולת ברירת המחדל של הדפדפן
+            p.preventDefault(); // מונע את פעולת ברירת המחדל של הדפדפן
+            return false; // מונע גם את הבועה של האירוע
         }
     };
     
@@ -198,14 +210,16 @@ const gameSketch = function(p) {
                 playerCoordinates.y = p.height / 2;
             }
             // כפתור צפייה בהישגים
+            const achievementsY = startY + buttonHeight + buttonSpacing;
             if (p.mouseX > p.width/2 - buttonWidth/2 && p.mouseX < p.width/2 + buttonWidth/2 &&
-                p.mouseY > startY + buttonHeight + buttonSpacing - buttonHeight/2 && p.mouseY < startY + buttonHeight + buttonSpacing + buttonHeight/2) {
+                p.mouseY > achievementsY - buttonHeight/2 && p.mouseY < achievementsY + buttonHeight/2) {
                 isSceneTransitionUnderway = true;
                 nextSceneTarget = "achievements";
             }
             // כפתור בחירת אווטארים
+            const skinsY = startY + (buttonHeight + buttonSpacing) * 2;
             if (p.mouseX > p.width/2 - buttonWidth/2 && p.mouseX < p.width/2 + buttonWidth/2 &&
-                p.mouseY > startY + (buttonHeight + buttonSpacing) * 2 - buttonHeight/2 && p.mouseY < startY + (buttonHeight + buttonSpacing) * 2 + buttonHeight/2) {
+                p.mouseY > skinsY - buttonHeight/2 && p.mouseY < skinsY + buttonHeight/2) {
                 isSceneTransitionUnderway = true;
                 nextSceneTarget = "skins";
             }
@@ -279,8 +293,18 @@ const gameSketch = function(p) {
     
     // פונקציית שינוי גודל חלון - מוגדרת בתוך המופע
     p.windowResized = () => {
-        const containerRect = document.getElementById('gameContainer').getBoundingClientRect();
-        p.resizeCanvas(containerRect.width, containerRect.width * (BASE_HEIGHT / BASE_WIDTH)); // שמירה על יחס גובה-רוחב
+        const container = document.getElementById('gameContainer');
+        const containerRect = container.getBoundingClientRect();
+        
+        let canvasWidth = containerRect.width;
+        let canvasHeight = containerRect.width * (BASE_HEIGHT / BASE_WIDTH);
+
+        if (canvasHeight > containerRect.height) {
+            canvasHeight = containerRect.height;
+            canvasWidth = containerRect.height * (BASE_WIDTH / BASE_HEIGHT);
+        }
+        p.resizeCanvas(canvasWidth, canvasHeight);
+        
         // עדכון מיקום השחקן לאחר שינוי גודל
         playerCoordinates.x = p.width / 2;
         playerCoordinates.y = p.height / 2;
@@ -866,14 +890,14 @@ const gameSketch = function(p) {
 
     // נתוני סקינים (שם, עלות, דגל רכישה בקוד)
     const skinsData = [
-        { name: "Azure Fin", cost: 0, acquiredFlag: "default", renderFunc: renderAzureFin }, // ברירת מחדל
-        { name: "Crimson Fin", cost: 1000, acquiredFlag: "predatorSkinAcquired", renderFunc: renderCrimsonFin },
-        { name: "Golden Fin", cost: 2500, acquiredFlag: "forgetfulSkinAcquired", renderFunc: renderGoldenFin },
-        { name: "Rose Fin", cost: 4000, acquiredFlag: "prismaticSkinAcquired", renderFunc: renderRoseFin },
-        { name: "Phantom", cost: 6000, acquiredFlag: "phantomSkinAcquired", renderFunc: renderPhantomFin },
-        { name: "Predator", cost: 8000, acquiredFlag: "predatorSkinAcquired", renderFunc: renderPredatorFin },
-        { name: "Forgetful", cost: 10000, acquiredFlag: "forgetfulSkinAcquired", renderFunc: renderForgetfulFin },
-        { name: "Prismatic", cost: 12000, acquiredFlag: "prismaticSkinAcquired", renderFunc: renderPrismaticFin }
+        { name: "סנפיר תכלת", cost: 0, acquiredFlag: "default", renderFunc: renderAzureFin }, // ברירת מחדל
+        { name: "סנפיר ארגמן", cost: 1500, acquiredFlag: "predatorSkinAcquired", renderFunc: renderCrimsonFin },
+        { name: "סנפיר זהב", cost: 3000, acquiredFlag: "forgetfulSkinAcquired", renderFunc: renderGoldenFin },
+        { name: "סנפיר ורד", cost: 5000, acquiredFlag: "prismaticSkinAcquired", renderFunc: renderRoseFin },
+        { name: "רוח רפאים", cost: 8000, acquiredFlag: "phantomSkinAcquired", renderFunc: renderPhantomFin },
+        { name: "טורף", cost: 12000, acquiredFlag: "predatorSkinAcquired", renderFunc: renderPredatorFin }, // שימוש חוזר בדגל, נתקן את זה
+        { name: "שכחן", cost: 15000, acquiredFlag: "forgetfulSkinAcquired", renderFunc: renderForgetfulFin }, // שימוש חוזר בדגל, נתקן את זה
+        { name: "פריזמטי", cost: 20000, acquiredFlag: "prismaticSkinAcquired", renderFunc: renderPrismaticFin } // שימוש חוזר בדגל, נתקן את זה
     ];
 
     const renderAvatarSelectionScreen = () => {
