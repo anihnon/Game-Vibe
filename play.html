@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>טוען משחק...</title>
+  <script src="https://cdn.jsdelivr.net/processing.js/1.4.8/processing.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -85,6 +86,7 @@
       <h1 id="gameTitle">טוען משחק...</h1>
       <div id="loading">טוען משחק…</div>
       <div id="gameContainer"></div>
+      <canvas id="gameCanvas" width="400" height="600"></canvas>
     </div>
   </div>
 
@@ -93,46 +95,53 @@
   </footer>
 
   <script>
-    // מביא את שם המשחק מה-URL
-    function getGameNameFromURL() {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get("game");
+  // פונקציה לקבלת שם המשחק מה-URL
+  function getGameNameFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get("game");
+  }
+
+  // פונקציה לעיצוב שם קריא של המשחק
+  function formatGameName(fileName) {
+    if (!fileName) return "";
+    const name = fileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  }
+
+  const gameName = getGameNameFromURL();
+  const gameTitle = document.getElementById("gameTitle");
+  const loading = document.getElementById("loading");
+  const gameContainer = document.getElementById("gameContainer");
+
+  if (!gameName) {
+    gameTitle.textContent = "שגיאה – אין שם משחק בקישור";
+    loading.textContent = "";
+  } else {
+    const prettyName = formatGameName(gameName);
+    gameTitle.textContent = prettyName;
+    document.title = `${prettyName} שחקו עכשיו!`;
+
+    let gameFile = gameName;
+    if (!gameFile.endsWith(".pde")) {
+      gameFile += ".pde";
     }
 
-    // פונקציה שמסירה סיומות וקווים ומחזירה שם קריא יותר
-    function formatGameName(fileName) {
-      if (!fileName) return "";
-      const name = fileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
-      return name.charAt(0).toUpperCase() + name.slice(1);
-    }
-
-    const gameName = getGameNameFromURL();
-    const gameTitle = document.getElementById("gameTitle");
-    const loading = document.getElementById("loading");
-    const gameContainer = document.getElementById("gameContainer");
-
-    if (!gameName) {
-      gameTitle.textContent = "שגיאה – אין שם משחק בקישור";
-      loading.textContent = "";
-    } else {
-      gameTitle.textContent = formatGameName(gameName);
-
-      let gameFile = gameName;
-      if (!gameFile.endsWith(".js")) {
-        gameFile += ".js";
-      }
-      const script = document.createElement("script");
-      script.src = `../game/${gameFile}`;
-      script.onload = () => {
+    fetch(`../game/${gameFile}`)
+      .then(res => res.text())
+      .then(code => {
+        const pScript = document.createElement("script");
+        pScript.type = "application/processing";
+        pScript.setAttribute("data-processing-target", "gameCanvas");
+        pScript.textContent = code;
+        document.body.appendChild(pScript);
         loading.style.display = "none";
-      };
-      script.onerror = () => {
+      })
+      .catch(err => {
         loading.textContent = "שגיאה בטעינת המשחק.";
         gameTitle.textContent = "משהו השתבש...";
-      };
-
-      gameContainer.appendChild(script);
-    }
-  </script>
+        console.error(err);
+      });
+  }
+</script>
 </body>
 </html>
