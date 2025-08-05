@@ -69,7 +69,7 @@ var verify = 0;
 var highScore = 0;
 
 // פונטים
-var fonts = [createFont("calibri Bold"), createFont("arial black Bold Italic"), createFont("arial black Bold")];
+var fonts = ["Arial", "Arial", "Arial"]; 
 
 // תמונה ממוזערת
 var thumbnail, getThumb = "";
