@@ -156,7 +156,7 @@ var leaderboard = [
     ["בנימין", 109724],
     ["צביקה", 1342],
     ["❄קרחון❄", 4187],
-    ["חדירה", 4340],
+    ["חדירה", 4340]
 ];
 var sortArr = function(arr, ind){
     for(var i = 0; i < arr.length - 1; i++){
