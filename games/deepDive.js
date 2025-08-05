@@ -7,7 +7,7 @@ const gameSketch = function(p) {
 
     // נתוני שמירת משחק, מפורקים למשתנים נגישים
     // [מטבעות, רוח רפאים נרכש, טורף נרכש, שכחן נרכש, פריזמטי נרכש, רוח רפאים פעיל, טורף פעיל, אווטאר פעיל, הישג 1, הישג 2, הישג 3, רמה, הישג 100 רמות, הישג 4, הישג 5, הישג 6, הישג 7, הישג 8, הישג 9, הישג 10]
-    let gamePersistenceData = [100, false, false, false, false, true, false, "Azure Fin", false, false, false, 2, false, false, false, false, false, false, false, false];
+    let gamePersistenceData = [100, false, false, false, false, true, false, "סנפיר תכלת", false, false, false, 2, false, false, false, false, false, false, false, false];
     let currentCoinBalance = gamePersistenceData[0];
     let phantomSkinAcquired = gamePersistenceData[1]; // רוח רפאים
     let predatorSkinAcquired = gamePersistenceData[2]; // טורף
@@ -100,7 +100,7 @@ const gameSketch = function(p) {
         playerCoordinates.y = p.height / 2;
 
         // אתחול גדלים ומהירויות יחסיות
-        playerRenderSize = 50 * (p.width / BASE_WIDTH);
+        playerRenderSize = Math.max(10, 50 * (p.width / BASE_WIDTH)); // גודל מינימלי של 10
         playerBaseMovementSpeed = Math.max(1, 4 * (p.width / BASE_WIDTH)); // מהירות מינימלית של 1
         oceanWavePosition = -140 * (p.height / BASE_HEIGHT);
         oceanWaveFluctuationRange = 100 * (p.height / BASE_HEIGHT);
@@ -198,7 +198,7 @@ const gameSketch = function(p) {
                 // איפוס מצב המשחק כשמתחילים משחק חדש
                 playerHealthPoints = 3;
                 playerAccumulatedScore = 0;
-                playerRenderSize = 50 * (p.width / BASE_WIDTH); // איפוס גודל יחסי
+                playerRenderSize = Math.max(10, 50 * (p.width / BASE_WIDTH)); // איפוס גודל יחסי
                 fishEatenCount = 0;
                 largeFishEatenCount = 0;
                 minesDodgedCount = 0;
@@ -279,7 +279,7 @@ const gameSketch = function(p) {
                 nextSceneTarget = "home";
                 playerAccumulatedScore = 0;
                 playerHealthPoints = 3;
-                playerRenderSize = 50 * (p.width / BASE_WIDTH);
+                playerRenderSize = Math.max(10, 50 * (p.width / BASE_WIDTH)); // איפוס גודל יחסי
                 fishEatenCount = 0;
                 largeFishEatenCount = 0;
                 minesDodgedCount = 0;
@@ -313,7 +313,7 @@ const gameSketch = function(p) {
         playerCoordinates.x = p.width / 2;
         playerCoordinates.y = p.height / 2;
         // עדכון גודל השחקן ביחס לגודל החדש של הקנבס
-        playerRenderSize = 50 * (p.width / BASE_WIDTH);
+        playerRenderSize = Math.max(10, 50 * (p.width / BASE_WIDTH)); // וודא גודל מינימלי גם בשינוי גודל
         playerBaseMovementSpeed = Math.max(1, 4 * (p.width / BASE_WIDTH)); // וודא מהירות מינימלית גם בשינוי גודל
         oceanWavePosition = -140 * (p.height / BASE_HEIGHT);
         oceanWaveFluctuationRange = 100 * (p.height / BASE_HEIGHT);
@@ -411,10 +411,6 @@ const gameSketch = function(p) {
         p.fill(255, 200, 0);
         p.stroke(200, 150, 0);
         p.triangle(-15, 0, -30, 10, -30, -10);
-
-        p.fill(255, 200, 0);
-        p.stroke(200, 150, 0);
-        p.triangle(5, -10, 15, -15, 10, -5);
 
         p.fill(0);
         p.noStroke();
@@ -657,7 +653,7 @@ const gameSketch = function(p) {
                     docileAquaticLife.splice(i, 1);
                 } else if (!playerPhasedState) { // לא יכול לאכול ואינו במצב חמקמק
                     playerHealthPoints--;
-                    playerRenderSize = 50 * (p.width / BASE_WIDTH); // איפוס גודל יחסי
+                    playerRenderSize = Math.max(10, 50 * (p.width / BASE_WIDTH)); // איפוס גודל יחסי
                     // איפוס מד הדג-מטר
                     currentFoodSize = 0;
                     maxFoodSize = 0;
@@ -679,7 +675,7 @@ const gameSketch = function(p) {
             // התנגשות עם טורף
             if (checkCircularCollision(playerCoordinates.x, playerCoordinates.y, playerRenderSize / 2, predator.x, predator.y, predator.size / 2) && !playerPhasedState) {
                 playerHealthPoints--;
-                playerRenderSize = 50 * (p.width / BASE_WIDTH); // איפוס גודל יחסי
+                playerRenderSize = Math.max(10, 50 * (p.width / BASE_WIDTH)); // איפוס גודל יחסי
                 aggressiveOceanicCreatures.splice(i, 1); // הסרת הטורף לאחר פגיעה
                 if (playerHealthPoints <= 0) {
                     isSceneTransitionUnderway = true;
