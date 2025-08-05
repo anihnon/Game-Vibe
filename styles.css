@@ -87,19 +87,3 @@ canvas {
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
-
-/* עיצוב חדש לכפתורים כדי להבטיח מראה אחיד ומקצועי */
-.button {
-    display: inline-block;
-    padding: 10px 20px;
-    margin: 5px;
-    background-color: #333; /* צבע רקע שחור */
-    color: white; /* צבע טקסט לבן */
-    text-decoration: none; /* מסיר קו תחתון מקישורים */
-    border-radius: 5px; /* פינות מעוגלות */
-    transition: background-color 0.3s;
-}
-
-.button:hover {
-    background-color: #555; /* שינוי צבע בעת מעבר עכבר */
-}
