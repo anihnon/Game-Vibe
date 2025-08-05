@@ -4,7 +4,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>טוען משחק...</title>
+    <!-- טעינת ספריית p5.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <!-- טעינת קובץ המשחק שלך ישירות. וודא שקובץ deepdive.js נמצא בנתיב games/deepdive.js -->
+    <script src="games/deepdive.js"></script>
 <style>
     body {
         margin: 0;
@@ -51,7 +54,6 @@
     #gameContainer {
         margin-top: 20px;
         width: 100%;
-        /* הוספנו גובה מינימלי למיכל המשחק */
         min-height: 400px; /* גובה מינימלי כדי שיהיה מקום לקנבס */
         display: flex;
         justify-content: center;
@@ -62,7 +64,6 @@
         color: gray;
         margin-top: 10px;
     }
-    /* כללי CSS עבור הקנבס ש-p5.js יוצר */
     canvas {
         display: block;
         margin: 0 auto;
@@ -88,7 +89,7 @@
             <h1 id="gameTitle">טוען משחק...</h1>
             <div id="loading">טוען משחק…</div>
             <div id="gameContainer">
-                <!-- הקנבס של p5.js ייווצר כאן באופן דינמי -->
+                <!-- הקנבס של p5.js ייווצר כאן באופן דינמי ע"י קוד המשחק -->
             </div>
         </div>
     </div>
@@ -130,29 +131,13 @@ window.onload = function() {
     gameTitle.textContent = prettyName;
     document.title = `${prettyName} שחקו עכשיו!`;
 
-    let gameFile = gameName;
-    if (!gameFile.endsWith(".js")) {
-        gameFile += ".js";
-    }
+    // הסתרת הודעת הטעינה
+    loading.style.display = "none";
 
-    // טעינת קוד המשחק
-    fetch(`games/${gameFile}`)
-        .then(res => {
-            if (!res.ok) throw new Error("Failed to load game file");
-            return res.text();
-        })
-        .then(code => {
-            const script = document.createElement('script');
-            script.textContent = code;
-            document.body.appendChild(script); // הוספת הסקריפט לדף
-            
-            loading.style.display = "none";
-        })
-        .catch(err => {
-            loading.textContent = "שגיאה בטעינת המשחק.";
-            gameTitle.textContent = "משהו השתבש...";
-            console.error(err);
-        });
+    // יצירת מופע חדש של p5.js עם הסקצ' שלנו
+    // gameSketch הוא שם הפונקציה בקובץ deepdive.js ששכתבנו למצב מופע
+    // 'gameContainer' הוא ה-ID של ה-div שאליו הקנבס יצורף
+    new p5(gameSketch, 'gameContainer'); 
 };
 </script>
 
