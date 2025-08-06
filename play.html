@@ -27,7 +27,8 @@
             min-height: 100vh;
             direction: rtl;
             color: #e2e8f0; /* Lighter text color */
-            overflow: hidden; /* Prevent scrolling due to game canvas */
+            overflow-y: auto; /* Allow scrolling if content overflows vertically */
+            overflow-x: hidden; /* Prevent horizontal scrolling */
         }
         header, footer {
             background: #2d3748; /* Darker header/footer */
@@ -63,6 +64,7 @@
             color: #ffffff;
         }
         #gameContainer {
+            position: relative; /* חשוב למיקום infoCard כ-overlay */
             margin-top: 20px;
             width: 100%;
             min-height: 400px; /* מינימום גובה למיכל המשחק */
@@ -107,21 +109,28 @@
             z-index: 10;
         }
         #infoCard {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            text-align: center;
-            background-color: rgba(0, 0, 0, 0.7);
+            position: absolute; /* כדי לרחף מעל הקנבס */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85); /* רקע כהה יותר, כמעט אטום */
+            display: none; /* Hidden by default, shown by JS */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
             padding: 2rem;
             border-radius: 0.75rem;
             z-index: 10;
-            display: none; /* Hidden by default, shown by JS */
-            flex-direction: column;
-            gap: 1rem;
-            width: 90%;
-            max-width: 400px;
+            box-sizing: border-box; /* לוודא padding לא גורם לגלישה */
+        }
+        #infoCardMessage { /* עיצוב הודעת מצב בתוך infoCard */
+            font-size: 2rem; /* גודל גדול יותר */
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5); /* צל לטקסט */
         }
         .button {
             background-color: #4CAF50; /* Green */
@@ -190,6 +199,34 @@
         .message-box-content button:hover {
             background-color: #2563eb;
         }
+        /* New section for game details below canvas */
+        #gameDetailsSection {
+            text-align: right; /* יישור לימין עבור עברית */
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: #2d3748; /* רקע כהה יותר */
+            border-radius: 1rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            width: 100%; /* יתפרס על כל רוחב ה-game-card */
+            box-sizing: border-box; /* לוודא padding לא גורם לגלישה */
+        }
+        #gameDetailsSection h2 {
+            font-size: 1.8rem; /* כותרות גדולות יותר */
+            font-weight: bold;
+            color: #90cdf4; /* צבע כחול בהיר */
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #4a5568; /* קו תחתון עדין */
+            padding-bottom: 0.5rem;
+        }
+        #gameDetailsSection p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            color: #cbd5e0; /* צבע טקסט בהיר יותר */
+        }
+        #detailedInstructions p {
+            margin-bottom: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -199,24 +236,31 @@
 
     <div class="container">
         <div class="game-card">
+            <!-- פרטי המשחק הכלליים - תמיד גלויים מעל הקנבס -->
             <h1 id="gameTitle">טוען משחק...</h1>
-            <p id="gameDesc" class="text-md mb-4"></p> <!-- הוספת אלמנט לתיאור המשחק -->
-            <img id="gameImage" src="" alt="תמונת משחק" class="w-full h-auto rounded-lg mb-4 hidden"> <!-- הוספת אלמנט לתמונת המשחק -->
+            <p id="gameDesc" class="text-md mb-4"></p>
+            <img id="gameImage" src="" alt="תמונת משחק" class="w-full h-auto rounded-lg mb-4 hidden">
             
-            <div id="loadingContainer">טוען משחק…</div>
-            
-            <div id="infoCard">
-                <h1 class="text-3xl font-bold mb-4"></h1> <!-- כותרת המשחק תעודכן כאן -->
-                <p class="text-lg mb-6"></p> <!-- תיאור המשחק יעודכן כאן -->
-                <div id="instructions" class="text-left mb-6"></div> <!-- הוספת דיב להוראות -->
-                <button id="startGameButton" class="button">התחל משחק</button>
-                <button id="instructionsButton" class="button">הוראות</button>
-                <button id="achievementsButton" class="button">הישגים</button>
-                <button id="resetDataButton" class="button red">איפוס נתונים</button>
-            </div>
-
             <div id="gameContainer">
                 <!-- הקנבס של p5.js ייווצר כאן באופן דינמי -->
+                <div id="loadingContainer">טוען משחק…</div>
+                
+                <!-- infoCard - משמש כעת רק כמסך כיסוי עם הודעות וכפתורים -->
+                <div id="infoCard">
+                    <div id="infoCardMessage" class="text-3xl font-bold mb-4"></div> <!-- הודעת מצב דינמית -->
+                    <button id="startGameButton" class="button">התחל משחק</button>
+                    <!-- כפתור "הוראות" הוסר מכיוון שההוראות גלויות תמיד למטה -->
+                    <button id="achievementsButton" class="button">הישגים</button>
+                    <button id="resetDataButton" class="button red">איפוס נתונים</button>
+                </div>
+            </div>
+
+            <!-- קטע חדש לפרטי משחק והוראות מפורטות - מתחת לקנבס -->
+            <div id="gameDetailsSection">
+                <h2 class="text-xl font-bold mb-2">אודות המשחק</h2>
+                <p id="gameDetailsDesc" class="mb-4"></p> <!-- תיאור המשחק יופיע גם כאן -->
+                <h2 class="text-xl font-bold mb-2">הוראות</h2>
+                <div id="detailedInstructions" class="text-left"></div> <!-- הוראות מפורטות -->
             </div>
         </div>
     </div>
@@ -237,19 +281,24 @@
 
     <script>
         // משתנים גלובליים לאלמנטי UI
-        const gameTitleElement = document.getElementById("gameTitle"); // שינוי שם למניעת התנגשות
-        const gameDescElement = document.getElementById("gameDesc"); // אלמנט חדש לתיאור
-        const gameImageElement = document.getElementById("gameImage"); // אלמנט חדש לתמונה
-        const instructionsElement = document.getElementById("instructions"); // אלמנט חדש להוראות
+        const gameTitleElement = document.getElementById("gameTitle");
+        const gameDescElement = document.getElementById("gameDesc");
+        const gameImageElement = document.getElementById("gameImage");
         const loadingContainer = document.getElementById("loadingContainer");
         const gameContainerElement = document.getElementById("gameContainer");
         const infoCard = document.getElementById('infoCard');
+        const infoCardMessageElement = document.getElementById('infoCardMessage'); // אלמנט חדש להודעת מצב
         const startGameButton = document.getElementById('startGameButton');
-        const instructionsButton = document.getElementById('instructionsButton');
         const achievementsButton = document.getElementById('achievementsButton');
         const resetDataButton = document.getElementById('resetDataButton');
 
-        // 2. פונקציה לקריאת פרמטר game מה-URL
+        // אלמנטים חדשים לפרטי המשחק והוראות מתחת לקנבס
+        const gameDetailsSection = document.getElementById("gameDetailsSection");
+        const gameDetailsDescElement = document.getElementById("gameDetailsDesc");
+        const detailedInstructionsElement = document.getElementById("detailedInstructions");
+
+
+        // פונקציה לקריאת פרמטר game מה-URL
         function getGameId() {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get("game");
@@ -278,61 +327,55 @@
         window.onload = function() {
             const gameId = getGameId();
 
-            // 4. אם האובייקט לא נמצא, הצג כותרת שגיאה והפסק
             if (!gameId) {
                 gameTitleElement.textContent = "שגיאה – משחק לא חוקי (חסר Game ID)";
                 loadingContainer.textContent = "";
+                gameDetailsSection.style.display = 'none'; // הסתר את החלק התחתון
                 return;
             }
 
-            // 1. הסר את מערך האובייקטים המוגדר ידנית והחלף בפעולת fetch ל־data.json
             fetch('data.json')
                 .then(res => {
                     if (!res.ok) throw new Error("Failed to load game data (data.json)");
                     return res.json();
                 })
                 .then(gamesData => {
-                    // 3. מצא את האובייקט עם id שמתאים לפרמטר מה־URL
                     const gameObj = gamesData.find(g => g.id === gameId);
 
-                    // 4. אם האובייקט לא נמצא, הצג כותרת שגיאה והפסק
                     if (!gameObj) {
                         gameTitleElement.textContent = `שגיאה – המשחק "${gameId}" לא נמצא`;
                         loadingContainer.textContent = "";
+                        gameDetailsSection.style.display = 'none'; // הסתר את החלק התחתון
                         return;
                     }
 
-                    // 5. אם המשחק נמצא:
-                    // 5.1. כתוב את title שלו ב־<h1> וב־document.title
+                    // עדכון פרטי המשחק הכלליים (מעל הקנבס)
                     gameTitleElement.textContent = gameObj.title;
                     document.title = `${gameObj.title} שחקו עכשיו!`;
-                    infoCard.querySelector('h1').textContent = gameObj.title; // עדכון כותרת ב-infoCard
-
-                    // 5.2. עדכן את נתוני התיאור (description) ב־<p id="gameDesc">
                     gameDescElement.textContent = gameObj.description;
-                    infoCard.querySelector('p').textContent = gameObj.description; // עדכון תיאור ב-infoCard
 
-                    // 5.3. העבר למבנה HTML את התמונה (<img id="gameImage">)
                     if (gameObj.image) {
                         gameImageElement.src = gameObj.image;
                         gameImageElement.alt = `תמונה של ${gameObj.title}`;
-                        gameImageElement.classList.remove('hidden'); // הצג את התמונה
+                        gameImageElement.classList.remove('hidden');
                     } else {
-                        gameImageElement.classList.add('hidden'); // הסתר אם אין תמונה
+                        gameImageElement.classList.add('hidden');
                     }
 
-                    // 5.4. מלא את רשימת instructions בדיב id="instructions"
+                    // עדכון פרטי המשחק והוראות בקטע החדש (מתחת לקנבס)
+                    gameDetailsSection.style.display = 'block'; // וודא שהקטע גלוי
+                    gameDetailsDescElement.textContent = gameObj.description; // תיאור המשחק בקטע המפורט
+
                     if (gameObj.instructions && gameObj.instructions.length > 0) {
-                        instructionsElement.innerHTML = '<strong>הוראות:</strong>';
+                        detailedInstructionsElement.innerHTML = ''; // נקה תוכן קודם
                         gameObj.instructions.forEach(instruction => {
                             const p = document.createElement('p');
                             p.textContent = `• ${instruction}`;
-                            instructionsElement.appendChild(p);
+                            detailedInstructionsElement.appendChild(p);
                         });
                     } else {
-                        instructionsElement.innerHTML = ''; // נקה אם אין הוראות
+                        detailedInstructionsElement.innerHTML = '<p>אין הוראות מפורטות זמינות למשחק זה.</p>';
                     }
-
 
                     // 6. בצע fetch נוסף עבור gameObj.jsFile
                     fetch(gameObj.jsFile)
@@ -343,12 +386,13 @@
                         .then(code => {
                             const script = document.createElement('script');
                             script.textContent = code;
-                            document.body.appendChild(script); // הוספת הסקריפט לדף
+                            document.body.appendChild(script);
 
                             // 7. לאחר טעינת הסקריפט, בדוק אם sketch מוגדר
                             if (typeof sketch !== 'undefined') {
                                 loadingContainer.style.display = "none";
-                                infoCard.style.display = "flex"; // הצג את כרטיס המידע עם הכפתורים
+                                infoCard.style.display = "flex"; // הצג את infoCard כ-overlay
+                                infoCardMessageElement.textContent = 'לחץ על רווח להתחלת המשחק'; // הודעת Intro
 
                                 // רק עכשיו יוצרים מופע p5 אם הוא עדיין לא קיים
                                 if (!window.p5Instance) {
@@ -376,8 +420,8 @@
         startGameButton.addEventListener('click', () => {
             if (typeof gamePhase !== 'undefined') {
                 gamePhase = 'playing';
-                loadGameData(); // טען נתונים לפני התחלה
-                loadLevel(initialStage); // התחל את המשחק
+                loadGameData();
+                loadLevel(initialStage);
                 infoCard.style.display = 'none'; // הסתר את ה-UI
             } else {
                 console.error("Game sketch not loaded yet or gamePhase is undefined.");
@@ -385,15 +429,8 @@
             }
         });
 
-        instructionsButton.addEventListener('click', () => {
-            // כעת ההוראות נטענות מ-JSON ומוצגות ב-infoCard,
-            // אז כפתור ההוראות יכול פשוט להציג את ה-infoCard שוב או להציג הודעה מותאמת
-            if (instructionsElement.innerHTML) {
-                showMessageBox('הוראות', instructionsElement.innerText.replace('הוראות:\n', ''));
-            } else {
-                showMessageBox('הוראות', 'אין הוראות זמינות למשחק זה.');
-            }
-        });
+        // כפתור הוראות הוסר מ-infoCard מכיוון שההוראות גלויות תמיד למטה.
+        // אם תרצה להחזיר כפתור הוראות, הוא יכול לגלול לקטע gameDetailsSection.
 
         achievementsButton.addEventListener('click', () => {
             if (typeof showMessageBox !== 'undefined' && typeof unlockedAchievements !== 'undefined') {
@@ -414,10 +451,10 @@
         resetDataButton.addEventListener('click', () => {
             if (typeof resetGameData !== 'undefined' && typeof loadLevel !== 'undefined') {
                 resetGameData();
-                // לאחר איפוס, טען מחדש את השלב הראשון והצג את מסך ההקדמה
-                gamePhase = 'intro';
+                gamePhase = 'intro'; // חזור למצב Intro
                 loadLevel(1); // טען את שלב 1 כדי לאתחל את המשחק למצב התחלתי
-                infoCard.style.display = 'flex'; // הצג שוב את כרטיס המידע
+                infoCard.style.display = 'flex'; // הצג שוב את infoCard
+                infoCardMessageElement.textContent = 'לחץ על רווח להתחלת המשחק'; // הודעת Intro
             } else {
                 showMessageBox('שגיאה', 'פונקציית איפוס הנתונים אינה זמינה כרגע.');
             }
