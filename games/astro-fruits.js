@@ -139,21 +139,23 @@ class Player {
         }
 
         // Vertical movement (jumping)
+        // ודא שהמקש נלחץ וגם שעדיין יש קפיצות זמינות
         if ((activeKeys[this.p.UP_ARROW] || activeKeys[87]) && this.jumpsLeft > 0) { // Up or W
             this.velY = JUMP_POWER;
             this.jumpsLeft--;
             this.onGround = false; // Player is off ground after jump
-            activeKeys[this.p.UP_ARROW] = false; // Consume jump key press
+            // Consume jump key press immediately after jump action
+            activeKeys[this.p.UP_ARROW] = false;
             activeKeys[87] = false;
         }
 
         // Gravity toggle (spacebar)
-        // ודא ש-p.keyCodes קיים לפני השימוש
-        if (this.p.keyCodes && this.currentLevel >= GRAVITY_TOGGLE_LEVEL && activeKeys[this.p.keyCodes.SPACE] && !spacePressed) { 
+        // השתמש בקוד מקש ישיר לרווח (32)
+        if (this.currentLevel >= GRAVITY_TOGGLE_LEVEL && activeKeys[32] && !spacePressed) { 
             this.gravityEnabled = !this.gravityEnabled;
             spacePressed = true; // Mark space as pressed to prevent rapid toggling
         }
-        if (this.p.keyCodes && !activeKeys[this.p.keyCodes.SPACE]) { // If spacebar is released
+        if (!activeKeys[32]) { // If spacebar is released
             spacePressed = false;
         }
 
@@ -171,21 +173,20 @@ class Player {
             }
         }
 
-
         // Collision with platforms
         this.onGround = false;
         for (let pObj of platforms) { // שינוי שם המשתנה כדי למנוע התנגשות עם p5 instance
             if (this.collidesWith(pObj)) {
                 // If falling and hit top of platform
                 if (this.velY > 0 && this.y + this.height / 2 > pObj.y - pObj.height / 2 && this.y - this.height / 2 < pObj.y - pObj.height / 2) {
-                    this.y = pObj.y - pObj.height / 2 - this.height / 2; // Fixed pObj.height to pObj.height
+                    this.y = pObj.y - pObj.height / 2 - this.height / 2;
                     this.velY = 0;
                     this.onGround = true;
                     this.jumpsLeft = MAX_JUMPS; // Reset jumps on ground
                 }
                 // If jumping and hit bottom of platform
                 else if (this.velY < 0 && this.y - this.height / 2 < pObj.y + pObj.height / 2 && this.y + this.height / 2 > pObj.y + pObj.height / 2) {
-                    this.y = pObj.y + pObj.height / 2 + this.height / 2; // Fixed pObj.height to pObj.height
+                    this.y = pObj.y + pObj.height / 2 + this.height / 2;
                     this.velY = 0;
                 }
                 // Horizontal collision
@@ -408,11 +409,13 @@ function loadLevel(levelNum) {
         platforms = currentLevelData.platforms.map(pData => new Platform(pData.x, pData.y, pData.w, pData.h, window.p5Instance));
         collectibleFruits = currentLevelData.fruits.map(fData => new CollectibleFruit(fData.x, fData.y, fData.type, window.p5Instance));
         exitPoint = new ExitPoint(currentLevelData.exit.x, currentLevelData.exit.y, currentLevelData.exit.w, currentLevelData.exit.h, window.p5Instance);
+        activeKeys = {}; // Clear active keys on level load
     } else {
         // Game completed!
         gamePhase = 'game_over';
         showMessageBox('כל הכבוד!', 'השלמת את כל השלבים הזמינים! אתה גיבור הפירות!');
         player = null; // Clear player
+        activeKeys = {}; // Clear active keys on game over
     }
 }
 
@@ -516,7 +519,7 @@ const sketch = function(p) {
             // P
             assets.fontGlyphs.push(createPixelArt(20, [[0,0,0],[-2,-4],[-1,-4],[0,-4],[1,-4],[2,-4],[3,-4],[-3,-3],[-2,-3],[3,-3],[-3,-2],[0,-2],[3,-2],[-3,-1],[3,-1],[-3,0],[0,0],[1,0],[2,0],[3,0],[-3,1],[0,1],[-3,2],[-2,2],[-1,2],[0,2],[-3,3],[-2,3],[-1,3],[0,3],[255,255,255],[-1,-3],[0,-3],[1,-3],[2,-3],[-2,-2],[-1,-2],[1,-2],[2,-2],[-2,-1],[-1,-1],[0,-1],[1,-1],[2,-1],[-2,0],[-1,0],[-2,1],[-1,1]]));
             // Q
-            assets.fontGlyphs.push(createPixelArt(20, [[0,0,0],[-3,-4],[-2,-4],[-1,-4],[0,-4],[1,-4],[2,-4],[-4,-3],[-3,-3],[2,-3],[-4,-2],[-1,-2],[2,-2],[-4,-1],[-1,-1],[2,-1],[-4,0],[-1,0],[2,0],[3,0],[-4,1],[3,1],[-4,2],[-3,2],[-2,2],[-1,2],[0,2],[1,2],[2,2],[3,2],[-4,3],[-3,3],[-2,3],[-1,3],[0,3],[1,3],[2,3],[3,3],[255,255,255],[-2,-3],[2,-3],[-3,-2],[-2,-2],[0,-2],[1,-2],[-3,-1],[-2,-1],[0,-1],[1,-1],[-3,0],[-2,0],[0,0],[1,0],[-3,1],[-2,1],[-1,1],[0,1],[1,1],[2,1]]));
+            assets.fontGlyphs.push(createPixelArt(20, [[0,0,0],[-3,-4],[-2,-4],[-1,-4],[0,-4],[1,-4],[2,-4],[-4,-3],[-3,-3],[2,-3],[-4,-2],[-1,-2],[2,-2],[-4,-1],[-1,-1],[2,-1],[-4,0],[-1,0],[2,0],[3,0],[-4,1],[3,1],[-4,2],[-3,2],[-2,2],[-1,2],[0,2],[1,2],[2,2],[3,2],[-4,3],[-3,3],[-2,3],[-1,3],[0,3],[1,3],[2,3],[3,3],[255,255,255],[-2,-3],[2,-3],[-3,-2],[-2,-2],[0,-2],[1,-2],[-3,-1],[-2,-1],[0,-1],[1,-1],[-3,0],[-2,0],[0,0],[1,0],[-3,1],[-2,1],[0,1],[1,1],[2,1]]));
             // R
             assets.fontGlyphs.push(createPixelArt(20, [[0,0,0],[-2,-4],[-1,-4],[0,-4],[1,-4],[2,-4],[3,-4],[-3,-3],[-2,-3],[3,-3],[-3,-2],[0,-2],[3,-2],[-3,-1],[2,-1],[3,-1],[-3,0],[0,0],[3,0],[-3,1],[0,1],[3,1],[-3,2],[-2,2],[-1,2],[0,2],[1,2],[2,2],[3,2],[-3,3],[-2,3],[-1,3],[1,3],[2,3],[3,3],[255,255,255],[-1,-3],[0,-3],[1,-3],[2,-3],[-2,-2],[-1,-2],[1,-2],[2,-2],[-2,-1],[-1,-1],[0,-1],[1,-1],[-2,0],[-1,0],[1,0],[2,0],[-2,1],[-1,1],[1,1],[2,1]]));
             // S
@@ -561,7 +564,7 @@ const sketch = function(p) {
         // טען נתוני משחק (אך לא את השלב עצמו)
         loadGameData(); 
         // 2. הסרת loadLevel(initialStage) מ-p.setup
-        // loadLevel(initialStage); 
+        // loadLevel(initialStage); // הוסר
     };
 
     p.draw = function() {
@@ -636,39 +639,47 @@ const sketch = function(p) {
     };
 
     p.keyPressed = function() {
+        // ALWAYS register the key press in activeKeys
+        activeKeys[p.keyCode] = true;
+
         // 4. מעבר מה־Intro ל־Playing
-        if (p.keyCode === p.keyCodes.SPACE) {
+        if (p.keyCode === 32) { // Use keyCode 32 for SPACE
             if (gamePhase === 'intro') {
                 gamePhase = 'playing';
+                loadGameData(); // טען נתוני משחק לפני טעינת השלב
                 loadLevel(initialStage); // טען את השלב הראשון כשהמשחק מתחיל
+                activeKeys = {}; // Clear active keys after phase transition
                 return false; // מונע את המשך הטיפול בלחיצת רווח
             } else if (gamePhase === 'game_over') {
                 gamePhase = 'playing';
                 initialStage = 1; // איפוס לשלב 1
                 resetGameData(); // איפוס נתוני משחק
                 loadLevel(initialStage); // טען את השלב הראשון מחדש
+                activeKeys = {}; // Clear active keys after phase transition
                 return false;
             } else if (gamePhase === 'level_complete') {
                 gamePhase = 'playing';
                 initialStage = player.currentLevel + 1; // קדם לשלב הבא
                 loadLevel(initialStage); // טען את השלב הבא
+                activeKeys = {}; // Clear active keys after phase transition
                 return false;
             }
         }
 
-        // רק אם אנחנו במצב משחק, טפל בלחיצות מקשים אחרות
+        // Only if we are in playing mode, handle other key presses
         if (gamePhase === 'playing') {
-            activeKeys[p.keyCode] = true;
-            // מניעת גלילת הדף עבור מקשי חצים ורווח
-            if ([p.LEFT_ARROW, p.RIGHT_ARROW, p.UP_ARROW, p.DOWN_ARROW, p.keyCodes.SPACE].includes(p.keyCode)) {
+            // Prevent page scrolling for arrow keys and space
+            if ([p.LEFT_ARROW, p.RIGHT_ARROW, p.UP_ARROW, p.DOWN_ARROW, 32].includes(p.keyCode)) { // Use 32 for SPACE
                 p.preventDefault();
-                return false;
+                // No return false here, let other logic process if needed
             }
         }
+        // console.log('Key Pressed:', p.keyCode, 'activeKeys:', activeKeys); // For debugging
     };
 
     p.keyReleased = function() {
         activeKeys[p.keyCode] = false;
+        // console.log('Key Released:', p.keyCode, 'activeKeys:', activeKeys); // For debugging
     };
 
     p.mouseMoved = function() {
@@ -687,26 +698,20 @@ const sketch = function(p) {
     p.touchStarted = function() {
         // Simulate spacebar press for game phase transitions on touch
         if (gamePhase === 'intro' || gamePhase === 'game_over' || gamePhase === 'level_complete') {
-            if (p.keyCodes && p.keyCodes.SPACE !== undefined) {
-                activeKeys[p.keyCodes.SPACE] = true;
-                p.keyPressed(); // קריאה לפונקציית keyPressed כדי להפעיל את לוגיקת המעבר
-                activeKeys[p.keyCodes.SPACE] = false; // שחרר מיד כדי למנוע לחיצות מרובות
-            }
+            activeKeys[32] = true; // Use 32 for SPACE
+            p.keyPressed(); // Call keyPressed to trigger transition logic
+            activeKeys[32] = false; // Immediately release to prevent multiple presses
         }
-        
+
         // Simulate spacebar press for gravity toggle on touch (only in playing phase)
-        if (gamePhase === 'playing' && player && player.currentLevel >= GRAVITY_TOGGLE_LEVEL) { 
-            if (p.keyCodes && p.keyCodes.SPACE !== undefined) {
-                activeKeys[p.keyCodes.SPACE] = true;
-                spacePressed = false; // Reset to allow toggle
-            } else {
-                console.warn("p.keyCodes.SPACE is not defined during touchStarted.");
-            }
+        if (gamePhase === 'playing' && player && player.currentLevel >= GRAVITY_TOGGLE_LEVEL) {
+            activeKeys[32] = true; // Use 32 for SPACE
+            spacePressed = false; // Reset to allow toggle
         }
 
         // Simulate jump for touch (only in playing phase)
-        if (gamePhase === 'playing' && player && player.jumpsLeft > 0) { 
-            if (p.UP_ARROW !== undefined) {
+        if (gamePhase === 'playing' && player && player.jumpsLeft > 0) {
+            if (p.UP_ARROW !== undefined) { // Still check for p.UP_ARROW as it's a p5 constant
                  activeKeys[p.UP_ARROW] = true;
             } else {
                 console.warn("p.UP_ARROW is not defined during touchStarted.");
@@ -716,10 +721,7 @@ const sketch = function(p) {
     };
 
     p.touchEnded = function() {
-        // ודא ש-p.keyCodes קיים לפני השימוש
-        if (p.keyCodes && p.keyCodes.SPACE !== undefined) {
-            activeKeys[p.keyCodes.SPACE] = false; // Release spacebar
-        }
+        activeKeys[32] = false; // Use 32 for SPACE
         if (p.UP_ARROW !== undefined) {
             activeKeys[p.UP_ARROW] = false; // Release jump
         }
