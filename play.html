@@ -86,6 +86,9 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             background-color: #141464; /* צבע רקע למשחק, כדי שיהיה גלוי */
+            /* וודא שהקנבס ממלא את כל המיכל שלו */
+            width: 100%;
+            height: 100%;
         }
         header h2 a {
             color: inherit;
@@ -114,7 +117,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.85); /* רקע כהה יותר, כמעט אטום */
+            background-color: rgba(0, 0, 0, 0.9); /* רקע כהה יותר, כמעט אטום */
             display: none; /* Hidden by default, shown by JS */
             flex-direction: column;
             justify-content: center;
@@ -227,6 +230,36 @@
         #detailedInstructions p {
             margin-bottom: 0.5rem;
         }
+        /* Fullscreen button styling */
+        #fullscreenButton {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            background-color: rgba(0, 0, 0, 0.5); /* שקוף למחצה */
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            z-index: 15; /* מעל infoCard */
+        }
+        #fullscreenButton:hover {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        /* Hide default scrollbars from gameContainer if it's not fullscreen */
+        #gameContainer:not(:-webkit-full-screen) {
+            overflow: hidden;
+        }
+        #gameContainer:not(:-moz-full-screen) {
+            overflow: hidden;
+        }
+        #gameContainer:not(:-ms-fullscreen) {
+            overflow: hidden;
+        }
+        #gameContainer:not(:fullscreen) {
+            overflow: hidden;
+        }
     </style>
 </head>
 <body>
@@ -249,16 +282,16 @@
                 <div id="infoCard">
                     <div id="infoCardMessage" class="text-3xl font-bold mb-4"></div> <!-- הודעת מצב דינמית -->
                     <button id="startGameButton" class="button">התחל משחק</button>
-                    <!-- כפתור "הוראות" הוסר מכיוון שההוראות גלויות תמיד למטה -->
                     <button id="achievementsButton" class="button">הישגים</button>
                     <button id="resetDataButton" class="button red">איפוס נתונים</button>
                 </div>
+                <button id="fullscreenButton" class="button">מסך מלא</button> <!-- כפתור מסך מלא -->
             </div>
 
             <!-- קטע חדש לפרטי משחק והוראות מפורטות - מתחת לקנבס -->
             <div id="gameDetailsSection">
-                <h2 class="text-xl font-bold mb-2">אודות המשחק</h2>
-                <p id="gameDetailsDesc" class="mb-4"></p> <!-- תיאור המשחק יופיע גם כאן -->
+                <h2 class="text-xl font-bold mb-2">סיפור המשחק</h2> <!-- שונה מ"אודות המשחק" ל"סיפור המשחק" -->
+                <p id="gameStory" class="mb-4"></p> <!-- שונה מ-gameDetailsDesc ל-gameStory -->
                 <h2 class="text-xl font-bold mb-2">הוראות</h2>
                 <div id="detailedInstructions" class="text-left"></div> <!-- הוראות מפורטות -->
             </div>
@@ -282,19 +315,20 @@
     <script>
         // משתנים גלובליים לאלמנטי UI
         const gameTitleElement = document.getElementById("gameTitle");
-        const gameDescElement = document.getElementById("gameDesc");
+        const gameDescElement = document.getElementById("gameDesc"); // זה נשאר לתיאור הכללי מעל התמונה
         const gameImageElement = document.getElementById("gameImage");
         const loadingContainer = document.getElementById("loadingContainer");
         const gameContainerElement = document.getElementById("gameContainer");
         const infoCard = document.getElementById('infoCard');
-        const infoCardMessageElement = document.getElementById('infoCardMessage'); // אלמנט חדש להודעת מצב
+        const infoCardMessageElement = document.getElementById('infoCardMessage');
         const startGameButton = document.getElementById('startGameButton');
         const achievementsButton = document.getElementById('achievementsButton');
         const resetDataButton = document.getElementById('resetDataButton');
+        const fullscreenButton = document.getElementById('fullscreenButton'); // כפתור מסך מלא
 
         // אלמנטים חדשים לפרטי המשחק והוראות מתחת לקנבס
         const gameDetailsSection = document.getElementById("gameDetailsSection");
-        const gameDetailsDescElement = document.getElementById("gameDetailsDesc");
+        const gameStoryElement = document.getElementById("gameStory"); // שונה ל-gameStory
         const detailedInstructionsElement = document.getElementById("detailedInstructions");
 
 
@@ -352,7 +386,7 @@
                     // עדכון פרטי המשחק הכלליים (מעל הקנבס)
                     gameTitleElement.textContent = gameObj.title;
                     document.title = `${gameObj.title} שחקו עכשיו!`;
-                    gameDescElement.textContent = gameObj.description;
+                    gameDescElement.textContent = gameObj.description; // תיאור כללי
 
                     if (gameObj.image) {
                         gameImageElement.src = gameObj.image;
@@ -364,8 +398,8 @@
 
                     // עדכון פרטי המשחק והוראות בקטע החדש (מתחת לקנבס)
                     gameDetailsSection.style.display = 'block'; // וודא שהקטע גלוי
-                    gameDetailsDescElement.textContent = gameObj.description; // תיאור המשחק בקטע המפורט
-
+                    gameStoryElement.textContent = gameObj.story || gameObj.description; // השתמש ב-story אם קיים, אחרת ב-description
+                    
                     if (gameObj.instructions && gameObj.instructions.length > 0) {
                         detailedInstructionsElement.innerHTML = ''; // נקה תוכן קודם
                         gameObj.instructions.forEach(instruction => {
@@ -429,9 +463,6 @@
             }
         });
 
-        // כפתור הוראות הוסר מ-infoCard מכיוון שההוראות גלויות תמיד למטה.
-        // אם תרצה להחזיר כפתור הוראות, הוא יכול לגלול לקטע gameDetailsSection.
-
         achievementsButton.addEventListener('click', () => {
             if (typeof showMessageBox !== 'undefined' && typeof unlockedAchievements !== 'undefined') {
                 let achievementsText = 'הישגים:\n';
@@ -439,7 +470,8 @@
                     achievementsText += 'אין הישגים שוחררו עדיין.';
                 } else {
                     for (const [key, value] of Object.entries(unlockedAchievements)) {
-                        achievementsText += `- ${key}: ${value ? 'נפתח' : 'לא נפתח'}\n`;
+                        // כאן תוכל להוסיף תיאורים קצרים להישגים אם תרצה ב-data.json
+                        achievementsText += `- ${key.replace(/([A-Z])/g, ' $1').trim()}: ${value ? 'נפתח' : 'לא נפתח'}\n`;
                     }
                 }
                 showMessageBox('הישגים', achievementsText);
@@ -457,6 +489,19 @@
                 infoCardMessageElement.textContent = 'לחץ על רווח להתחלת המשחק'; // הודעת Intro
             } else {
                 showMessageBox('שגיאה', 'פונקציית איפוס הנתונים אינה זמינה כרגע.');
+            }
+        });
+
+        // לוגיקה של כפתור מסך מלא
+        fullscreenButton.addEventListener('click', () => {
+            if (gameContainerElement.requestFullscreen) {
+                gameContainerElement.requestFullscreen();
+            } else if (gameContainerElement.mozRequestFullScreen) { /* Firefox */
+                gameContainerElement.mozRequestFullScreen();
+            } else if (gameContainerElement.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+                gameContainerElement.webkitRequestFullscreen();
+            } else if (gameContainerElement.msRequestFullscreen) { /* IE/Edge */
+                gameContainerElement.msRequestFullscreen();
             }
         });
     </script>
