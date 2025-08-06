@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>טוען משחק...</title>
     <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,31 +13,36 @@
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                     },
-                }
-            }
-        }
+                },
+            },
+        };
     </script>
     <style>
+        /* סגנונות בסיסיים, רקע כהה וצבע טקסט בהיר */
         body {
             margin: 0;
             font-family: 'Inter', sans-serif;
-            background: #1a202c; /* Darker background for modern look */
+            background: #1a202c;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
             direction: rtl;
-            color: #e2e8f0; /* Lighter text color */
-            overflow-y: auto; /* Allow scrolling if content overflows vertically */
-            overflow-x: hidden; /* Prevent horizontal scrolling */
+            color: #e2e8f0;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
+        
+        /* עיצוב כותרת עליונה ותחתונה */
         header, footer {
-            background: #2d3748; /* Darker header/footer */
+            background: #2d3748;
             color: white;
             text-align: center;
             padding: 15px 0;
             user-select: none;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
+        
+        /* מיכל ראשי למרכז את התוכן */
         .container {
             flex: 1;
             display: flex;
@@ -45,10 +50,12 @@
             align-items: center;
             padding: 30px 15px;
         }
+        
+        /* כרטיס המשחק המרכזי */
         .game-card {
-            background: #222b3a; /* Darker card background */
+            background: #222b3a;
             border-radius: 20px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4); /* Stronger shadow */
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
             padding: 30px 20px 40px;
             text-align: center;
             max-width: 90vw;
@@ -57,68 +64,71 @@
             flex-direction: column;
             align-items: center;
         }
+        
+        /* כותרת המשחק הראשית */
         h1 {
-            font-size: 2.2em; /* Slightly larger title */
+            font-size: 2.2em;
             margin: 0 0 15px 0;
             user-select: text;
             color: #ffffff;
         }
+        
+        /* מיכל המשחק שמכיל את הקנבס */
         #gameContainer {
-            position: relative; /* חשוב למיקום infoCard כ-overlay */
+            position: relative;
             margin-top: 20px;
             width: 100%;
-            min-height: 400px; /* מינימום גובה למיכל המשחק */
             display: flex;
             justify-content: center;
-            align-items: center; /* מרכז את הקנבס בתוך המיכל */
-            background-color: #333; /* רקע למיכל המשחק לפני טעינת הקנבס */
-            border-radius: 10px; /* פינות מעוגלות למיכל */
-            overflow: hidden; /* הסתרת גלילה בתוך המיכל */
-            aspect-ratio: 1 / 1; /* שמירה על יחס גובה-רוחב ריבועי */
-            max-width: 600px; /* Max width for game container */
+            align-items: center;
+            background-color: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            aspect-ratio: 16 / 9; /* יחס גובה-רוחב קלאסי של 16:9 */
+            max-width: 900px;
         }
-        /* כללי CSS עבור הקנבס ש-p5.js יוצר */
+        
+        /* עיצוב הקנבס שיצר p5.js */
         canvas {
             display: block;
-            margin: 0 auto;
             max-width: 100%;
-            height: auto; /* חשוב לשמור על יחס גובה-רוחב */
+            max-height: 100%;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            background-color: #141464; /* צבע רקע למשחק, כדי שיהיה גלוי */
-            /* וודא שהקנבס ממלא את כל המיכל שלו */
-            width: 100%;
-            height: 100%;
+            background-color: #141464;
         }
+        
+        /* עיצוב לקישור בכותרת העליונה */
         header h2 a {
             color: inherit;
             text-decoration: none;
-            transition: color 0.3s ease, text-decoration 0.3s ease; /* הוספת אנימציה למעבר */
+            transition: color 0.3s ease, text-decoration 0.3s ease;
         }
-        header h2 a:hover { /* עיצוב למצב ריחוף כדי להבהיר שזה קישור */
-            color: #a0aec0; /* צבע בהיר יותר בריחוף */
-            text-decoration: underline; /* קו תחתון בריחוף */
+        header h2 a:hover {
+            color: #a0aec0;
+            text-decoration: underline;
         }
 
-        /* UI elements for game control */
+        /* מסך טעינה */
         #loadingContainer {
-            font-size: 1.2em;
-            color: #a0aec0; /* Lighter gray for loading text */
-            margin-top: 10px;
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            font-size: 1.2em;
+            color: #a0aec0;
             z-index: 10;
         }
+        
+        /* כרטיס מידע (intro, game over) כ-overlay */
         #infoCard {
-            position: absolute; /* כדי לרחף מעל הקנבס */
+            position: absolute;
             top: 0;
-            left: 0;
+            right: 0; /* יישור לימין עבור RTL */
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.9); /* רקע כהה יותר, כמעט אטום */
-            display: none; /* Hidden by default, shown by JS */
+            background-color: rgba(0, 0, 0, 0.9);
+            display: none; /* נסתר כברירת מחדל */
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -126,34 +136,12 @@
             padding: 2rem;
             border-radius: 0.75rem;
             z-index: 10;
-            box-sizing: border-box; /* לוודא padding לא גורם לגלישה */
+            box-sizing: border-box;
         }
-        #infoCard h1 { /* כותרת המשחק בתוך infoCard */
-            font-size: 2.5rem; /* גודל גדול יותר */
-            font-weight: bold;
-            color: #ffffff;
-            margin-bottom: 1rem;
-        }
-        #infoCard p { /* תיאור המשחק בתוך infoCard */
-            font-size: 1.2rem;
-            color: #cbd5e0;
-            margin-bottom: 1.5rem;
-        }
-        #infoCard img { /* תמונת המשחק בתוך infoCard */
-            max-width: 80%;
-            height: auto;
-            border-radius: 0.75rem;
-            margin-bottom: 1.5rem;
-        }
-        #infoCardMessage { /* עיצוב הודעת מצב בתוך infoCard */
-            font-size: 2rem; /* גודל גדול יותר */
-            font-weight: bold;
-            color: #ffffff;
-            margin-bottom: 1.5rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5); /* צל לטקסט */
-        }
+        
+        /* כפתורים - סגנון כללי */
         .button {
-            background-color: #4CAF50; /* Green */
+            background-color: #4CAF50;
             border: none;
             color: white;
             padding: 12px 24px;
@@ -171,11 +159,13 @@
             transform: scale(1.05);
         }
         .button.red {
-            background-color: #f44336; /* Red */
+            background-color: #f44336;
         }
         .button.red:hover {
             background-color: #da190b;
         }
+
+        /* תיבת הודעה מותאמת אישית (במקום alert) */
         .message-box {
             position: fixed;
             top: 0;
@@ -183,7 +173,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.8);
-            display: none; /* Hidden by default */
+            display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
@@ -197,82 +187,59 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.7);
             max-width: 90vw;
         }
-        .message-box-content h2 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-        .message-box-content button {
-            background-color: #3b82f6; /* Blue */
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin-top: 1rem;
-            cursor: pointer;
-            border-radius: 0.5rem;
-            transition: background-color 0.3s ease;
-        }
-        .message-box-content button:hover {
-            background-color: #2563eb;
-        }
-        /* New section for game details below canvas */
+
+        /* קטע פרטי המשחק מתחת לקנבס */
         #gameDetailsSection {
-            text-align: right; /* יישור לימין עבור עברית */
+            text-align: right;
             margin-top: 2rem;
             padding: 1.5rem;
-            background-color: #2d3748; /* רקע כהה יותר */
+            background-color: #2d3748;
             border-radius: 1rem;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            width: 100%; /* יתפרס על כל רוחב ה-game-card */
-            box-sizing: border-box; /* לוודא padding לא גורם לגלישה */
+            width: 100%;
+            box-sizing: border-box;
         }
         #gameDetailsSection h2 {
-            font-size: 1.8rem; /* כותרות גדולות יותר */
+            font-size: 1.8rem;
             font-weight: bold;
-            color: #90cdf4; /* צבע כחול בהיר */
+            color: #90cdf4;
             margin-bottom: 1rem;
-            border-bottom: 2px solid #4a5568; /* קו תחתון עדין */
+            border-bottom: 2px solid #4a5568;
             padding-bottom: 0.5rem;
         }
         #gameDetailsSection p {
             font-size: 1.1rem;
             line-height: 1.6;
             margin-bottom: 1rem;
-            color: #cbd5e0; /* צבע טקסט בהיר יותר */
+            color: #cbd5e0;
         }
         #detailedInstructions p {
             margin-bottom: 0.5rem;
         }
-        /* Fullscreen button styling */
+
+        /* כפתור מסך מלא */
         #fullscreenButton {
             position: absolute;
             bottom: 1rem;
             right: 1rem;
-            background-color: rgba(0, 0, 0, 0.5); /* שקוף למחצה */
+            background-color: rgba(0, 0, 0, 0.5);
             color: white;
             padding: 0.5rem 1rem;
             border-radius: 0.5rem;
             font-size: 0.9rem;
             cursor: pointer;
             transition: background-color 0.3s ease;
-            z-index: 15; /* מעל infoCard */
+            z-index: 15;
         }
         #fullscreenButton:hover {
             background-color: rgba(0, 0, 0, 0.7);
         }
-        /* Hide default scrollbars from gameContainer if it's not fullscreen */
-        #gameContainer:not(:-webkit-full-screen) {
-            overflow: hidden;
+
+        /* הסתרת כפתור מסך מלא כשהוא כבר במסך מלא */
+        #gameContainer:fullscreen #fullscreenButton {
+            display: none;
         }
-        #gameContainer:not(:-moz-full-screen) {
-            overflow: hidden;
-        }
-        #gameContainer:not(:-ms-fullscreen) {
-            overflow: hidden;
-        }
+
         #gameContainer:not(:fullscreen) {
             overflow: hidden;
         }
@@ -292,19 +259,20 @@
                 <!-- הקנבס של p5.js ייווצר כאן באופן דינמי -->
                 <div id="loadingContainer">טוען משחק…</div>
                 
-                <!-- infoCard - משמש כעת כמסך כיסוי (overlay) בלבד -->
+                <!-- infoCard - משמש כמסך כיסוי (overlay) -->
                 <div id="infoCard">
-                    <img id="infoCardImage" src="" alt="תמונת משחק" class="w-full h-auto rounded-lg mb-4 hidden"> <!-- תמונה בתוך infoCard -->
-                    <p id="infoCardDesc" class="text-lg mb-6"></p> <!-- תיאור בתוך infoCard -->
-                    <div id="infoCardMessage" class="text-3xl font-bold mb-4"></div> <!-- הודעת מצב דינמית -->
-                    <!-- Flex container to place buttons side-by-side -->
+                    <!-- תמונה בתוך infoCard, עם fallback למקרה שאין תמונה -->
+                    <img id="infoCardImage" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3C/svg%3E" alt="תמונת משחק" class="w-full h-auto rounded-lg mb-4 hidden" onerror="this.onerror=null;this.src='https://placehold.co/400x300/2d3748/fff?text=No+Image';">
+                    <p id="infoCardDesc" class="text-lg mb-6"></p>
+                    <div id="infoCardMessage" class="text-3xl font-bold mb-4"></div>
+                    
                     <div class="flex flex-col md:flex-row items-center justify-center gap-4">
                         <button id="startGameButton" class="button">התחל משחק</button>
                         <button id="achievementsButton" class="button">הישגים</button>
                         <button id="resetDataButton" class="button red">איפוס נתונים</button>
                     </div>
                 </div>
-                <button id="fullscreenButton" class="button">מסך מלא</button> <!-- כפתור מסך מלא -->
+                <button id="fullscreenButton" class="button">מסך מלא</button>
             </div>
 
             <!-- קטע חדש לפרטי משחק והוראות מפורטות - מתחת לקנבס -->
@@ -312,7 +280,7 @@
                 <h2 class="text-xl font-bold mb-2">סיפור המשחק</h2>
                 <p id="gameStory" class="mb-4"></p>
                 <h2 class="text-xl font-bold mb-2">הוראות</h2>
-                <div id="detailedInstructions" class="text-left"></div>
+                <div id="detailedInstructions" class="text-right"></div>
             </div>
         </div>
     </div>
@@ -332,61 +300,55 @@
     <!-- Your game sketch will be loaded here dynamically -->
 
     <script>
-        // משתנים גלובליים לאלמנטי UI
-        const gameTitleElement = document.getElementById("gameTitle"); // כותרת ראשית (תמיד גלויה)
+        // משתנים גלובליים לאלמנטים של ממשק המשתמש
+        const gameTitleElement = document.getElementById("gameTitle");
         const loadingContainer = document.getElementById("loadingContainer");
         const gameContainerElement = document.getElementById("gameContainer");
         const infoCard = document.getElementById('infoCard');
-        const infoCardImageElement = document.getElementById('infoCardImage'); // תמונה בתוך infoCard
-        const infoCardDescElement = document.getElementById('infoCardDesc'); // תיאור בתוך infoCard
+        const infoCardImageElement = document.getElementById('infoCardImage');
+        const infoCardDescElement = document.getElementById('infoCardDesc');
         const infoCardMessageElement = document.getElementById('infoCardMessage');
         const startGameButton = document.getElementById('startGameButton');
         const achievementsButton = document.getElementById('achievementsButton');
         const resetDataButton = document.getElementById('resetDataButton');
         const fullscreenButton = document.getElementById('fullscreenButton');
-        
-        // משתנה גלובלי למצב המשחק
-        let gamePhase = 'intro';
-
-        // אלמנטים לפרטי המשחק והוראות מתחת לקנבס
         const gameDetailsSection = document.getElementById("gameDetailsSection");
         const gameStoryElement = document.getElementById("gameStory");
         const detailedInstructionsElement = document.getElementById("detailedInstructions");
+        
+        let gamePhase = 'intro'; // מצב המשחק, מוגדר כגלובלי כדי שניתן יהיה לשנותו מהסקצ'
 
-
-        // פונקציה לקריאת פרמטר game מה-URL
-        function getGameId() {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get("game");
-        }
-
-        // פונקציה להצגת תיבת הודעות מותאמת אישית (כמו בקובץ הסקצ')
+        /**
+         * פונקציה להצגת תיבת הודעות מותאמת אישית.
+         * @param {string} title כותרת ההודעה
+         * @param {string} content תוכן ההודעה
+         * @param {function} [callback] פונקציה שתופעל לאחר סגירת התיבה
+         */
         function showMessageBox(title, content, callback) {
             const msgBox = document.getElementById('messageBox');
-            if (msgBox) {
-                document.getElementById('messageBoxTitle').innerText = title;
-                document.getElementById('messageBoxContent').innerText = content;
-                msgBox.style.display = 'flex';
-                const closeButton = document.getElementById('messageBoxClose');
-                closeButton.onclick = () => {
-                    msgBox.style.display = 'none';
-                    if (callback) callback();
-                };
-            } else {
-                console.warn("Message box element not found. Displaying alert instead.");
-                alert(`${title}\n${content}`);
-                if (callback) callback();
+            if (!msgBox) {
+                console.error("Message box element not found.");
+                return;
             }
+            document.getElementById('messageBoxTitle').innerText = title;
+            document.getElementById('messageBoxContent').innerText = content;
+            msgBox.style.display = 'flex';
+            const closeButton = document.getElementById('messageBoxClose');
+            closeButton.onclick = () => {
+                msgBox.style.display = 'none';
+                if (callback) callback();
+            };
         }
 
-        // לוגיקה ראשית לטעינת נתוני המשחק וסקריפט המשחק
-        window.onload = function() {
-            const gameId = getGameId();
+        // פונקציה ראשית לטעינת המשחק
+        function loadGame() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const gameId = urlParams.get("game");
 
             if (!gameId) {
-                gameTitleElement.textContent = "שגיאה – משחק לא חוקי (חסר Game ID)";
-                loadingContainer.textContent = "";
-                gameDetailsSection.style.display = 'none'; // הסתר את החלק התחתון
+                gameTitleElement.textContent = "שגיאה – חסר ID משחק.";
+                loadingContainer.style.display = "none";
+                gameDetailsSection.style.display = 'none';
                 return;
             }
 
@@ -399,18 +361,17 @@
                     const gameObj = gamesData.find(g => g.id === gameId);
 
                     if (!gameObj) {
-                        gameTitleElement.textContent = `שגיאה – המשחק "${gameId}" לא נמצא`;
-                        loadingContainer.textContent = "";
-                        gameDetailsSection.style.display = 'none'; // הסתר את החלק התחתון
+                        gameTitleElement.textContent = `שגיאה – המשחק "${gameId}" לא נמצא.`;
+                        loadingContainer.style.display = "none";
+                        gameDetailsSection.style.display = 'none';
                         return;
                     }
 
-                    // עדכון כותרת המשחק הראשית (תמיד גלויה)
+                    // עדכון אלמנטים של ממשק המשתמש עם נתוני המשחק
                     gameTitleElement.textContent = gameObj.title;
-                    document.title = `${gameObj.title} שחקו עכשיו!`;
-                    
-                    // עדכון פרטים בתוך infoCard (יוצגו במסכי Intro/Game Over/Level Complete)
+                    document.title = `${gameObj.title} | משחק Vibe`;
                     infoCardDescElement.textContent = gameObj.description;
+                    
                     if (gameObj.image) {
                         infoCardImageElement.src = gameObj.image;
                         infoCardImageElement.alt = `תמונה של ${gameObj.title}`;
@@ -419,12 +380,11 @@
                         infoCardImageElement.classList.add('hidden');
                     }
 
-                    // עדכון פרטי המשחק והוראות בקטע החדש (מתחת לקנבס)
-                    gameDetailsSection.style.display = 'block'; // וודא שהקטע גלוי
-                    gameStoryElement.textContent = gameObj.story || gameObj.description; // השתמש ב-story אם קיים, אחרת ב-description
+                    gameDetailsSection.style.display = 'block';
+                    gameStoryElement.textContent = gameObj.story || gameObj.description;
                     
+                    detailedInstructionsElement.innerHTML = '';
                     if (gameObj.instructions && gameObj.instructions.length > 0) {
-                        detailedInstructionsElement.innerHTML = ''; // נקה תוכן קודם
                         gameObj.instructions.forEach(instruction => {
                             const p = document.createElement('p');
                             p.textContent = `• ${instruction}`;
@@ -435,96 +395,80 @@
                     }
 
                     // טעינת קובץ ה-JS של המשחק
-                    fetch(gameObj.jsFile)
-                        .then(res => {
-                            if (!res.ok) throw new Error(`Failed to load game script: ${gameObj.jsFile}`);
-                            return res.text();
-                        })
-                        .then(code => {
-                            const script = document.createElement('script');
-                            script.textContent = code;
-                            document.body.appendChild(script);
-
-                            // לאחר טעינת הסקריפט, בדוק אם sketch מוגדר
-                            if (typeof sketch !== 'undefined') {
-                                loadingContainer.style.display = "none";
-                                infoCard.style.display = "flex"; // הצג את infoCard כ-overlay
-                                infoCardMessageElement.textContent = 'לחץ על רווח להתחלת המשחק'; // הודעת Intro
-
-                                // רק עכשיו יוצרים מופע p5 אם הוא עדיין לא קיים
-                                if (!window.p5Instance) {
-                                    window.p5Instance = new p5(sketch, gameContainerElement);
-                                }
-                            } else {
-                                console.error("קובץ המשחק נטען, אך הגדרת המשחק (sketch) לא נמצאה.");
-                                loadingContainer.innerText = "שגיאה: הגדרת המשחק לא נמצאה.";
-                            }
-                        })
-                        .catch(err => {
-                            loadingContainer.textContent = `שגיאה בטעינת קובץ המשחק: ${err.message}`;
-                            gameTitleElement.textContent = "משהו השתבש...";
-                            console.error(err);
-                        });
+                    loadGameScript(gameObj.jsFile);
                 })
                 .catch(err => {
                     loadingContainer.textContent = `שגיאה בטעינת נתוני המשחקים: ${err.message}`;
                     gameTitleElement.textContent = "משהו השתבש...";
                     console.error(err);
                 });
-        };
+        }
+        
+        /**
+         * פונקציה לטעינה דינמית של סקריפט המשחק.
+         * @param {string} scriptPath נתיב קובץ ה-JS של המשחק
+         */
+        function loadGameScript(scriptPath) {
+            const script = document.createElement('script');
+            script.src = scriptPath;
+            script.onload = () => {
+                // לאחר טעינת הסקריפט, בודקים אם הוגדר פונקציית sketch
+                if (typeof sketch !== 'undefined') {
+                    loadingContainer.style.display = "none";
+                    infoCard.style.display = "flex";
+                    infoCardMessageElement.textContent = 'לחץ על "התחל משחק" כדי להתחיל!';
+                    // יצירת מופע של p5 רק לאחר טעינת הסקריפט בהצלחה
+                    if (!window.p5Instance) {
+                        window.p5Instance = new p5(sketch, gameContainerElement);
+                    }
+                } else {
+                    console.error("קובץ המשחק נטען, אך הגדרת המשחק (sketch) לא נמצאה.");
+                    loadingContainer.innerText = "שגיאה: הגדרת המשחק לא נמצאה.";
+                }
+            };
+            script.onerror = (err) => {
+                loadingContainer.textContent = `שגיאה בטעינת קובץ המשחק: ${err.message}`;
+                gameTitleElement.textContent = "משהו השתבש...";
+                console.error(`Failed to load game script: ${scriptPath}`, err);
+            };
+            document.body.appendChild(script);
+        }
 
-        // Event listeners for UI buttons (אלה יתקשרו עם סקצ' ה-p5.js לאחר טעינתו)
+        // Event listeners for UI buttons
         startGameButton.addEventListener('click', () => {
+            // בדיקה שgamePhase הוגדר (כלומר, המשחק נטען)
             if (typeof gamePhase !== 'undefined') {
                 gamePhase = 'playing';
-                // לוגיקה של המשחק תתחיל מכאן
-                infoCard.style.display = 'none'; // הסתר את ה-infoCard (ובתוכו התמונה והתיאור)
+                infoCard.style.display = 'none';
             } else {
-                console.error("Game sketch not loaded yet or gamePhase is undefined.");
                 showMessageBox('שגיאה', 'המשחק עדיין לא נטען במלואו. נסה שוב בעוד רגע.');
             }
         });
 
         achievementsButton.addEventListener('click', () => {
-            if (typeof showMessageBox !== 'undefined' && typeof unlockedAchievements !== 'undefined') {
-                let achievementsText = 'הישגים:\n';
-                if (Object.keys(unlockedAchievements).length === 0) {
-                    achievementsText += 'אין הישגים שוחררו עדיין.';
-                } else {
-                    for (const [key, value] of Object.entries(unlockedAchievements)) {
-                        achievementsText += `- ${key.replace(/([A-Z])/g, ' $1').trim()}: ${value ? 'נפתח' : 'לא נפתח'}\n`;
-                    }
-                }
-                showMessageBox('הישגים', achievementsText);
-            } else {
-                showMessageBox('שגיאה', 'הישגים אינם זמינים כרגע.');
-            }
+            // כפתור זה דורש לוגיקה שתכתוב בקובץ p5.js החיצוני.
+            showMessageBox('הישגים', 'פונקציית ההישגים תעבוד כשתוגדר בקובץ המשחק. 🏆');
         });
 
         resetDataButton.addEventListener('click', () => {
-            if (typeof resetGameData !== 'undefined' && typeof loadLevel !== 'undefined') {
-                resetGameData(); // קריאה לפונקציית איפוס נתונים - תוקן שם הפונקציה
-                gamePhase = 'intro'; // חזור למצב Intro
-                loadLevel(1); // טען את שלב 1 כדי לאתחל את המשחק למצב התחלתי
-                infoCard.style.display = 'flex'; // הצג שוב את infoCard (ובתוכו התמונה והתיאור)
-                infoCardMessageElement.textContent = 'לחץ על רווח להתחלת המשחק'; // הודעת Intro
-            } else {
-                showMessageBox('שגיאה', 'פונקציית איפוס הנתונים אינה זמינה כרגע.');
-            }
+            // כפתור זה דורש פונקציות איפוס שיכתבו בקובץ p5.js.
+            showMessageBox('איפוס נתונים', 'פונקציית איפוס הנתונים תעבוד כשתוגדר בקובץ המשחק. 🔄');
         });
 
-        // לוגיקה של כפתור מסך מלא
         fullscreenButton.addEventListener('click', () => {
             if (gameContainerElement.requestFullscreen) {
                 gameContainerElement.requestFullscreen();
-            } else if (gameContainerElement.mozRequestFullScreen) { /* Firefox */
+            } else if (gameContainerElement.mozRequestFullScreen) {
                 gameContainerElement.mozRequestFullScreen();
-            } else if (gameContainerElement.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+            } else if (gameContainerElement.webkitRequestFullscreen) {
                 gameContainerElement.webkitRequestFullscreen();
-            } else if (gameContainerElement.msRequestFullscreen) { /* IE/Edge */
+            } else if (gameContainerElement.msRequestFullscreen) {
                 gameContainerElement.msRequestFullscreen();
             }
         });
+
+        // הפעלת לוגיקת טעינת המשחק כשהעמוד מוכן
+        window.onload = loadGame;
     </script>
 </body>
 </html>
