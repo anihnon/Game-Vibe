@@ -178,14 +178,14 @@ class Player {
             if (this.collidesWith(pObj)) {
                 // If falling and hit top of platform
                 if (this.velY > 0 && this.y + this.height / 2 > pObj.y - pObj.height / 2 && this.y - this.height / 2 < pObj.y - pObj.height / 2) {
-                    this.y = pObj.y - p.height / 2 - this.height / 2; // Fixed pObj.height to p.height
+                    this.y = pObj.y - pObj.height / 2 - this.height / 2; // Fixed pObj.height to pObj.height
                     this.velY = 0;
                     this.onGround = true;
                     this.jumpsLeft = MAX_JUMPS; // Reset jumps on ground
                 }
                 // If jumping and hit bottom of platform
                 else if (this.velY < 0 && this.y - this.height / 2 < pObj.y + pObj.height / 2 && this.y + this.height / 2 > pObj.y + pObj.height / 2) {
-                    this.y = pObj.y + p.height / 2 + this.height / 2; // Fixed pObj.height to p.height
+                    this.y = pObj.y + pObj.height / 2 + this.height / 2; // Fixed pObj.height to pObj.height
                     this.velY = 0;
                 }
                 // Horizontal collision
@@ -422,9 +422,9 @@ const sketch = function(p) {
     window.p5Instance = p; 
 
     p.setup = function() {
-        // 1. יצירת קנבס בגודל הדיב בפועל
+        // 1. יצירת קנבס בודד
         const container = document.getElementById('gameContainer');
-        const canvas = p.createCanvas(container.clientWidth, container.clientHeight);
+        let canvas = p.createCanvas(container.clientWidth, container.clientHeight);
         canvas.parent('gameContainer'); // ודא שהקנבס מוכנס לתוך ה-div הנכון
 
         p.pixelDensity(1);
@@ -558,13 +558,14 @@ const sketch = function(p) {
             return assets;
         })();
 
-        // טען את השלב רק לאחר שכל הנכסים נוצרו
-        loadGameData(); // טען נתוני משחק לפני טעינת שלב
-        loadLevel(initialStage);
+        // טען נתוני משחק (אך לא את השלב עצמו)
+        loadGameData(); 
+        // 2. הסרת loadLevel(initialStage) מ-p.setup
+        // loadLevel(initialStage); 
     };
 
     p.draw = function() {
-        // 3. בקרת שלבי המשחק (gamePhase)
+        // 3. בקרת סטייט נכונה ב־draw
         if (gamePhase === 'intro') {
             p.background(50);
             p.textSize(32);
@@ -603,7 +604,7 @@ const sketch = function(p) {
                 gamePhase = 'level_complete';
                 showMessageBox('שלב הושלם!', `כל הכבוד! אספת את כל הפירות בשלב ${player.currentLevel}.`);
                 saveGameData();
-                loadLevel(player.currentLevel + 1); // Load next level
+                // אין קריאה ל-loadLevel כאן, זה יקרה רק בלחיצת רווח
             }
 
             // Display total fruits collected
@@ -627,7 +628,7 @@ const sketch = function(p) {
                 p.textSize(24);
                 p.text('לחץ על רווח כדי להתחיל מחדש', p.width/2, p.height/2 + 50);
             } else if (gamePhase === 'level_complete') {
-                p.text(`שלב ${player.currentLevel -1} הושלם!`, p.width/2, p.height/2 - 50);
+                p.text(`שלב ${player.currentLevel} הושלם!`, p.width/2, p.height/2 - 50); // השתמש ב-player.currentLevel ישירות
                 p.textSize(24);
                 p.text('לחץ על רווח כדי להמשיך לשלב הבא', p.width/2, p.height/2 + 50);
             }
@@ -635,27 +636,34 @@ const sketch = function(p) {
     };
 
     p.keyPressed = function() {
-        // 3. בקרת שלבי המשחק (gamePhase) - טיפול ברווח למעבר בין שלבים
+        // 4. מעבר מה־Intro ל־Playing
         if (p.keyCode === p.keyCodes.SPACE) {
             if (gamePhase === 'intro') {
                 gamePhase = 'playing';
                 loadLevel(initialStage); // טען את השלב הראשון כשהמשחק מתחיל
-            } else if (gamePhase === 'game_over' || gamePhase === 'level_complete') {
+                return false; // מונע את המשך הטיפול בלחיצת רווח
+            } else if (gamePhase === 'game_over') {
                 gamePhase = 'playing';
-                // אם המשחק נגמר, אתחל את השלב הראשון
-                if (gamePhase === 'game_over') {
-                    initialStage = 1; // איפוס לשלב 1
-                    resetGameData(); // איפוס נתוני משחק
-                }
-                loadLevel(initialStage); // טען את השלב הבא או את השלב הראשון
+                initialStage = 1; // איפוס לשלב 1
+                resetGameData(); // איפוס נתוני משחק
+                loadLevel(initialStage); // טען את השלב הראשון מחדש
+                return false;
+            } else if (gamePhase === 'level_complete') {
+                gamePhase = 'playing';
+                initialStage = player.currentLevel + 1; // קדם לשלב הבא
+                loadLevel(initialStage); // טען את השלב הבא
+                return false;
             }
         }
 
-        activeKeys[p.keyCode] = true;
-        // מניעת גלילת הדף עבור מקשי חצים ורווח
-        if ([p.LEFT_ARROW, p.RIGHT_ARROW, p.UP_ARROW, p.DOWN_ARROW, p.keyCodes.SPACE].includes(p.keyCode)) {
-            p.preventDefault();
-            return false;
+        // רק אם אנחנו במצב משחק, טפל בלחיצות מקשים אחרות
+        if (gamePhase === 'playing') {
+            activeKeys[p.keyCode] = true;
+            // מניעת גלילת הדף עבור מקשי חצים ורווח
+            if ([p.LEFT_ARROW, p.RIGHT_ARROW, p.UP_ARROW, p.DOWN_ARROW, p.keyCodes.SPACE].includes(p.keyCode)) {
+                p.preventDefault();
+                return false;
+            }
         }
     };
 
@@ -677,26 +685,27 @@ const sketch = function(p) {
     };
 
     p.touchStarted = function() {
-        // Simulate spacebar press for gravity toggle on touch
-        if (gamePhase === 'playing' && player && player.currentLevel >= GRAVITY_TOGGLE_LEVEL) { // רק במצב משחק
-            // ודא ש-p.keyCodes קיים לפני השימוש
+        // Simulate spacebar press for game phase transitions on touch
+        if (gamePhase === 'intro' || gamePhase === 'game_over' || gamePhase === 'level_complete') {
+            if (p.keyCodes && p.keyCodes.SPACE !== undefined) {
+                activeKeys[p.keyCodes.SPACE] = true;
+                p.keyPressed(); // קריאה לפונקציית keyPressed כדי להפעיל את לוגיקת המעבר
+                activeKeys[p.keyCodes.SPACE] = false; // שחרר מיד כדי למנוע לחיצות מרובות
+            }
+        }
+        
+        // Simulate spacebar press for gravity toggle on touch (only in playing phase)
+        if (gamePhase === 'playing' && player && player.currentLevel >= GRAVITY_TOGGLE_LEVEL) { 
             if (p.keyCodes && p.keyCodes.SPACE !== undefined) {
                 activeKeys[p.keyCodes.SPACE] = true;
                 spacePressed = false; // Reset to allow toggle
             } else {
                 console.warn("p.keyCodes.SPACE is not defined during touchStarted.");
             }
-        } else if (gamePhase === 'intro' || gamePhase === 'game_over' || gamePhase === 'level_complete') {
-            // אם במסך הקדמה/סיום, לחיצה על המסך תתנהג כמו רווח
-            if (p.keyCodes && p.keyCodes.SPACE !== undefined) {
-                activeKeys[p.keyCodes.SPACE] = true;
-                // קריאה לפונקציית keyPressed כדי להפעיל את לוגיקת המעבר
-                p.keyPressed(); 
-            }
         }
 
-        // Simulate jump for touch
-        if (gamePhase === 'playing' && player && player.jumpsLeft > 0) { // רק במצב משחק
+        // Simulate jump for touch (only in playing phase)
+        if (gamePhase === 'playing' && player && player.jumpsLeft > 0) { 
             if (p.UP_ARROW !== undefined) {
                  activeKeys[p.UP_ARROW] = true;
             } else {
@@ -718,7 +727,7 @@ const sketch = function(p) {
     };
 
     p.windowResized = function() {
-        // 2. התאמת שינוי גודל חלון
+        // 5. ניהול windowResized ללא יצירת קנבס נוסף
         const container = document.getElementById('gameContainer');
         p.resizeCanvas(container.clientWidth, container.clientHeight);
     };
