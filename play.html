@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>טוען משחק...</title>
-    <!-- Tailwind CSS CDN for styling - Added for modern styling -->
+    <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -88,6 +88,11 @@
         header h2 a {
             color: inherit;
             text-decoration: none;
+            transition: color 0.3s ease, text-decoration 0.3s ease; /* הוספת אנימציה למעבר */
+        }
+        header h2 a:hover { /* עיצוב למצב ריחוף כדי להבהיר שזה קישור */
+            color: #a0aec0; /* צבע בהיר יותר בריחוף */
+            text-decoration: underline; /* קו תחתון בריחוף */
         }
 
         /* UI elements for game control */
@@ -195,18 +200,23 @@
     <div class="container">
         <div class="game-card">
             <h1 id="gameTitle">טוען משחק...</h1>
+            <p id="gameDesc" class="text-md mb-4"></p> <!-- הוספת אלמנט לתיאור המשחק -->
+            <img id="gameImage" src="" alt="תמונת משחק" class="w-full h-auto rounded-lg mb-4 hidden"> <!-- הוספת אלמנט לתמונת המשחק -->
+            
+            <div id="loadingContainer">טוען משחק…</div>
+            
+            <div id="infoCard">
+                <h1 class="text-3xl font-bold mb-4"></h1> <!-- כותרת המשחק תעודכן כאן -->
+                <p class="text-lg mb-6"></p> <!-- תיאור המשחק יעודכן כאן -->
+                <div id="instructions" class="text-left mb-6"></div> <!-- הוספת דיב להוראות -->
+                <button id="startGameButton" class="button">התחל משחק</button>
+                <button id="instructionsButton" class="button">הוראות</button>
+                <button id="achievementsButton" class="button">הישגים</button>
+                <button id="resetDataButton" class="button red">איפוס נתונים</button>
+            </div>
+
             <div id="gameContainer">
                 <!-- הקנבס של p5.js ייווצר כאן באופן דינמי -->
-                <div id="loadingContainer">טוען משחק…</div>
-                
-                <div id="infoCard">
-                    <h1 class="text-3xl font-bold mb-4">מסע הפירות</h1>
-                    <p class="text-lg mb-6">אסוף את כל הפירות בכל שלב כדי להתקדם!</p>
-                    <button id="startGameButton" class="button">התחל משחק</button>
-                    <button id="instructionsButton" class="button">הוראות</button>
-                    <button id="achievementsButton" class="button">הישגים</button>
-                    <button id="resetDataButton" class="button red">איפוס נתונים</button>
-                </div>
             </div>
         </div>
     </div>
@@ -226,9 +236,12 @@
     <!-- Your game sketch will be loaded here dynamically -->
 
     <script>
-        // Global variables for UI elements
-        const gameTitle = document.getElementById("gameTitle");
-        const loadingContainer = document.getElementById("loadingContainer"); // Renamed from 'loading'
+        // משתנים גלובליים לאלמנטי UI
+        const gameTitleElement = document.getElementById("gameTitle"); // שינוי שם למניעת התנגשות
+        const gameDescElement = document.getElementById("gameDesc"); // אלמנט חדש לתיאור
+        const gameImageElement = document.getElementById("gameImage"); // אלמנט חדש לתמונה
+        const instructionsElement = document.getElementById("instructions"); // אלמנט חדש להוראות
+        const loadingContainer = document.getElementById("loadingContainer");
         const gameContainerElement = document.getElementById("gameContainer");
         const infoCard = document.getElementById('infoCard');
         const startGameButton = document.getElementById('startGameButton');
@@ -236,41 +249,149 @@
         const achievementsButton = document.getElementById('achievementsButton');
         const resetDataButton = document.getElementById('resetDataButton');
 
-        // Function to extract game name from URL
-        function getGameNameFromURL() {
+        // 2. פונקציה לקריאת פרמטר game מה-URL
+        function getGameId() {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get("game");
         }
 
-        // Function to validate game name
-        function isValidGameName(name) {
-            return /^[\w-]+$/.test(name);
+        // פונקציה להצגת תיבת הודעות מותאמת אישית (כמו בקובץ הסקצ')
+        function showMessageBox(title, content, callback) {
+            const msgBox = document.getElementById('messageBox');
+            if (msgBox) {
+                document.getElementById('messageBoxTitle').innerText = title;
+                document.getElementById('messageBoxContent').innerText = content;
+                msgBox.style.display = 'flex';
+                const closeButton = document.getElementById('messageBoxClose');
+                closeButton.onclick = () => {
+                    msgBox.style.display = 'none';
+                    if (callback) callback();
+                };
+            } else {
+                console.warn("Message box element not found. Displaying alert instead.");
+                alert(`${title}\n${content}`);
+                if (callback) callback();
+            }
         }
 
-        // Function to format game name for display
-        function formatGameName(fileName) {
-            if (!fileName) return "";
-            const name = fileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
-            return name.charAt(0).toUpperCase() + name.slice(1);
-        }
+        // לוגיקה ראשית לטעינת נתוני המשחק וסקריפט המשחק
+        window.onload = function() {
+            const gameId = getGameId();
 
-        // Event listeners for UI buttons (these will interact with the p5.js sketch)
-        // These global variables (gamePhase, loadGameData, loadLevel, initialStage, unlockedAchievements, resetGameData)
-        // are expected to be defined in astro-fruits.js
+            // 4. אם האובייקט לא נמצא, הצג כותרת שגיאה והפסק
+            if (!gameId) {
+                gameTitleElement.textContent = "שגיאה – משחק לא חוקי (חסר Game ID)";
+                loadingContainer.textContent = "";
+                return;
+            }
+
+            // 1. הסר את מערך האובייקטים המוגדר ידנית והחלף בפעולת fetch ל־data.json
+            fetch('data.json')
+                .then(res => {
+                    if (!res.ok) throw new Error("Failed to load game data (data.json)");
+                    return res.json();
+                })
+                .then(gamesData => {
+                    // 3. מצא את האובייקט עם id שמתאים לפרמטר מה־URL
+                    const gameObj = gamesData.find(g => g.id === gameId);
+
+                    // 4. אם האובייקט לא נמצא, הצג כותרת שגיאה והפסק
+                    if (!gameObj) {
+                        gameTitleElement.textContent = `שגיאה – המשחק "${gameId}" לא נמצא`;
+                        loadingContainer.textContent = "";
+                        return;
+                    }
+
+                    // 5. אם המשחק נמצא:
+                    // 5.1. כתוב את title שלו ב־<h1> וב־document.title
+                    gameTitleElement.textContent = gameObj.title;
+                    document.title = `${gameObj.title} שחקו עכשיו!`;
+                    infoCard.querySelector('h1').textContent = gameObj.title; // עדכון כותרת ב-infoCard
+
+                    // 5.2. עדכן את נתוני התיאור (description) ב־<p id="gameDesc">
+                    gameDescElement.textContent = gameObj.description;
+                    infoCard.querySelector('p').textContent = gameObj.description; // עדכון תיאור ב-infoCard
+
+                    // 5.3. העבר למבנה HTML את התמונה (<img id="gameImage">)
+                    if (gameObj.image) {
+                        gameImageElement.src = gameObj.image;
+                        gameImageElement.alt = `תמונה של ${gameObj.title}`;
+                        gameImageElement.classList.remove('hidden'); // הצג את התמונה
+                    } else {
+                        gameImageElement.classList.add('hidden'); // הסתר אם אין תמונה
+                    }
+
+                    // 5.4. מלא את רשימת instructions בדיב id="instructions"
+                    if (gameObj.instructions && gameObj.instructions.length > 0) {
+                        instructionsElement.innerHTML = '<strong>הוראות:</strong>';
+                        gameObj.instructions.forEach(instruction => {
+                            const p = document.createElement('p');
+                            p.textContent = `• ${instruction}`;
+                            instructionsElement.appendChild(p);
+                        });
+                    } else {
+                        instructionsElement.innerHTML = ''; // נקה אם אין הוראות
+                    }
+
+
+                    // 6. בצע fetch נוסף עבור gameObj.jsFile
+                    fetch(gameObj.jsFile)
+                        .then(res => {
+                            if (!res.ok) throw new Error(`Failed to load game script: ${gameObj.jsFile}`);
+                            return res.text();
+                        })
+                        .then(code => {
+                            const script = document.createElement('script');
+                            script.textContent = code;
+                            document.body.appendChild(script); // הוספת הסקריפט לדף
+
+                            // 7. לאחר טעינת הסקריפט, בדוק אם sketch מוגדר
+                            if (typeof sketch !== 'undefined') {
+                                loadingContainer.style.display = "none";
+                                infoCard.style.display = "flex"; // הצג את כרטיס המידע עם הכפתורים
+
+                                // רק עכשיו יוצרים מופע p5 אם הוא עדיין לא קיים
+                                if (!window.p5Instance) {
+                                    window.p5Instance = new p5(sketch, gameContainerElement);
+                                }
+                            } else {
+                                console.error("קובץ המשחק נטען, אך הגדרת המשחק (sketch) לא נמצאה.");
+                                loadingContainer.innerText = "שגיאה: הגדרת המשחק לא נמצאה.";
+                            }
+                        })
+                        .catch(err => {
+                            loadingContainer.textContent = `שגיאה בטעינת קובץ המשחק: ${err.message}`;
+                            gameTitleElement.textContent = "משהו השתבש...";
+                            console.error(err);
+                        });
+                })
+                .catch(err => {
+                    loadingContainer.textContent = `שגיאה בטעינת נתוני המשחקים: ${err.message}`;
+                    gameTitleElement.textContent = "משהו השתבש...";
+                    console.error(err);
+                });
+        };
+
+        // Event listeners for UI buttons (אלה יתקשרו עם סקצ' ה-p5.js לאחר טעינתו)
         startGameButton.addEventListener('click', () => {
             if (typeof gamePhase !== 'undefined') {
                 gamePhase = 'playing';
-                loadGameData(); // Load data before starting
-                loadLevel(initialStage); // Start the game
-                infoCard.style.display = 'none'; // Hide UI
+                loadGameData(); // טען נתונים לפני התחלה
+                loadLevel(initialStage); // התחל את המשחק
+                infoCard.style.display = 'none'; // הסתר את ה-UI
             } else {
                 console.error("Game sketch not loaded yet or gamePhase is undefined.");
+                showMessageBox('שגיאה', 'המשחק עדיין לא נטען במלואו. נסה שוב בעוד רגע.');
             }
         });
 
         instructionsButton.addEventListener('click', () => {
-            if (typeof showMessageBox !== 'undefined') {
-                showMessageBox('הוראות', 'השתמש במקשי החצים או W,A,S,D כדי לזוז ולקפוץ. לחץ על רווח כדי להחליף את כוח המשיכה (החל משלב 3). אסוף את כל הפירות והגיע ליציאה!');
+            // כעת ההוראות נטענות מ-JSON ומוצגות ב-infoCard,
+            // אז כפתור ההוראות יכול פשוט להציג את ה-infoCard שוב או להציג הודעה מותאמת
+            if (instructionsElement.innerHTML) {
+                showMessageBox('הוראות', instructionsElement.innerText.replace('הוראות:\n', ''));
+            } else {
+                showMessageBox('הוראות', 'אין הוראות זמינות למשחק זה.');
             }
         });
 
@@ -285,6 +406,8 @@
                     }
                 }
                 showMessageBox('הישגים', achievementsText);
+            } else {
+                showMessageBox('שגיאה', 'הישגים אינם זמינים כרגע.');
             }
         });
 
@@ -295,60 +418,10 @@
                 gamePhase = 'intro';
                 loadLevel(1); // טען את שלב 1 כדי לאתחל את המשחק למצב התחלתי
                 infoCard.style.display = 'flex'; // הצג שוב את כרטיס המידע
+            } else {
+                showMessageBox('שגיאה', 'פונקציית איפוס הנתונים אינה זמינה כרגע.');
             }
         });
-
-        // Main logic for loading the game script
-        window.onload = function() {
-            const rawName = getGameNameFromURL();
-            if (!rawName || !isValidGameName(rawName)) {
-                gameTitle.textContent = "שגיאה – שם משחק לא חוקי";
-                loadingContainer.textContent = "";
-                return;
-            }
-
-            const gameName = rawName;
-            const prettyName = formatGameName(gameName);
-            gameTitle.textContent = prettyName;
-            document.title = `${prettyName} שחקו עכשיו!`;
-
-            let gameFile = gameName;
-            if (!gameFile.endsWith(".js")) {
-                gameFile += ".js";
-            }
-
-            // טעינת קוד המשחק
-            fetch(`games/${gameFile}`)
-                .then(res => {
-                    if (!res.ok) throw new Error("Failed to load game file");
-                    return res.text();
-                })
-                .then(code => {
-                    const script = document.createElement('script');
-                    script.textContent = code;
-                    document.body.appendChild(script); // הוספת הסקריפט לדף
-
-                    // This part runs AFTER astro-fruits.js has been loaded and executed
-                    // The p5 instance is created here, ensuring it's only done once.
-                    if (typeof sketch !== 'undefined') {
-                        loadingContainer.style.display = "none";
-                        infoCard.style.display = "flex"; // Show the info card with buttons
-
-                        // רק עכשיו יוצרים מופע p5 אם הוא עדיין לא קיים
-                        if (!window.p5Instance) {
-                            window.p5Instance = new p5(sketch, gameContainerElement);
-                        }
-                    } else {
-                        console.error("קובץ המשחק נטען, אך הגדרת המשחק (sketch) לא נמצאה.");
-                        loadingContainer.innerText = "שגיאה: הגדרת המשחק לא נמצאה.";
-                    }
-                })
-                .catch(err => {
-                    loadingContainer.textContent = "שגיאה בטעינת המשחק.";
-                    gameTitle.textContent = "משהו השתבש...";
-                    console.error(err);
-                });
-        };
     </script>
 </body>
 </html>
