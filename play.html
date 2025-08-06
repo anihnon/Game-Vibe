@@ -128,6 +128,23 @@
             z-index: 10;
             box-sizing: border-box; /* לוודא padding לא גורם לגלישה */
         }
+        #infoCard h1 { /* כותרת המשחק בתוך infoCard */
+            font-size: 2.5rem; /* גודל גדול יותר */
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 1rem;
+        }
+        #infoCard p { /* תיאור המשחק בתוך infoCard */
+            font-size: 1.2rem;
+            color: #cbd5e0;
+            margin-bottom: 1.5rem;
+        }
+        #infoCard img { /* תמונת המשחק בתוך infoCard */
+            max-width: 80%;
+            height: auto;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
         #infoCardMessage { /* עיצוב הודעת מצב בתוך infoCard */
             font-size: 2rem; /* גודל גדול יותר */
             font-weight: bold;
@@ -269,17 +286,17 @@
 
     <div class="container">
         <div class="game-card">
-            <!-- פרטי המשחק הכלליים - תמיד גלויים מעל הקנבס -->
+            <!-- כותרת המשחק הראשית - תמיד גלויה -->
             <h1 id="gameTitle">טוען משחק...</h1>
-            <p id="gameDesc" class="text-md mb-4"></p>
-            <img id="gameImage" src="" alt="תמונת משחק" class="w-full h-auto rounded-lg mb-4 hidden">
             
             <div id="gameContainer">
                 <!-- הקנבס של p5.js ייווצר כאן באופן דינמי -->
                 <div id="loadingContainer">טוען משחק…</div>
                 
-                <!-- infoCard - משמש כעת רק כמסך כיסוי עם הודעות וכפתורים -->
+                <!-- infoCard - משמש כעת כמסך כיסוי (overlay) בלבד -->
                 <div id="infoCard">
+                    <img id="infoCardImage" src="" alt="תמונת משחק" class="w-full h-auto rounded-lg mb-4 hidden"> <!-- תמונה בתוך infoCard -->
+                    <p id="infoCardDesc" class="text-lg mb-6"></p> <!-- תיאור בתוך infoCard -->
                     <div id="infoCardMessage" class="text-3xl font-bold mb-4"></div> <!-- הודעת מצב דינמית -->
                     <button id="startGameButton" class="button">התחל משחק</button>
                     <button id="achievementsButton" class="button">הישגים</button>
@@ -290,10 +307,10 @@
 
             <!-- קטע חדש לפרטי משחק והוראות מפורטות - מתחת לקנבס -->
             <div id="gameDetailsSection">
-                <h2 class="text-xl font-bold mb-2">סיפור המשחק</h2> <!-- שונה מ"אודות המשחק" ל"סיפור המשחק" -->
-                <p id="gameStory" class="mb-4"></p> <!-- שונה מ-gameDetailsDesc ל-gameStory -->
+                <h2 class="text-xl font-bold mb-2">סיפור המשחק</h2>
+                <p id="gameStory" class="mb-4"></p>
                 <h2 class="text-xl font-bold mb-2">הוראות</h2>
-                <div id="detailedInstructions" class="text-left"></div> <!-- הוראות מפורטות -->
+                <div id="detailedInstructions" class="text-left"></div>
             </div>
         </div>
     </div>
@@ -314,21 +331,21 @@
 
     <script>
         // משתנים גלובליים לאלמנטי UI
-        const gameTitleElement = document.getElementById("gameTitle");
-        const gameDescElement = document.getElementById("gameDesc"); // זה נשאר לתיאור הכללי מעל התמונה
-        const gameImageElement = document.getElementById("gameImage");
+        const gameTitleElement = document.getElementById("gameTitle"); // כותרת ראשית (תמיד גלויה)
         const loadingContainer = document.getElementById("loadingContainer");
         const gameContainerElement = document.getElementById("gameContainer");
         const infoCard = document.getElementById('infoCard');
+        const infoCardImageElement = document.getElementById('infoCardImage'); // תמונה בתוך infoCard
+        const infoCardDescElement = document.getElementById('infoCardDesc'); // תיאור בתוך infoCard
         const infoCardMessageElement = document.getElementById('infoCardMessage');
         const startGameButton = document.getElementById('startGameButton');
         const achievementsButton = document.getElementById('achievementsButton');
         const resetDataButton = document.getElementById('resetDataButton');
-        const fullscreenButton = document.getElementById('fullscreenButton'); // כפתור מסך מלא
+        const fullscreenButton = document.getElementById('fullscreenButton');
 
-        // אלמנטים חדשים לפרטי המשחק והוראות מתחת לקנבס
+        // אלמנטים לפרטי המשחק והוראות מתחת לקנבס
         const gameDetailsSection = document.getElementById("gameDetailsSection");
-        const gameStoryElement = document.getElementById("gameStory"); // שונה ל-gameStory
+        const gameStoryElement = document.getElementById("gameStory");
         const detailedInstructionsElement = document.getElementById("detailedInstructions");
 
 
@@ -383,17 +400,18 @@
                         return;
                     }
 
-                    // עדכון פרטי המשחק הכלליים (מעל הקנבס)
+                    // עדכון כותרת המשחק הראשית (תמיד גלויה)
                     gameTitleElement.textContent = gameObj.title;
                     document.title = `${gameObj.title} שחקו עכשיו!`;
-                    gameDescElement.textContent = gameObj.description; // תיאור כללי
-
+                    
+                    // עדכון פרטים בתוך infoCard (יוצגו במסכי Intro/Game Over/Level Complete)
+                    infoCardDescElement.textContent = gameObj.description;
                     if (gameObj.image) {
-                        gameImageElement.src = gameObj.image;
-                        gameImageElement.alt = `תמונה של ${gameObj.title}`;
-                        gameImageElement.classList.remove('hidden');
+                        infoCardImageElement.src = gameObj.image;
+                        infoCardImageElement.alt = `תמונה של ${gameObj.title}`;
+                        infoCardImageElement.classList.remove('hidden');
                     } else {
-                        gameImageElement.classList.add('hidden');
+                        infoCardImageElement.classList.add('hidden');
                     }
 
                     // עדכון פרטי המשחק והוראות בקטע החדש (מתחת לקנבס)
@@ -411,7 +429,7 @@
                         detailedInstructionsElement.innerHTML = '<p>אין הוראות מפורטות זמינות למשחק זה.</p>';
                     }
 
-                    // 6. בצע fetch נוסף עבור gameObj.jsFile
+                    // טעינת קובץ ה-JS של המשחק
                     fetch(gameObj.jsFile)
                         .then(res => {
                             if (!res.ok) throw new Error(`Failed to load game script: ${gameObj.jsFile}`);
@@ -422,7 +440,7 @@
                             script.textContent = code;
                             document.body.appendChild(script);
 
-                            // 7. לאחר טעינת הסקריפט, בדוק אם sketch מוגדר
+                            // לאחר טעינת הסקריפט, בדוק אם sketch מוגדר
                             if (typeof sketch !== 'undefined') {
                                 loadingContainer.style.display = "none";
                                 infoCard.style.display = "flex"; // הצג את infoCard כ-overlay
@@ -456,7 +474,7 @@
                 gamePhase = 'playing';
                 loadGameData();
                 loadLevel(initialStage);
-                infoCard.style.display = 'none'; // הסתר את ה-UI
+                infoCard.style.display = 'none'; // הסתר את ה-infoCard (ובתוכו התמונה והתיאור)
             } else {
                 console.error("Game sketch not loaded yet or gamePhase is undefined.");
                 showMessageBox('שגיאה', 'המשחק עדיין לא נטען במלואו. נסה שוב בעוד רגע.');
@@ -470,7 +488,6 @@
                     achievementsText += 'אין הישגים שוחררו עדיין.';
                 } else {
                     for (const [key, value] of Object.entries(unlockedAchievements)) {
-                        // כאן תוכל להוסיף תיאורים קצרים להישגים אם תרצה ב-data.json
                         achievementsText += `- ${key.replace(/([A-Z])/g, ' $1').trim()}: ${value ? 'נפתח' : 'לא נפתח'}\n`;
                     }
                 }
@@ -482,10 +499,10 @@
 
         resetDataButton.addEventListener('click', () => {
             if (typeof resetGameData !== 'undefined' && typeof loadLevel !== 'undefined') {
-                resetGameData();
+                resetDataData(); // קריאה לפונקציית איפוס נתונים
                 gamePhase = 'intro'; // חזור למצב Intro
                 loadLevel(1); // טען את שלב 1 כדי לאתחל את המשחק למצב התחלתי
-                infoCard.style.display = 'flex'; // הצג שוב את infoCard
+                infoCard.style.display = 'flex'; // הצג שוב את infoCard (ובתוכו התמונה והתיאור)
                 infoCardMessageElement.textContent = 'לחץ על רווח להתחלת המשחק'; // הודעת Intro
             } else {
                 showMessageBox('שגיאה', 'פונקציית איפוס הנתונים אינה זמינה כרגע.');
