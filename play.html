@@ -20,7 +20,7 @@
     <style>
         body {
             margin: 0;
-            font-family: 'Inter', sans-serif; /* Changed to Inter for consistency */
+            font-family: 'Inter', sans-serif;
             background: #1a202c; /* Darker background for modern look */
             display: flex;
             flex-direction: column;
@@ -161,7 +161,6 @@
             text-decoration: none;
             display: inline-block;
             font-size: 16px;
-            margin: 4px 2px;
             cursor: pointer;
             border-radius: 8px;
             transition: background-color 0.3s ease, transform 0.3s ease;
@@ -298,9 +297,12 @@
                     <img id="infoCardImage" src="" alt="תמונת משחק" class="w-full h-auto rounded-lg mb-4 hidden"> <!-- תמונה בתוך infoCard -->
                     <p id="infoCardDesc" class="text-lg mb-6"></p> <!-- תיאור בתוך infoCard -->
                     <div id="infoCardMessage" class="text-3xl font-bold mb-4"></div> <!-- הודעת מצב דינמית -->
-                    <button id="startGameButton" class="button">התחל משחק</button>
-                    <button id="achievementsButton" class="button">הישגים</button>
-                    <button id="resetDataButton" class="button red">איפוס נתונים</button>
+                    <!-- Flex container to place buttons side-by-side -->
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-4">
+                        <button id="startGameButton" class="button">התחל משחק</button>
+                        <button id="achievementsButton" class="button">הישגים</button>
+                        <button id="resetDataButton" class="button red">איפוס נתונים</button>
+                    </div>
                 </div>
                 <button id="fullscreenButton" class="button">מסך מלא</button> <!-- כפתור מסך מלא -->
             </div>
@@ -342,6 +344,9 @@
         const achievementsButton = document.getElementById('achievementsButton');
         const resetDataButton = document.getElementById('resetDataButton');
         const fullscreenButton = document.getElementById('fullscreenButton');
+        
+        // משתנה גלובלי למצב המשחק
+        let gamePhase = 'intro';
 
         // אלמנטים לפרטי המשחק והוראות מתחת לקנבס
         const gameDetailsSection = document.getElementById("gameDetailsSection");
@@ -472,8 +477,7 @@
         startGameButton.addEventListener('click', () => {
             if (typeof gamePhase !== 'undefined') {
                 gamePhase = 'playing';
-                loadGameData();
-                loadLevel(initialStage);
+                // לוגיקה של המשחק תתחיל מכאן
                 infoCard.style.display = 'none'; // הסתר את ה-infoCard (ובתוכו התמונה והתיאור)
             } else {
                 console.error("Game sketch not loaded yet or gamePhase is undefined.");
@@ -499,7 +503,7 @@
 
         resetDataButton.addEventListener('click', () => {
             if (typeof resetGameData !== 'undefined' && typeof loadLevel !== 'undefined') {
-                resetDataData(); // קריאה לפונקציית איפוס נתונים
+                resetGameData(); // קריאה לפונקציית איפוס נתונים - תוקן שם הפונקציה
                 gamePhase = 'intro'; // חזור למצב Intro
                 loadLevel(1); // טען את שלב 1 כדי לאתחל את המשחק למצב התחלתי
                 infoCard.style.display = 'flex'; // הצג שוב את infoCard (ובתוכו התמונה והתיאור)
