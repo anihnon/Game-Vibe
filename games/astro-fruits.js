@@ -33,14 +33,20 @@ let GameAssets = {};
 // Function to show custom message box
 function showMessageBox(title, content, callback) {
     const msgBox = document.getElementById('messageBox');
-    document.getElementById('messageBoxTitle').innerText = title;
-    document.getElementById('messageBoxContent').innerText = content;
-    msgBox.style.display = 'flex';
-    const closeButton = document.getElementById('messageBoxClose');
-    closeButton.onclick = () => {
-        msgBox.style.display = 'none';
+    if (msgBox) {
+        document.getElementById('messageBoxTitle').innerText = title;
+        document.getElementById('messageBoxContent').innerText = content;
+        msgBox.style.display = 'flex';
+        const closeButton = document.getElementById('messageBoxClose');
+        closeButton.onclick = () => {
+            msgBox.style.display = 'none';
+            if (callback) callback();
+        };
+    } else {
+        console.warn("Message box element not found. Displaying alert instead.");
+        alert(`${title}\n${content}`);
         if (callback) callback();
-    };
+    }
 }
 
 // --- Cookie (localStorage) Management ---
@@ -143,11 +149,11 @@ class Player {
 
         // Gravity toggle (spacebar)
         // ודא ש-p.keyCodes קיים לפני השימוש
-        if (this.currentLevel >= GRAVITY_TOGGLE_LEVEL && activeKeys[this.p.keyCodes.SPACE] && !spacePressed) { 
+        if (this.p.keyCodes && this.currentLevel >= GRAVITY_TOGGLE_LEVEL && activeKeys[this.p.keyCodes.SPACE] && !spacePressed) { 
             this.gravityEnabled = !this.gravityEnabled;
             spacePressed = true; // Mark space as pressed to prevent rapid toggling
         }
-        if (!activeKeys[this.p.keyCodes.SPACE]) { // If spacebar is released
+        if (this.p.keyCodes && !activeKeys[this.p.keyCodes.SPACE]) { // If spacebar is released
             spacePressed = false;
         }
 
@@ -155,13 +161,16 @@ class Player {
         this.y += this.velY;
 
         // Collision with canvas edges
-        if (this.x < this.width / 2) {
-            this.x = this.width / 2;
-            this.velX = 0;
-        } else if (this.x > this.p.width - this.width / 2) { // שימוש ב-p.width
-            this.x = this.p.width - this.width / 2;
-            this.velX = 0;
+        if (this.p.width) { // ודא ש-p.width מוגדר
+            if (this.x < this.width / 2) {
+                this.x = this.width / 2;
+                this.velX = 0;
+            } else if (this.x > this.p.width - this.width / 2) { // שימוש ב-p.width
+                this.x = this.p.width - this.width / 2;
+                this.velX = 0;
+            }
         }
+
 
         // Collision with platforms
         this.onGround = false;
@@ -191,7 +200,7 @@ class Player {
         }
 
         // If player falls off screen, game over
-        if (this.y > this.p.height + 50) { // שימוש ב-p.height
+        if (this.p.height && this.y > this.p.height + 50) { // ודא ש-p.height מוגדר
             gamePhase = 'game_over';
             showMessageBox('הפסדת!', 'נפלת מהמפה. נסה שוב!');
         }
@@ -201,13 +210,15 @@ class Player {
     }
 
     draw() {
-        this.p.fill(255, 100, 100); // שימוש ב-p.fill
-        this.p.rect(this.x, this.y, this.width, this.height); // שימוש ב-p.rect
+        if (this.p) { // ודא ש-p קיים לפני הציור
+            this.p.fill(255, 100, 100); // שימוש ב-p.fill
+            this.p.rect(this.x, this.y, this.width, this.height); // שימוש ב-p.rect
 
-        // Draw sparkle effect (non-essential element)
-        if (this.sparkleTimer < 30) {
-            this.p.fill(255, 255, 0, 150); // שימוש ב-p.fill
-            this.p.ellipse(this.x + this.p.random(-5, 5), this.y + this.p.random(-10, 10), 5, 5); // שימוש ב-p.random ו-p.ellipse
+            // Draw sparkle effect (non-essential element)
+            if (this.sparkleTimer < 30) {
+                this.p.fill(255, 255, 0, 150); // שימוש ב-p.fill
+                this.p.ellipse(this.x + this.p.random(-5, 5), this.y + this.p.random(-10, 10), 5, 5); // שימוש ב-p.random ו-p.ellipse
+            }
         }
     }
 
@@ -232,8 +243,10 @@ class Platform {
     }
 
     draw() {
-        this.p.fill(100, 100, 100); // שימוש ב-p.fill
-        this.p.rect(this.x, this.y, this.width, this.height); // שימוש ב-p.rect
+        if (this.p) { // ודא ש-p קיים לפני הציור
+            this.p.fill(100, 100, 100); // שימוש ב-p.fill
+            this.p.rect(this.x, this.y, this.width, this.height); // שימוש ב-p.rect
+        }
     }
 }
 
@@ -249,7 +262,7 @@ class CollectibleFruit {
     }
 
     draw() {
-        if (!this.collected) {
+        if (!this.collected && this.p) { // ודא ש-p קיים לפני הציור
             // ודא שהתמונה קיימת ונטענה לפני הציור
             if (GameAssets.collectibleFruits[this.type]) {
                 this.p.image(GameAssets.collectibleFruits[this.type], this.x, this.y, this.radius * 2, this.radius * 2); // שימוש ב-p.image
@@ -282,15 +295,17 @@ class ExitPoint {
     }
 
     draw() {
-        this.p.fill(0, 200, 0, 150); // שימוש ב-p.fill
-        this.p.rect(this.x, this.y, this.width, this.height); // שימוש ב-p.rect
-        // ודא שהתמונה קיימת ונטענה לפני הציור
-        if (GameAssets.bossIcon) {
-            this.p.image(GameAssets.bossIcon, this.x, this.y, this.width * 0.8, this.height * 0.8); // שימוש ב-p.image
-        } else {
-            console.warn("Boss icon asset not found.");
-            this.p.fill(0); // צבע שחור כחלופה
-            this.p.rect(this.x, this.y, this.width * 0.8, this.height * 0.8);
+        if (this.p) { // ודא ש-p קיים לפני הציור
+            this.p.fill(0, 200, 0, 150); // שימוש ב-p.fill
+            this.p.rect(this.x, this.y, this.width, this.height); // שימוש ב-p.rect
+            // ודא שהתמונה קיימת ונטענה לפני הציור
+            if (GameAssets.bossIcon) {
+                this.p.image(GameAssets.bossIcon, this.x, this.y, this.width * 0.8, this.height * 0.8); // שימוש ב-p.image
+            } else {
+                console.warn("Boss icon asset not found.");
+                this.p.fill(0); // צבע שחור כחלופה
+                this.p.rect(this.x, this.y, this.width * 0.8, this.height * 0.8);
+            }
         }
     }
 }
@@ -545,6 +560,7 @@ const sketch = function(p) {
         })();
 
         // טען את השלב רק לאחר שכל הנכסים נוצרו
+        loadGameData(); // טען נתוני משחק לפני טעינת שלב
         loadLevel(initialStage);
     };
 
@@ -568,7 +584,7 @@ const sketch = function(p) {
 
         // Check for fruit collection
         for (let i = collectibleFruits.length - 1; i >= 0; i--) {
-            if (!collectibleFruits[i].collected && player.collidesWith(collectibleFruits[i])) {
+            if (!collectibleFruits[i].collected && player && player.collidesWith(collectibleFruits[i])) { // ודא ש-player קיים
                 collectibleFruits[i].collect();
             }
         }
@@ -596,6 +612,11 @@ const sketch = function(p) {
 
     p.keyPressed = function() {
         activeKeys[p.keyCode] = true;
+        // מניעת גלילת הדף עבור מקשי חצים ורווח
+        if ([p.LEFT_ARROW, p.RIGHT_ARROW, p.UP_ARROW, p.DOWN_ARROW, p.keyCodes.SPACE].includes(p.keyCode)) {
+            p.preventDefault();
+            return false;
+        }
     };
 
     p.keyReleased = function() {
