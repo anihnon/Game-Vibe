@@ -142,7 +142,8 @@ class Player {
         }
 
         // Gravity toggle (spacebar)
-        if (this.currentLevel >= GRAVITY_TOGGLE_LEVEL && activeKeys[this.p.keyCodes.SPACE] && !spacePressed) { // שימוש ב-p.keyCodes.SPACE
+        // ודא ש-p.keyCodes קיים לפני השימוש
+        if (this.currentLevel >= GRAVITY_TOGGLE_LEVEL && activeKeys[this.p.keyCodes.SPACE] && !spacePressed) { 
             this.gravityEnabled = !this.gravityEnabled;
             spacePressed = true; // Mark space as pressed to prevent rapid toggling
         }
@@ -249,7 +250,15 @@ class CollectibleFruit {
 
     draw() {
         if (!this.collected) {
-            this.p.image(GameAssets.collectibleFruits[this.type], this.x, this.y, this.radius * 2, this.radius * 2); // שימוש ב-p.image
+            // ודא שהתמונה קיימת ונטענה לפני הציור
+            if (GameAssets.collectibleFruits[this.type]) {
+                this.p.image(GameAssets.collectibleFruits[this.type], this.x, this.y, this.radius * 2, this.radius * 2); // שימוש ב-p.image
+            } else {
+                // לוג שגיאה או ציור פרי חלופי אם התמונה לא קיימת
+                console.warn(`Collectible fruit asset type ${this.type} not found.`);
+                this.p.fill(255, 0, 0); // צבע אדום כחלופה
+                this.p.ellipse(this.x, this.y, this.radius * 2, this.radius * 2);
+            }
         }
     }
 
@@ -275,7 +284,14 @@ class ExitPoint {
     draw() {
         this.p.fill(0, 200, 0, 150); // שימוש ב-p.fill
         this.p.rect(this.x, this.y, this.width, this.height); // שימוש ב-p.rect
-        this.p.image(GameAssets.bossIcon, this.x, this.y, this.width * 0.8, this.height * 0.8); // שימוש ב-p.image
+        // ודא שהתמונה קיימת ונטענה לפני הציור
+        if (GameAssets.bossIcon) {
+            this.p.image(GameAssets.bossIcon, this.x, this.y, this.width * 0.8, this.height * 0.8); // שימוש ב-p.image
+        } else {
+            console.warn("Boss icon asset not found.");
+            this.p.fill(0); // צבע שחור כחלופה
+            this.p.rect(this.x, this.y, this.width * 0.8, this.height * 0.8);
+        }
     }
 }
 
@@ -368,11 +384,15 @@ function loadLevel(levelNum) {
     currentLevelFruits = 0;
     if (levelData[levelNum]) {
         currentLevelData = levelData[levelNum];
-        // העבר את p5Instance לכל הקלאסים
-        player = new Player(currentLevelData.playerStart.x, currentLevelData.playerStart.y, levelNum, p5Instance);
-        platforms = currentLevelData.platforms.map(pData => new Platform(pData.x, pData.y, pData.w, pData.h, p5Instance));
-        collectibleFruits = currentLevelData.fruits.map(fData => new CollectibleFruit(fData.x, fData.y, fData.type, p5Instance));
-        exitPoint = new ExitPoint(currentLevelData.exit.x, currentLevelData.exit.y, currentLevelData.exit.w, currentLevelData.exit.h, p5Instance);
+        // ודא ש-p5Instance מוגדר לפני אתחול הקלאסים
+        if (!window.p5Instance) {
+            console.error("p5Instance is not defined. Cannot load level.");
+            return; // עצור אם p5Instance לא זמין
+        }
+        player = new Player(currentLevelData.playerStart.x, currentLevelData.playerStart.y, levelNum, window.p5Instance);
+        platforms = currentLevelData.platforms.map(pData => new Platform(pData.x, pData.y, pData.w, pData.h, window.p5Instance));
+        collectibleFruits = currentLevelData.fruits.map(fData => new CollectibleFruit(fData.x, fData.y, fData.type, window.p5Instance));
+        exitPoint = new ExitPoint(currentLevelData.exit.x, currentLevelData.exit.y, currentLevelData.exit.w, currentLevelData.exit.h, window.p5Instance);
     } else {
         // Game completed!
         gamePhase = 'game_over';
@@ -390,7 +410,7 @@ const sketch = function(p) {
         // קביעת גודל הקנבס כך שיתאים לגודל ה-gameContainer
         let parentDiv = p.select('#gameContainer'); // בחר את ה-div ההורה
         let canvasWidth = parentDiv.width;
-        let canvasHeight = parentDiv.height; // נתחיל עם גובה זהה לרוחב, נשנה בהמשך אם צריך
+        let canvasHeight = parentDiv.height; 
         let canvas = p.createCanvas(canvasWidth, canvasHeight);
         canvas.parent('gameContainer'); // ודא שהקנבס מוכנס לתוך ה-div הנכון
 
@@ -399,10 +419,6 @@ const sketch = function(p) {
         p.textAlign(p.CENTER, p.CENTER);
         p.imageMode(p.CENTER);
         p.frameRate(60);
-
-        // Load game data on setup
-        loadGameData();
-        loadLevel(initialStage);
 
         // Generate pixel art assets
         GameAssets = (function() {
@@ -443,6 +459,7 @@ const sketch = function(p) {
                 imgWidth = p.max(1, imgWidth);
                 imgHeight = p.max(1, imgHeight);
 
+                // חיתוך התמונה מה-pg והחזרת p5.Image
                 return pg.get(imgX, imgY, imgWidth, imgHeight);
             }
 
@@ -526,6 +543,9 @@ const sketch = function(p) {
         
             return assets;
         })();
+
+        // טען את השלב רק לאחר שכל הנכסים נוצרו
+        loadLevel(initialStage);
     };
 
     p.draw = function() {
@@ -554,7 +574,7 @@ const sketch = function(p) {
         }
 
         // Check for level completion
-        if (player && player.collidesWith(exitPoint) && collectibleFruits.every(f => f.collected)) {
+        if (player && exitPoint && player.collidesWith(exitPoint) && collectibleFruits.every(f => f.collected)) {
             gamePhase = 'level_complete';
             showMessageBox('שלב הושלם!', `כל הכבוד! אספת את כל הפירות בשלב ${player.currentLevel}.`);
             saveGameData();
@@ -598,19 +618,33 @@ const sketch = function(p) {
     p.touchStarted = function() {
         // Simulate spacebar press for gravity toggle on touch
         if (player && player.currentLevel >= GRAVITY_TOGGLE_LEVEL) {
-            activeKeys[p.keyCodes.SPACE] = true;
-            spacePressed = false; // Reset to allow toggle
+            // ודא ש-p.keyCodes קיים לפני השימוש
+            if (p.keyCodes && p.keyCodes.SPACE !== undefined) {
+                activeKeys[p.keyCodes.SPACE] = true;
+                spacePressed = false; // Reset to allow toggle
+            } else {
+                console.warn("p.keyCodes.SPACE is not defined during touchStarted.");
+            }
         }
         // Simulate jump for touch
         if (player && player.jumpsLeft > 0) {
-            activeKeys[p.UP_ARROW] = true;
+            if (p.UP_ARROW !== undefined) {
+                 activeKeys[p.UP_ARROW] = true;
+            } else {
+                console.warn("p.UP_ARROW is not defined during touchStarted.");
+            }
         }
         return false; // Prevent default browser behavior
     };
 
     p.touchEnded = function() {
-        activeKeys[p.keyCodes.SPACE] = false; // Release spacebar
-        activeKeys[p.UP_ARROW] = false; // Release jump
+        // ודא ש-p.keyCodes קיים לפני השימוש
+        if (p.keyCodes && p.keyCodes.SPACE !== undefined) {
+            activeKeys[p.keyCodes.SPACE] = false; // Release spacebar
+        }
+        if (p.UP_ARROW !== undefined) {
+            activeKeys[p.UP_ARROW] = false; // Release jump
+        }
         return false; // Prevent default browser behavior
     };
 
@@ -621,7 +655,6 @@ const sketch = function(p) {
             let newWidth = parentDiv.width;
             let newHeight = parentDiv.height;
             // שמור על יחס גובה-רוחב אם המשחק שלך תלוי בזה
-            // לדוגמה, אם המשחק הוא תמיד ריבוע:
             let size = p.min(newWidth, newHeight);
             p.resizeCanvas(size, size);
             
