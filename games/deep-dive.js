@@ -1,74 +1,254 @@
+// Global variables for p5.js sketch
+let gamePhase = 'intro'; // 'intro', 'playing', 'level_complete', 'game_over', 'instructions', 'achievements'
+let startTime = 0;
+let transitionAlpha = 1;
+let pointerStyle = 0; // For cursor graphics
+let activeKeys = {}; // Stores currently pressed keys
+let spacePressed = false; // Tracks if spacebar was just pressed
+let isMouseOut = false; // Tracks if mouse is outside canvas
+
+let isLagging = false; // Can be toggled for performance (though p5.js handles this better)
+let initialStage = 1; // Starting level - this is from the Fruit Quest, not used in Tide game.
+
+// Game specific variables for "The Great Tide"
+let playerCoordinates = { x: 0, y: 0 };
+let playerRenderSize;
+let playerFacingAngle = 0;
+let playerBaseMovementSpeed;
+let playerPhantomEnergy = 100;
+let playerPhasedState = false;
+
+let keyboardInputStates = [];
+
+let docileAquaticLife = [];
+let aggressiveOceanicCreatures = [];
+let seaMines = [];
+let playerHealthPoints = 3;
+let playerAccumulatedScore = 0;
+let fishEatenCount = 0;
+let largeFishEatenCount = 0;
+let minesDodgedCount = 0;
+let gameTimeElapsed = 0;
+
+let currentFoodSize = 0;
+let maxFoodSize = 0;
+
+let oceanWavePosition;
+let oceanWaveDirection = false;
+let oceanWaveFluctuationRange;
+
+let sceneFadeOutAlpha = 0;
+let sceneFadeInAlpha = 255;
+let isSceneTransitionUnderway = false;
+let nextSceneTarget = "";
+
+// Base dimensions for responsive scaling
+const BASE_WIDTH = 800;
+const BASE_HEIGHT = 600;
+
+// Game persistence data (from user's snippet)
+let gamePersistenceData = [100, false, false, false, false, true, false, "סנפיר תכלת", false, false, false, 2, false, false, false, false, false, false, false, false];
+let currentCoinBalance = gamePersistenceData[0];
+let phantomSkinAcquired = gamePersistenceData[1];
+let predatorSkinAcquired = gamePersistenceData[2];
+let forgetfulSkinAcquired = gamePersistenceData[3];
+let prismaticSkinAcquired = gamePersistenceData[4];
+let phantomAbilityActive = gamePersistenceData[5];
+let predatorAbilityActive = gamePersistenceData[6];
+let activePlayerAvatar = gamePersistenceData[7];
+let achievementLogEntryOne = gamePersistenceData[8];
+let achievementLogEntryTwo = gamePersistenceData[9];
+let achievementLogEntryThree = gamePersistenceData[10];
+let currentExpeditionLevel = gamePersistenceData[11];
+let grandMasterAchievement = gamePersistenceData[12];
+let achievementLogEntryFour = gamePersistenceData[13];
+let achievementLogEntryFive = gamePersistenceData[14];
+let achievementLogEntrySix = gamePersistenceData[15];
+let achievementLogEntrySeven = gamePersistenceData[16];
+let achievementLogEntryEight = gamePersistenceData[17];
+let achievementLogEntryNine = gamePersistenceData[18];
+let achievementLogEntryTen = gamePersistenceData[19];
+
+// Skins data (newly defined)
+const skinsData = [
+    { name: "סנפיר תכלת", cost: 0, acquiredFlag: "default", renderFunc: null }, // renderFunc will be assigned in setup
+    { name: "רוח רפאים", cost: 500, acquiredFlag: "phantomSkinAcquired", renderFunc: null },
+    { name: "טורף", cost: 1000, acquiredFlag: "predatorSkinAcquired", renderFunc: null },
+    { name: "שכחן", cost: 750, acquiredFlag: "forgetfulSkinAcquired", renderFunc: null },
+    { name: "פריזמטי", cost: 1500, acquiredFlag: "prismaticSkinAcquired", renderFunc: null }
+];
+
+// Function to show custom message box (assuming this is in play.html or a shared script)
+function showMessageBox(title, content, callback) {
+    const msgBox = document.getElementById('messageBox');
+    if (msgBox) {
+        document.getElementById('messageBoxTitle').innerText = title;
+        document.getElementById('messageBoxContent').innerText = content;
+        msgBox.style.display = 'flex';
+        const closeButton = document.getElementById('messageBoxClose');
+        closeButton.onclick = () => {
+            msgBox.style.display = 'none';
+            if (callback) callback();
+        };
+    } else {
+        console.warn("Message box element not found. Displaying alert instead.");
+        alert(`${title}\n${content}`);
+        if (callback) callback();
+    }
+}
+
+// --- Cookie (localStorage) Management ---
+const GAME_DATA_KEY = 'greatTideGameData'; // Changed key to avoid conflict with old game
+
+function saveGameData() {
+    gamePersistenceData = [
+        currentCoinBalance, phantomSkinAcquired, predatorSkinAcquired, forgetfulSkinAcquired, prismaticSkinAcquired,
+        phantomAbilityActive, predatorAbilityActive, activePlayerAvatar, achievementLogEntryOne, achievementLogEntryTwo,
+        achievementLogEntryThree, currentExpeditionLevel, grandMasterAchievement, achievementLogEntryFour,
+        achievementLogEntryFive, achievementLogEntrySix, achievementLogEntrySeven, achievementLogEntryEight,
+        achievementLogEntryNine, achievementLogEntryTen
+    ];
+    localStorage.setItem(GAME_DATA_KEY, JSON.stringify(gamePersistenceData));
+    console.log('Game data saved:', gamePersistenceData);
+}
+
+function loadGameData() {
+    const savedData = localStorage.getItem(GAME_DATA_KEY);
+    if (savedData) {
+        const loadedData = JSON.parse(savedData);
+        if (loadedData && Array.isArray(loadedData) && loadedData.length === 20) { // Ensure correct structure
+            gamePersistenceData = loadedData;
+            currentCoinBalance = gamePersistenceData[0];
+            phantomSkinAcquired = gamePersistenceData[1];
+            predatorSkinAcquired = gamePersistenceData[2];
+            forgetfulSkinAcquired = gamePersistenceData[3];
+            prismaticSkinAcquired = gamePersistenceData[4];
+            phantomAbilityActive = gamePersistenceData[5];
+            predatorAbilityActive = gamePersistenceData[6];
+            activePlayerAvatar = gamePersistenceData[7];
+            achievementLogEntryOne = gamePersistenceData[8];
+            achievementLogEntryTwo = gamePersistenceData[9];
+            achievementLogEntryThree = gamePersistenceData[10];
+            currentExpeditionLevel = gamePersistenceData[11];
+            grandMasterAchievement = gamePersistenceData[12];
+            achievementLogEntryFour = gamePersistenceData[13];
+            achievementLogEntryFive = gamePersistenceData[14];
+            achievementLogEntrySix = gamePersistenceData[15];
+            achievementLogEntrySeven = gamePersistenceData[16];
+            achievementLogEntryEight = gamePersistenceData[17];
+            achievementLogEntryNine = gamePersistenceData[18];
+            achievementLogEntryTen = gamePersistenceData[19];
+            console.log('Game data loaded:', gamePersistenceData);
+        } else {
+            console.warn('Invalid saved game data structure. Starting new game data.');
+            resetGameData(); // Reset if data is corrupt
+        }
+    } else {
+        console.log('No saved game data found. Initializing new game data.');
+        saveGameData(); // Save initial data if none exists
+    }
+}
+
+function resetGameData() {
+    localStorage.removeItem(GAME_DATA_KEY);
+    gamePersistenceData = [100, false, false, false, false, true, false, "סנפיר תכלת", false, false, false, 2, false, false, false, false, false, false, false, false];
+    currentCoinBalance = gamePersistenceData[0];
+    phantomSkinAcquired = gamePersistenceData[1];
+    predatorSkinAcquired = gamePersistenceData[2];
+    forgetfulSkinAcquired = gamePersistenceData[3];
+    prismaticSkinAcquired = gamePersistenceData[4];
+    phantomAbilityActive = gamePersistenceData[5];
+    predatorAbilityActive = gamePersistenceData[6];
+    activePlayerAvatar = gamePersistenceData[7];
+    achievementLogEntryOne = gamePersistenceData[8];
+    achievementLogEntryTwo = gamePersistenceData[9];
+    achievementLogEntryThree = gamePersistenceData[10];
+    currentExpeditionLevel = gamePersistenceData[11];
+    grandMasterAchievement = gamePersistenceData[12];
+    achievementLogEntryFour = gamePersistenceData[13];
+    achievementLogEntryFive = gamePersistenceData[14];
+    achievementLogEntrySix = gamePersistenceData[15];
+    achievementLogEntrySeven = gamePersistenceData[16];
+    achievementLogEntryEight = gamePersistenceData[17];
+    achievementLogEntryNine = gamePersistenceData[18];
+    achievementLogEntryTen = gamePersistenceData[19];
+    showMessageBox('איפוס נתונים', 'כל נתוני המשחק אופסו בהצלחה!');
+    console.log('Game data reset.');
+    saveGameData(); // Save the reset data
+}
+
+// --- Achievement Logic ---
+function checkAchievements() {
+    // Achievement 1: 100 points
+    if (playerAccumulatedScore >= 100 && !achievementLogEntryOne) {
+        achievementLogEntryOne = true;
+        showMessageBox('הישג חדש!', 'ציון 100: השגת 100 נקודות!');
+        saveGameData();
+    }
+    // Achievement 2: 500 points
+    if (playerAccumulatedScore >= 500 && !achievementLogEntryTwo) {
+        achievementLogEntryTwo = true;
+        showMessageBox('הישג חדש!', 'ציון 500: השגת 500 נקודות!');
+        saveGameData();
+    }
+    // Achievement 3: 1000 points
+    if (playerAccumulatedScore >= 1000 && !achievementLogEntryThree) {
+        achievementLogEntryThree = true;
+        showMessageBox('הישג חדש!', 'ציון 1000: השגת 1000 נקודות!');
+        saveGameData();
+    }
+    // Achievement 4: Eat 100 creatures
+    if (fishEatenCount >= 100 && !achievementLogEntryFour) {
+        achievementLogEntryFour = true;
+        showMessageBox('הישג חדש!', 'טורף קטן: אכלת 100 יצורים ימיים!');
+        saveGameData();
+    }
+    // Achievement 5: Dodge 50 mines
+    if (minesDodgedCount >= 50 && !achievementLogEntryFive) {
+        achievementLogEntryFive = true;
+        showMessageBox('הישג חדש!', 'חמקן מיומן: התחמקת מ-50 מוקשים!');
+        saveGameData();
+    }
+    // Achievement 6: Earn 1000 coins
+    if (currentCoinBalance >= 1000 && !achievementLogEntrySix) {
+        achievementLogEntrySix = true;
+        showMessageBox('הישג חדש!', 'עשיר מתחת למים: הרווחת 1000 מטבעות!');
+        saveGameData();
+    }
+    // Achievement 7: Play 5 minutes
+    if (gameTimeElapsed >= 300 && !achievementLogEntrySeven) { // 5 minutes * 60 seconds/minute
+        achievementLogEntrySeven = true;
+        showMessageBox('הישג חדש!', 'שחקן ותיק: שיחקת 5 דקות!');
+        saveGameData();
+    }
+    // Achievement 8: Reach size 200
+    if (playerRenderSize >= 200 * (window.p5Instance.width / BASE_WIDTH) && !achievementLogEntryEight) {
+        achievementLogEntryEight = true;
+        showMessageBox('הישג חדש!', 'ענק ים: הגעת לגודל 200!');
+        saveGameData();
+    }
+    // Achievement 9: Survive 10 minutes
+    if (gameTimeElapsed >= 600 && !achievementLogEntryNine) { // 10 minutes * 60 seconds/minute
+        achievementLogEntryNine = true;
+        showMessageBox('הישג חדש!', 'שורד אולטימטיבי: שרדת 10 דקות!');
+        saveGameData();
+    }
+    // Achievement 10: Eat 50 large fish
+    if (largeFishEatenCount >= 50 && !achievementLogEntryTen) {
+        achievementLogEntryTen = true;
+        showMessageBox('הישג חדש!', 'מפלצת ים: אכלת 50 דגים גדולים!');
+        saveGameData();
+    }
+}
+
+
 // הגדרת הסקצ' של p5.js במצב מופע
-const gameSketch = function(p) {
+const sketch = function(p) {
 
     // הגדרות בסיס לגודל יחסי (עבור חישובים)
     const BASE_WIDTH = 800;
     const BASE_HEIGHT = 600;
 
-    // נתוני שמירת משחק, מפורקים למשתנים נגישים
-    // [מטבעות, רוח רפאים נרכש, טורף נרכש, שכחן נרכש, פריזמטי נרכש, רוח רפאים פעיל, טורף פעיל, אווטאר פעיל, הישג 1, הישג 2, הישג 3, רמה, הישג 100 רמות, הישג 4, הישג 5, הישג 6, הישג 7, הישג 8, הישג 9, הישג 10]
-    let gamePersistenceData = [100, false, false, false, false, true, false, "סנפיר תכלת", false, false, false, 2, false, false, false, false, false, false, false, false];
-    let currentCoinBalance = gamePersistenceData[0];
-    let phantomSkinAcquired = gamePersistenceData[1]; // רוח רפאים
-    let predatorSkinAcquired = gamePersistenceData[2]; // טורף
-    let forgetfulSkinAcquired = gamePersistenceData[3]; // שכחן
-    let prismaticSkinAcquired = gamePersistenceData[4]; // פריזמטי
-    let phantomAbilityActive = gamePersistenceData[5]; // האם יכולת רוח רפאים פעילה (אם נבחר הסקין)
-    let predatorAbilityActive = gamePersistenceData[6]; // האם יכולת טורף פעילה (אם נבחר הסקין)
-    let activePlayerAvatar = gamePersistenceData[7]; // אווטאר השחקן הנוכחי
-    let achievementLogEntryOne = gamePersistenceData[8]; // הישג: 100 נקודות
-    let achievementLogEntryTwo = gamePersistenceData[9]; // הישג: 500 נקודות
-    let achievementLogEntryThree = gamePersistenceData[10]; // הישג: 1000 נקודות
-    let currentExpeditionLevel = gamePersistenceData[11]; // רמת המסע הנוכחית
-    let grandMasterAchievement = gamePersistenceData[12]; // הישג: רמה 100 (לא בשימוש כרגע)
-    let achievementLogEntryFour = gamePersistenceData[13]; // הישג: אכל 100 יצורים
-    let achievementLogEntryFive = gamePersistenceData[14]; // הישג: התחמק מ-50 מוקשים
-    let achievementLogEntrySix = gamePersistenceData[15]; // הישג: הרוויח 1000 מטבעות
-    let achievementLogEntrySeven = gamePersistenceData[16]; // הישג: שיחק 5 דקות
-    let achievementLogEntryEight = gamePersistenceData[17]; // הישג: הגיע לגודל 200
-    let achievementLogEntryNine = gamePersistenceData[18]; // הישג: שרד 10 דקות
-    let achievementLogEntryTen = gamePersistenceData[19]; // הישג: אכל 50 דגים גדולים
-
-    // מצב המסך הפעיל
-    let activeGameScene = "home";
-
-    // מאפייני יצור השחקן
-    let playerCoordinates = { x: 0, y: 0 }; // יאותחל ב-setup
-    let playerRenderSize; // יאותחל ב-setup, גודל יחסי
-    let playerFacingAngle = 0;
-    let playerBaseMovementSpeed; // יאותחל ב-setup, מהירות יחסית
-    let playerPhantomEnergy = 100; // מד אנרגיה ליכולת רוח רפאים
-    let playerPhasedState = false; // מצב חמקמק (בלתי פגיע)
-
-    // ניהול קלט מקלדת
-    let keyboardInputStates = [];
-
-    // אובייקטים בתוך הסביבה הימית
-    let docileAquaticLife = []; // יצורים ימיים רגועים (דגים קטנים)
-    let aggressiveOceanicCreatures = []; // יצורים אוקיינוסים תוקפניים (כרישים)
-    let seaMines = []; // מוקשי ים חדשים
-    let playerHealthPoints = 3;
-    let playerAccumulatedScore = 0;
-    let fishEatenCount = 0; // מונה דגים שנאכלו
-    let largeFishEatenCount = 0; // מונה דגים גדולים שנאכלו
-    let minesDodgedCount = 0; // מונה מוקשים שחמקו
-    let gameTimeElapsed = 0; // זמן משחק בשניות
-
-    // מד "הדג-מטר"
-    let currentFoodSize = 0; // גודל הדג האחרון שנאכל
-    let maxFoodSize = 0; // גודל הדג המקסימלי שניתן לאכול
-
-    // מכניקת גלי הים
-    let oceanWavePosition; // יאותחל ב-setup, מיקום יחסי
-    let oceanWaveDirection = false;
-    let oceanWaveFluctuationRange; // יאותחל ב-setup, טווח תנודה יחסי
-
-    // אנימציות מעבר בין סצנות
-    let sceneFadeOutAlpha = 0;
-    let sceneFadeInAlpha = 255;
-    let isSceneTransitionUnderway = false;
-    let nextSceneTarget = "";
-    
     // פונקציית setup() של P5.js - מוגדרת בתוך המופע
     p.setup = () => {
         // יצירת הקנבס והצמדתו ל-div עם id 'gameContainer'
@@ -104,6 +284,18 @@ const gameSketch = function(p) {
         playerBaseMovementSpeed = Math.max(1, 4 * (p.width / BASE_WIDTH)); // מהירות מינימלית של 1
         oceanWavePosition = -140 * (p.height / BASE_HEIGHT);
         oceanWaveFluctuationRange = 100 * (p.height / BASE_HEIGHT);
+
+        // שמור את מופע p5.js במשתנה גלובלי כדי שיהיה נגיש מחוץ לסקצ'
+        window.p5Instance = p; 
+
+        // Assign render functions to skinsData after p is available
+        skinsData.find(s => s.name === "סנפיר תכלת").renderFunc = renderAzureFin;
+        skinsData.find(s => s.name === "רוח רפאים").renderFunc = renderPhantomFin;
+        skinsData.find(s => s.name === "טורף").renderFunc = renderPredatorFin;
+        skinsData.find(s => s.name === "שכחן").renderFunc = renderForgetfulFin;
+        skinsData.find(s => s.name === "פריזמטי").renderFunc = renderPrismaticFin;
+
+        loadGameData(); // Load game data after p is initialized
     };
 
     // פונקציית draw() של P5.js - מוגדרת בתוך המופע
@@ -111,6 +303,7 @@ const gameSketch = function(p) {
         // עדכון זמן המשחק
         if (activeGameScene === "game") {
             gameTimeElapsed = p.floor(p.frameCount / 60); // כל 60 פריימים = שנייה
+            checkAchievements(); // Check achievements during gameplay
         }
 
         if (isSceneTransitionUnderway) {
@@ -123,22 +316,10 @@ const gameSketch = function(p) {
                 activeGameScene = nextSceneTarget;
                 isSceneTransitionUnderway = false;
                 sceneFadeInAlpha = 255;
+                sceneFadeOutAlpha = 0; // Reset for next fade out
             }
         } else {
             p.background(20, 20, 100);
-
-            // עדכון וציור יצורים ימיים רגועים
-            for (let i = docileAquaticLife.length - 1; i >= 0; i--) {
-                const entity = docileAquaticLife[i];
-                entity.x -= 2 * (p.width / BASE_WIDTH); // מהירות יחסית
-                if (entity.type === 0) renderAzureFin(entity.x, entity.y, entity.size, 0);
-                if (entity.type === 1) renderCrimsonFin(entity.x, entity.y, entity.size, 0);
-                if (entity.type === 2) renderGoldenFin(entity.x, entity.y, entity.size, 0);
-                if (entity.type === 3) renderRoseFin(entity.x, entity.y, entity.size, 0);
-                if (entity.x < -entity.size) {
-                    docileAquaticLife.splice(i, 1);
-                }
-            }
 
             // ניהול לוגיקת המשחק בהתאם לסצנה הפעילה
             switch (activeGameScene) {
@@ -173,7 +354,7 @@ const gameSketch = function(p) {
         keyboardInputStates[p.keyCode] = true;
         // מניעת גלילת הדף עבור מקשי חצים ורווח
         // שימוש ב-p.preventDefault() כדי לוודא עצירה מוחלטת של פעולת ברירת המחדל
-        if ([p.LEFT_ARROW, p.RIGHT_ARROW, p.UP_ARROW, p.DOWN_ARROW, 32].includes(p.keyCode)) {
+        if ([p.LEFT_ARROW, p.RIGHT_ARROW, p.UP_ARROW, p.DOWN_ARROW, p.keyCodes.SPACE].includes(p.keyCode)) {
             p.preventDefault(); // מונע את פעולת ברירת המחדל של הדפדפן
             return false; // מונע גם את הבועה של האירוע
         }
@@ -185,10 +366,10 @@ const gameSketch = function(p) {
 
     p.mousePressed = () => {
         if (activeGameScene === "home") {
-            const buttonWidth = 200 * (p.width / BASE_WIDTH); // רוחב כפתור
-            const buttonHeight = 60 * (p.height / BASE_HEIGHT); // גובה כפתור
-            const buttonSpacing = 20 * (p.height / BASE_HEIGHT); // מרווח בין כפתורים
-            const startY = p.height * 0.5 - (buttonHeight + buttonSpacing) * 0.5; // מיקום התחלתי Y עבור כפתורים מאונכים
+            const buttonWidth = 200 * (p.width / BASE_WIDTH);
+            const buttonHeight = 60 * (p.height / BASE_HEIGHT);
+            const buttonSpacing = 20 * (p.height / BASE_HEIGHT);
+            const startY = p.height * 0.5 - (buttonHeight + buttonSpacing) * 0.5;
 
             // כפתור התחלת מסע
             if (p.mouseX > p.width/2 - buttonWidth/2 && p.mouseX < p.width/2 + buttonWidth/2 &&
@@ -198,16 +379,17 @@ const gameSketch = function(p) {
                 // איפוס מצב המשחק כשמתחילים משחק חדש
                 playerHealthPoints = 3;
                 playerAccumulatedScore = 0;
-                playerRenderSize = Math.max(10, 50 * (p.width / BASE_WIDTH)); // איפוס גודל יחסי
+                playerRenderSize = Math.max(10, 50 * (p.width / BASE_WIDTH));
                 fishEatenCount = 0;
                 largeFishEatenCount = 0;
                 minesDodgedCount = 0;
-                gameTimeElapsed = 0; // איפוס זמן משחק
+                gameTimeElapsed = 0;
                 docileAquaticLife = [];
                 aggressiveOceanicCreatures = [];
                 seaMines = [];
-                playerCoordinates.x = p.width / 2; // איפוס מיקום שחקן
+                playerCoordinates.x = p.width / 2;
                 playerCoordinates.y = p.height / 2;
+                saveGameData(); // Save game state on start
             }
             // כפתור צפייה בהישגים
             const achievementsY = startY + buttonHeight + buttonSpacing;
@@ -230,13 +412,13 @@ const gameSketch = function(p) {
              if(p.dist(p.mouseX, p.mouseY, 100 * (p.width / BASE_WIDTH), p.height - (50 * (p.height / BASE_HEIGHT))) <= backButtonSize / 2) {
                 isSceneTransitionUnderway = true;
                 nextSceneTarget = "home";
+                saveGameData(); // Save game state when returning to home
             }
             // לוגיקת קניית סקינים במסך הסקינים
             if (activeGameScene === "skins") {
                 const skinButtonRadius = 30 * (p.width / BASE_WIDTH); // רדיוס כפתור הסקין
                 const skinLineHeight = 80 * (p.height / BASE_HEIGHT);
                 const skinX = p.width * 0.2;
-                const textX = p.width * 0.5;
 
                 skinsData.forEach(skin => {
                     const currentSkinY = p.height * 0.25 + (skinsData.indexOf(skin) * skinLineHeight);
@@ -257,10 +439,14 @@ const gameSketch = function(p) {
                                     else if (skin.acquiredFlag === "predatorSkinAcquired") predatorSkinAcquired = true;
                                     else if (skin.acquiredFlag === "forgetfulSkinAcquired") forgetfulSkinAcquired = true;
                                     else if (skin.acquiredFlag === "prismaticSkinAcquired") prismaticSkinAcquired = true;
-                                    activePlayerAvatar = skin.name;
+                                    activePlayerAvatar = skin.name; // הפעלת הסקין מיד לאחר הרכישה
+                                    saveGameData();
+                                } else {
+                                    showMessageBox('אין מספיק מטבעות', `אתה צריך ${skin.cost - currentCoinBalance} מטבעות נוספים כדי לרכוש את ${skin.name}.`);
                                 }
                             } else { // אם כבר נרכש, פשוט הפעל אותו
                                 activePlayerAvatar = skin.name;
+                                saveGameData();
                             }
                         }
                     }
@@ -269,24 +455,28 @@ const gameSketch = function(p) {
         }
         
         if (activeGameScene === "death") {
-            const buttonWidth = 200 * (p.width / BASE_WIDTH); // רוחב כפתור
-            const buttonHeight = 60 * (p.height / BASE_HEIGHT); // גובה כפתור
-            const buttonY = p.height/2 + (150 * (p.height / BASE_HEIGHT)); // מיקום Y של הכפתור
+            const buttonWidth = 200 * (p.width / BASE_WIDTH);
+            const buttonHeight = 60 * (p.height / BASE_HEIGHT);
+            const buttonY = p.height/2 + (150 * (p.height / BASE_HEIGHT));
 
             if (p.mouseX > p.width/2 - buttonWidth/2 && p.mouseX < p.width/2 + buttonWidth/2 &&
                 p.mouseY > buttonY - buttonHeight/2 && p.mouseY < buttonY + buttonHeight/2) {
                 isSceneTransitionUnderway = true;
                 nextSceneTarget = "home";
+                // איפוס מצב המשחק כשחוזרים למסך הבית לאחר מוות
                 playerAccumulatedScore = 0;
                 playerHealthPoints = 3;
-                playerRenderSize = Math.max(10, 50 * (p.width / BASE_WIDTH)); // איפוס גודל יחסי
+                playerRenderSize = Math.max(10, 50 * (p.width / BASE_WIDTH));
                 fishEatenCount = 0;
                 largeFishEatenCount = 0;
                 minesDodgedCount = 0;
-                gameTimeElapsed = 0; // איפוס זמן משחק
+                gameTimeElapsed = 0;
                 docileAquaticLife = [];
                 aggressiveOceanicCreatures = [];
                 seaMines = [];
+                playerCoordinates.x = p.width / 2;
+                playerCoordinates.y = p.height / 2;
+                saveGameData(); // Save game state on death
             }
         }
         
@@ -330,23 +520,23 @@ const gameSketch = function(p) {
         p.scale(scaledSize / 70);
         p.rotate(rotationAngle);
         
-        p.ellipse(0, 0, 30, 20); 
+        p.ellipse(0, 0, 30, 20); // גוף
         
         p.push();
         p.translate(-15, 0);
-        p.rotate(p.sin(p.frameCount * 15) * 10);
-        p.triangle(0, 0, -15, 10, -15, -10);
+        p.rotate(p.sin(p.frameCount * 0.1) * 0.5); // אנימציה קלה לזנב
+        p.triangle(0, 0, -15, 10, -15, -10); // זנב
         p.pop();
 
-        p.triangle(5, -10, 15, -15, 10, -5);
+        p.triangle(5, -10, 15, -15, 10, -5); // סנפיר עליון
 
         p.fill(eyeTint);
         p.noStroke();
-        p.rect(8, -2, 4, 4);
+        p.ellipse(8, -2, 4, 4); // עין
         
         p.stroke(0);
         p.strokeWeight(1);
-        p.line(10, 5, 15, 5);
+        p.line(10, 5, 15, 5); // פה
 
         p.pop();
     };
@@ -365,11 +555,11 @@ const gameSketch = function(p) {
         p.scale(scaledSize / 70);
         p.rotate(r);
 
-        p.ellipse(0, 0, 30, 20); 
+        p.ellipse(0, 0, 30, 20); // גוף
         
         p.push();
         p.translate(-15, 0);
-        p.rotate(p.sin(p.frameCount * 15) * 10);
+        p.rotate(p.sin(p.frameCount * 0.1) * 0.5);
         p.triangle(0, 0, -15, 10, -15, -10);
         p.pop();
 
@@ -380,18 +570,19 @@ const gameSketch = function(p) {
             p.color(255, 0, 0), p.color(255, 128, 0), p.color(255, 255, 0),
             p.color(0, 200, 0), p.color(0, 0, 255), p.color(128, 0, 128)
         ];
+        // ציור פסים צבעוניים
         for (let i = 0; i < huePalette.length; i++) {
-            p.fill(huePalette[i]);
+            p.fill(huePalette[(p.frameCount + i * 5) % huePalette.length]); // אנימציית צבעים
             p.rect(-10 + i * 4, 0, 3, 20);
         }
         
         p.fill(0);
         p.noStroke();
-        p.rect(8, -2, 4, 4);
+        p.ellipse(8, -2, 4, 4); // עין
         
         p.stroke(0);
         p.strokeWeight(1);
-        p.line(10, 5, 15, 5);
+        p.line(10, 5, 15, 5); // פה
 
         p.pop();
     };
@@ -406,24 +597,24 @@ const gameSketch = function(p) {
         p.fill(0, 100, 200);
         p.stroke(0, 50, 150);
         p.strokeWeight(scaledSize / 60);
-        p.ellipse(0, 0, 30, 20); 
+        p.ellipse(0, 0, 30, 20); // גוף
         
         p.fill(255, 200, 0);
         p.stroke(200, 150, 0);
-        p.triangle(-15, 0, -30, 10, -30, -10);
+        p.triangle(-15, 0, -30, 10, -30, -10); // זנב צהוב
 
         p.fill(0);
         p.noStroke();
-        p.rect(5, 0, 5, 20);
+        p.rect(5, 0, 5, 20); // פסים שחורים
         p.rect(-5, 0, 5, 20);
 
         p.fill(0);
         p.noStroke();
-        p.rect(8, -2, 4, 4);
+        p.ellipse(8, -2, 4, 4); // עין
         
         p.stroke(0);
         p.strokeWeight(1);
-        p.line(10, 5, 15, 5);
+        p.line(10, 5, 15, 5); // פה
 
         p.pop();
     };
@@ -444,17 +635,17 @@ const gameSketch = function(p) {
         p.bezierVertex(-10, 15, 10, 15, 20, 0);
         p.endShape(p.CLOSE);
         
-        p.triangle(0, -10, 10, -25, 20, -10);
+        p.triangle(0, -10, 10, -25, 20, -10); // סנפיר גב
 
-        p.triangle(-20, 0, -30, 10, -30, -10);
+        p.triangle(-20, 0, -30, 10, -30, -10); // זנב
 
         p.fill(0);
         p.noStroke();
-        p.ellipse(10, -5, 3, 3);
+        p.ellipse(10, -5, 3, 3); // עין
 
         p.fill(255);
         p.noStroke();
-        p.triangle(10, 5, 12, 8, 8, 8);
+        p.triangle(10, 5, 12, 8, 8, 8); // שיניים
         p.triangle(15, 5, 17, 8, 13, 8);
 
         p.pop();
@@ -469,13 +660,13 @@ const gameSketch = function(p) {
         p.fill(50, 50, 50);
         p.stroke(20, 20, 20);
         p.strokeWeight(2);
-        p.ellipse(0, 0, 40, 40);
+        p.ellipse(0, 0, 40, 40); // גוף המוקש
         
         for (let i = 0; i < 8; i++) {
             p.push();
-            p.rotate(i * (360 / 8));
+            p.rotate(p.radians(i * (360 / 8))); // שימוש ב-p.radians
             p.line(0, 20, 0, 30);
-            p.ellipse(0, 30, 5, 5);
+            p.ellipse(0, 30, 5, 5); // קצה קוץ
             p.pop();
         }
         p.pop();
@@ -628,14 +819,19 @@ const gameSketch = function(p) {
             playerPhantomEnergy = 100; // איפוס מד האנרגיה
         }
         
+        // יצירת ישויות חדשות
+        generateNewDocileAquaticLife();
+        generateNewAggressiveOceanicCreature();
+        generateSeaMine();
+
         // עדכון וציור יצורים ימיים רגועים
         for (let i = docileAquaticLife.length - 1; i >= 0; i--) {
             const entity = docileAquaticLife[i];
             entity.x -= 2 * (p.width / BASE_WIDTH); // קצב תנועה יחסי
-            if (entity.type === 0) renderAzureFin(entity.x, entity.y, entity.size, 0);
-            if (entity.type === 1) renderCrimsonFin(entity.x, entity.y, entity.size, 0);
-            if (entity.type === 2) renderGoldenFin(entity.x, entity.y, entity.size, 0);
-            if (entity.type === 3) renderRoseFin(entity.x, entity.y, entity.size, 0);
+            const renderFn = skinsData.find(s => s.name === activePlayerAvatar).renderFunc; // השתמש בפונקציית הרינדור של הסקין הנוכחי
+            if (renderFn) {
+                renderFn(entity.x, entity.y, entity.size, 0); // ציור היצור
+            }
             
             // בדיקת אינטראקציית אכילה והתנגשות
             if (checkCircularCollision(playerCoordinates.x, playerCoordinates.y, playerRenderSize / 2, entity.x, entity.y, entity.size / 2)) {
@@ -661,6 +857,7 @@ const gameSketch = function(p) {
                     if (playerHealthPoints <= 0) {
                         isSceneTransitionUnderway = true;
                         nextSceneTarget = "death";
+                        saveGameData();
                     }
                 }
             }
@@ -680,6 +877,7 @@ const gameSketch = function(p) {
                 if (playerHealthPoints <= 0) {
                     isSceneTransitionUnderway = true;
                     nextSceneTarget = "death";
+                    saveGameData();
                 }
             }
             if (predator.x < -predator.size) { // הסרת טורף שיצא מהמסך
@@ -701,6 +899,7 @@ const gameSketch = function(p) {
                     if (playerHealthPoints <= 0) {
                         isSceneTransitionUnderway = true;
                         nextSceneTarget = "death";
+                        saveGameData();
                     }
                 } else { // אם במצב חמקמק, חומק מהמוקש
                     minesDodgedCount++; // עדכון מונה מוקשים שחמקו
@@ -723,286 +922,168 @@ const gameSketch = function(p) {
         // ציור ממשק משתמש
         p.fill(255);
         p.textSize(20 * (p.width / BASE_WIDTH)); // גודל טקסט יחסי
-        p.text(`ניקוד: ${playerAccumulatedScore}`, p.width * 0.1, p.height * 0.05);
-        p.text(`חיים: ${playerHealthPoints}`, p.width * 0.1, p.height * 0.1);
-        p.text(`מטבעות: ${currentCoinBalance}`, p.width * 0.1, p.height * 0.15);
-        
-        // ציור מד אנרגיית מצב חמקמק
+        p.textAlign(p.LEFT);
+        p.text(`ניקוד: ${playerAccumulatedScore}`, p.width * 0.05, p.height * 0.05);
+        p.text(`חיים: ${playerHealthPoints}`, p.width * 0.05, p.height * 0.1);
+        p.text(`מטבעות: ${currentCoinBalance}`, p.width * 0.05, p.height * 0.15);
+        p.text(`זמן: ${gameTimeElapsed} שניות`, p.width * 0.05, p.height * 0.2);
+
+        // ציור מד הדג-מטר
+        p.fill(200);
+        p.rect(p.width * 0.75, p.height * 0.075, 200 * (p.width / BASE_WIDTH), 20 * (p.height / BASE_HEIGHT), 5);
+        p.fill(0, 200, 0);
+        let foodMeterWidth = p.map(playerRenderSize, 10, 200 * (p.width / BASE_WIDTH), 0, 200 * (p.width / BASE_WIDTH));
+        p.rect(p.width * 0.75 - (200 * (p.width / BASE_WIDTH) - foodMeterWidth) / 2, p.height * 0.075, foodMeterWidth, 20 * (p.height / BASE_HEIGHT), 5);
+        p.fill(255);
+        p.textSize(15 * (p.width / BASE_WIDTH));
+        p.text("מד גודל", p.width * 0.75, p.height * 0.075);
+
+        // ציור מד אנרגיה רוח רפאים (אם הסקין פעיל)
         if (phantomAbilityActive) {
-            const meterWidth = 200 * (p.width / BASE_WIDTH);
-            const meterHeight = 20 * (p.height / BASE_HEIGHT);
-            p.stroke(255);
-            p.noFill();
-            p.rect(p.width * 0.5, p.height * 0.05, meterWidth, meterHeight);
-            p.fill(255, 255, 255, 100);
-            p.noStroke();
-            p.rect(p.width * 0.5 - meterWidth/2 + (playerPhantomEnergy / 100) * meterWidth / 2, p.height * 0.05, (playerPhantomEnergy / 100) * meterWidth, meterHeight);
+            p.fill(200);
+            p.rect(p.width * 0.75, p.height * 0.15, 200 * (p.width / BASE_WIDTH), 20 * (p.height / BASE_HEIGHT), 5);
+            p.fill(0, 200, 200);
+            let energyMeterWidth = p.map(playerPhantomEnergy, 0, 100, 0, 200 * (p.width / BASE_WIDTH));
+            p.rect(p.width * 0.75 - (200 * (p.width / BASE_WIDTH) - energyMeterWidth) / 2, p.height * 0.15, energyMeterWidth, 20 * (p.height / BASE_HEIGHT), 5);
+            p.fill(255);
+            p.textSize(15 * (p.width / BASE_WIDTH));
+            p.text("אנרגיית חמקנות", p.width * 0.75, p.height * 0.15);
         }
 
-        // ציור מד הדג-מטר (Fish-o-meter)
-        const meterWidth = 200 * (p.width / BASE_WIDTH);
-        const meterHeight = 20 * (p.height / BASE_HEIGHT);
-        p.stroke(255);
-        p.noFill();
-        p.rect(p.width * 0.5, p.height * 0.1, meterWidth, meterHeight); // מסגרת המד
-        if (maxFoodSize > 0) {
-            let meterFill = p.map(currentFoodSize, 0, maxFoodSize, 0, meterWidth);
-            p.fill(0, 200, 0, 150); // צבע ירוק
-            p.noStroke();
-            p.rect(p.width * 0.5 - meterWidth/2 + meterFill / 2, p.height * 0.1, meterFill, meterHeight);
+        // ציור השחקן
+        const currentPlayerRenderFn = skinsData.find(s => s.name === activePlayerAvatar).renderFunc;
+        if (currentPlayerRenderFn) {
+            currentPlayerRenderFn(playerCoordinates.x, playerCoordinates.y, playerRenderSize, playerFacingAngle);
+        } else {
+            // Fallback if no render function found
+            renderAzureFin(playerCoordinates.x, playerCoordinates.y, playerRenderSize, playerFacingAngle);
         }
-        p.fill(255);
-        p.textSize(16 * (p.width / BASE_WIDTH)); // גודל טקסט יחסי
-        p.text("דג-מטר", p.width * 0.5, p.height * 0.1 + (25 * (p.height / BASE_HEIGHT)));
-        
-        // ציור אווטאר השחקן הנוכחי
-        switch (activePlayerAvatar) {
-            case "סנפיר תכלת": // כחול
-                renderAzureFin(playerCoordinates.x, playerCoordinates.y, playerRenderSize, playerFacingAngle);
-                break;
-            case "סנפיר ארגמן": // אדום
-                renderCrimsonFin(playerCoordinates.x, playerCoordinates.y, playerRenderSize, playerFacingAngle);
-                break;
-            case "סנפיר זהב": // צהוב
-                renderGoldenFin(playerCoordinates.x, playerCoordinates.y, playerRenderSize, playerFacingAngle);
-                break;
-            case "סנפיר ורד": // ורוד
-                renderRoseFin(playerCoordinates.x, playerCoordinates.y, playerRenderSize, playerFacingAngle);
-                break;
-            case "רוח רפאים": // רוח רפאים
-                renderPhantomFin(playerCoordinates.x, playerCoordinates.y, playerRenderSize, playerFacingAngle);
-                break;
-            case "טורף": // טורף
-                renderPredatorFin(playerCoordinates.x, playerCoordinates.y, playerRenderSize, playerFacingAngle);
-                break;
-            case "שכחן": // שכחן
-                renderForgetfulFin(playerCoordinates.x, playerCoordinates.y, playerRenderSize, playerFacingAngle);
-                break;
-            case "פריזמטי": // פריזמטי
-                renderPrismaticFin(playerCoordinates.x, playerCoordinates.y, playerRenderSize, playerFacingAngle);
-                break;
-        }
-        
-        generateNewDocileAquaticLife();
-        generateNewAggressiveOceanicCreature();
-        generateSeaMine();
+        p.textAlign(p.CENTER); // החזרת יישור למרכז
     };
 
     const renderAccomplishmentsScreen = () => {
         p.fill(255);
-        p.textSize(50 * (p.width / BASE_WIDTH)); // גודל טקסט יחסי
+        p.textSize(p.width * 0.08);
         p.text("הישגים", p.width/2, p.height * 0.1);
-        
-        p.textSize(25 * (p.width / BASE_WIDTH)); // גודל טקסט יחסי
-        p.textAlign(p.RIGHT); // יישור לימין לרשימת הישגים
-        let achievementY = p.height * 0.25;
-        const lineHeight = 40 * (p.height / BASE_HEIGHT); // מרווח שורה יחסי
 
-        // הישג 1: 100 נקודות
-        p.fill(achievementLogEntryOne ? p.color(0, 200, 0) : p.color(150)); // ירוק אם הושג, אפור אחרת
-        p.text(`השג 100 נקודות: ${achievementLogEntryOne ? "הושלם!" : "לא הושלם"}`, p.width * 0.8, achievementY);
-        if (playerAccumulatedScore >= 100 && !achievementLogEntryOne) {
-            achievementLogEntryOne = true;
-        }
-
-        // הישג 2: 500 נקודות
-        achievementY += lineHeight;
-        p.fill(achievementLogEntryTwo ? p.color(0, 200, 0) : p.color(150));
-        p.text(`השג 500 נקודות: ${achievementLogEntryTwo ? "הושלם!" : "לא הושלם"}`, p.width * 0.8, achievementY);
-        if (playerAccumulatedScore >= 500 && !achievementLogEntryTwo) {
-            achievementLogEntryTwo = true;
-        }
-
-        // הישג 3: 1000 נקודות
-        achievementY += lineHeight;
-        p.fill(achievementLogEntryThree ? p.color(0, 200, 0) : p.color(150));
-        p.text(`השג 1000 נקודות: ${achievementLogEntryThree ? "הושלם!" : "לא הושלם"}`, p.width * 0.8, achievementY);
-        if (playerAccumulatedScore >= 1000 && !achievementLogEntryThree) {
-            achievementLogEntryThree = true;
-        }
-
-        // הישג 4: אכל 100 יצורים
-        achievementY += lineHeight;
-        p.fill(achievementLogEntryFour ? p.color(0, 200, 0) : p.color(150));
-        p.text(`אכל 100 יצורים ימיים: ${achievementLogEntryFour ? "הושלם!" : `(${fishEatenCount}/100)`}`, p.width * 0.8, achievementY);
-        if (fishEatenCount >= 100 && !achievementLogEntryFour) {
-            achievementLogEntryFour = true;
-        }
-
-        // הישג 5: התחמק מ-50 מוקשים
-        achievementY += lineHeight;
-        p.fill(achievementLogEntryFive ? p.color(0, 200, 0) : p.color(150));
-        p.text(`התחמק מ-50 מוקשי ים: ${achievementLogEntryFive ? "הושלם!" : `(${minesDodgedCount}/50)`}`, p.width * 0.8, achievementY);
-        if (minesDodgedCount >= 50 && !achievementLogEntryFive) {
-            achievementLogEntryFive = true;
-        }
-
-        // הישג 6: הרוויח 1000 מטבעות
-        achievementY += lineHeight;
-        p.fill(achievementLogEntrySix ? p.color(0, 200, 0) : p.color(150));
-        p.text(`הרווח 1000 מטבעות: ${achievementLogEntrySix ? "הושלם!" : `(${currentCoinBalance}/1000)`}`, p.width * 0.8, achievementY);
-        if (currentCoinBalance >= 1000 && !achievementLogEntrySix) {
-            achievementLogEntrySix = true;
-        }
-
-        // הישג 7: שיחק 5 דקות (300 שניות)
-        achievementY += lineHeight;
-        p.fill(achievementLogEntrySeven ? p.color(0, 200, 0) : p.color(150));
-        p.text(`שחק 5 דקות: ${achievementLogEntrySeven ? "הושלם!" : `(${p.floor(gameTimeElapsed/60)}/${5})`}`, p.width * 0.8, achievementY);
-        if (gameTimeElapsed >= 300 && !achievementLogEntrySeven) {
-            achievementLogEntrySeven = true;
-        }
-
-        // הישג 8: הגיע לגודל 200
-        achievementY += lineHeight;
-        p.fill(achievementLogEntryEight ? p.color(0, 200, 0) : p.color(150));
-        p.text(`הגיע לגודל ${p.round(200 * (p.width / BASE_WIDTH))}: ${achievementLogEntryEight ? "הושלם!" : `(${p.round(playerRenderSize)}/${p.round(200 * (p.width / BASE_WIDTH))})`}`, p.width * 0.8, achievementY);
-        if (playerRenderSize >= 200 * (p.width / BASE_WIDTH) && !achievementLogEntryEight) {
-            achievementLogEntryEight = true;
-        }
-
-        // הישג 9: שרד 10 דקות (600 שניות)
-        achievementY += lineHeight;
-        p.fill(achievementLogEntryNine ? p.color(0, 200, 0) : p.color(150));
-        p.text(`שרד 10 דקות: ${achievementLogEntryNine ? "הושלם!" : `(${p.floor(gameTimeElapsed/60)}/${10})`}`, p.width * 0.8, achievementY);
-        if (gameTimeElapsed >= 600 && !achievementLogEntryNine) {
-            achievementLogEntryNine = true;
-        }
-
-        // הישג 10: אכל 50 דגים גדולים (גודל מעל 100)
-        achievementY += lineHeight;
-        p.fill(achievementLogEntryTen ? p.color(0, 200, 0) : p.color(150));
-        p.text(`אכל 50 יצורים ימיים גדולים: ${achievementLogEntryTen ? "הושלם!" : `(${largeFishEatenCount}/50)`}`, p.width * 0.8, achievementY);
-        if (largeFishEatenCount >= 50 && !achievementLogEntryTen) {
-            achievementLogEntryTen = true;
-        }
-
-        // מונה מטבעות בלוח ההישגים
-        p.fill(255);
-        p.textSize(25 * (p.width / BASE_WIDTH));
+        p.textSize(p.width * 0.03);
         p.textAlign(p.LEFT);
-        p.text(`מטבעות: ${currentCoinBalance}`, p.width * 0.05, p.height * 0.05);
-        p.textAlign(p.CENTER); // החזרת יישור למרכז
-        
-        // כפתור חזרה למסך הראשי
+        let lineHeight = p.height * 0.05;
+        let startY = p.height * 0.2;
+
+        p.text(`ציון 100: ${achievementLogEntryOne ? '✅' : '❌'}`, p.width * 0.1, startY);
+        p.text(`ציון 500: ${achievementLogEntryTwo ? '✅' : '❌'}`, p.width * 0.1, startY + lineHeight);
+        p.text(`ציון 1000: ${achievementLogEntryThree ? '✅' : '❌'}`, p.width * 0.1, startY + lineHeight * 2);
+        p.text(`טורף קטן (100 דגים): ${achievementLogEntryFour ? '✅' : '❌'}`, p.width * 0.1, startY + lineHeight * 3);
+        p.text(`חמקן מיומן (50 מוקשים): ${achievementLogEntryFive ? '✅' : '❌'}`, p.width * 0.1, startY + lineHeight * 4);
+        p.text(`עשיר מתחת למים (1000 מטבעות): ${achievementLogEntrySix ? '✅' : '❌'}`, p.width * 0.1, startY + lineHeight * 5);
+        p.text(`שחקן ותיק (5 דקות): ${achievementLogEntrySeven ? '✅' : '❌'}`, p.width * 0.1, startY + lineHeight * 6);
+        p.text(`ענק ים (גודל 200): ${achievementLogEntryEight ? '✅' : '❌'}`, p.width * 0.1, startY + lineHeight * 7);
+        p.text(`שורד אולטימטיבי (10 דקות): ${achievementLogEntryNine ? '✅' : '❌'}`, p.width * 0.1, startY + lineHeight * 8);
+        p.text(`מפלצת ים (50 דגים גדולים): ${achievementLogEntryTen ? '✅' : '❌'}`, p.width * 0.1, startY + lineHeight * 9);
+
+
+        // כפתור חזרה
         const backButtonSize = 100 * (p.width / BASE_WIDTH);
-        p.fill(163, 163, 255, 100);
+        p.fill(200, 100, 0);
         if(p.dist(p.mouseX, p.mouseY, 100 * (p.width / BASE_WIDTH), p.height - (50 * (p.height / BASE_HEIGHT))) <= backButtonSize / 2) {
-            p.fill(163, 163, 255, 50);
+            p.fill(150, 70, 0);
             p.cursor(p.HAND);
         } else {
-            p.fill(163, 163, 255, 100);
+            p.fill(200, 100, 0);
             p.cursor(p.ARROW);
         }
         p.ellipse(100 * (p.width / BASE_WIDTH), p.height - (50 * (p.height / BASE_HEIGHT)), backButtonSize, backButtonSize);
         p.fill(255);
-        p.textSize(40 * (p.width / BASE_WIDTH)); // גודל טקסט יחסי
+        p.textSize(25 * (p.width / BASE_WIDTH));
         p.text("חזור", 100 * (p.width / BASE_WIDTH), p.height - (50 * (p.height / BASE_HEIGHT)));
+        p.textAlign(p.CENTER);
     };
-
-    // נתוני סקינים (שם, עלות, דגל רכישה בקוד)
-    const skinsData = [
-        { name: "סנפיר תכלת", cost: 0, acquiredFlag: "default", renderFunc: renderAzureFin }, // ברירת מחדל
-        { name: "סנפיר ארגמן", cost: 1500, acquiredFlag: "predatorSkinAcquired", renderFunc: renderCrimsonFin },
-        { name: "סנפיר זהב", cost: 3000, acquiredFlag: "forgetfulSkinAcquired", renderFunc: renderGoldenFin },
-        { name: "סנפיר ורד", cost: 5000, acquiredFlag: "prismaticSkinAcquired", renderFunc: renderRoseFin },
-        { name: "רוח רפאים", cost: 8000, acquiredFlag: "phantomSkinAcquired", renderFunc: renderPhantomFin },
-        { name: "טורף", cost: 12000, acquiredFlag: "predatorSkinAcquired", renderFunc: renderPredatorFin }, // שימוש חוזר בדגל, נתקן את זה
-        { name: "שכחן", cost: 15000, acquiredFlag: "forgetfulSkinAcquired", renderFunc: renderForgetfulFin }, // שימוש חוזר בדגל, נתקן את זה
-        { name: "פריזמטי", cost: 20000, acquiredFlag: "prismaticSkinAcquired", renderFunc: renderPrismaticFin } // שימוש חוזר בדגל, נתקן את זה
-    ];
 
     const renderAvatarSelectionScreen = () => {
         p.fill(255);
-        p.textSize(50 * (p.width / BASE_WIDTH)); // גודל טקסט יחסי
-        p.text("בחירת אווטאר", p.width/2, p.height * 0.1);
-        
-        p.textSize(25 * (p.width / BASE_WIDTH)); // גודל טקסט יחסי
-        let skinY = p.height * 0.25;
-        const skinLineHeight = 80 * (p.height / BASE_HEIGHT);
-        const skinX = p.width * 0.2; // מיקום עמודת אווטארים
-        const textX = p.width * 0.5; // מיקום עמודת טקסט
-        const buttonRadius = 30 * (p.width / BASE_WIDTH); // רדיוס כפתורי הסקין
+        p.textSize(p.width * 0.08);
+        p.text("בחר אווטאר", p.width/2, p.height * 0.1);
 
-        skinsData.forEach((skin, index) => {
-            const currentSkinY = p.height * 0.25 + (index * skinLineHeight);
+        p.textSize(p.width * 0.03);
+        p.textAlign(p.LEFT);
+        let lineHeight = 80 * (p.height / BASE_HEIGHT);
+        let startY = p.height * 0.25;
+        const skinX = p.width * 0.2;
+        const textX = p.width * 0.5;
+        const skinButtonRadius = 30 * (p.width / BASE_WIDTH);
+
+        skinsData.forEach(skin => {
+            const currentSkinY = startY + (skinsData.indexOf(skin) * lineHeight);
             let isAcquired = false;
-            // בדיקה האם הסקין נרכש (באמצעות הדגל המתאים)
-            if (skin.acquiredFlag === "default") {
-                isAcquired = true; // סקין ברירת מחדל תמיד נרכש
-            } else if (skin.acquiredFlag === "phantomSkinAcquired") {
-                isAcquired = phantomSkinAcquired;
-            } else if (skin.acquiredFlag === "predatorSkinAcquired") {
-                isAcquired = predatorSkinAcquired;
-            } else if (skin.acquiredFlag === "forgetfulSkinAcquired") {
-                isAcquired = forgetfulSkinAcquired;
-            } else if (skin.acquiredFlag === "prismaticSkinAcquired") {
-                isAcquired = prismaticSkinAcquired;
+            if (skin.acquiredFlag === "default") isAcquired = true;
+            else if (skin.acquiredFlag === "phantomSkinAcquired") isAcquired = phantomSkinAcquired;
+            else if (skin.acquiredFlag === "predatorSkinAcquired") isAcquired = predatorSkinAcquired;
+            else if (skin.acquiredFlag === "forgetfulSkinAcquired") isAcquired = forgetfulSkinAcquired;
+            else if (skin.acquiredFlag === "prismaticSkinAcquired") isAcquired = prismaticSkinAcquired;
+
+            // ציור הסקין
+            if (skin.renderFunc) {
+                skin.renderFunc(skinX, currentSkinY, 50, 0); // גודל קבוע לתצוגה מקדימה
+            } else {
+                renderAzureFin(skinX, currentSkinY, 50, 0); // Fallback
             }
+
+            // ציור כפתור בחירה/קנייה
+            p.fill(isAcquired ? (activePlayerAvatar === skin.name ? p.color(0, 200, 0) : p.color(100, 100, 255)) : p.color(255, 100, 0));
+            if (p.dist(p.mouseX, p.mouseY, skinX, currentSkinY) < skinButtonRadius) {
+                p.fill(isAcquired ? (activePlayerAvatar === skin.name ? p.color(0, 150, 0) : p.color(70, 70, 200)) : p.color(200, 70, 0));
+                p.cursor(p.HAND);
+            } else {
+                p.cursor(p.ARROW);
+            }
+            p.ellipse(skinX, currentSkinY, skinButtonRadius * 2, skinButtonRadius * 2);
 
             p.fill(255);
-            p.text(`${skin.name} (${skin.cost} מטבעות)`, textX, currentSkinY);
-            
-            // ציור האווטאר באמצעות פונקציית הרינדור הספציפית
-            skin.renderFunc(skinX, currentSkinY, 50 * (p.width / BASE_WIDTH), 0);
-
-            if (activePlayerAvatar === skin.name) { p.text("פעיל", textX + 150 * (p.width / BASE_WIDTH), currentSkinY); }
-            else if (isAcquired || skin.cost === 0) { // אם נרכש או ברירת מחדל
-                p.fill(0, 200, 0); p.text("בחר", textX + 150 * (p.width / BASE_WIDTH), currentSkinY);
-                if (p.dist(p.mouseX, p.mouseY, skinX, currentSkinY) < buttonRadius && p.mouseIsPressed) {
-                    activePlayerAvatar = skin.name;
-                }
-            } else if (currentCoinBalance >= skin.cost) { // אם יש מספיק מטבעות לקנות
-                p.fill(0, 200, 0); p.text("קנה", textX + 150 * (p.width / BASE_WIDTH), currentSkinY);
-                if (p.dist(p.mouseX, p.mouseY, skinX, currentSkinY) < buttonRadius && p.mouseIsPressed) {
-                    currentCoinBalance -= skin.cost;
-                    // עדכון דגל הרכישה המתאים
-                    if (skin.acquiredFlag === "phantomSkinAcquired") phantomSkinAcquired = true;
-                    else if (skin.acquiredFlag === "predatorSkinAcquired") predatorSkinAcquired = true;
-                    else if (skin.acquiredFlag === "forgetfulSkinAcquired") forgetfulSkinAcquired = true;
-                    else if (skin.acquiredFlag === "prismaticSkinAcquired") prismaticSkinAcquired = true;
-                    activePlayerAvatar = skin.name;
-                }
-            } else { // אין מספיק מטבעות
-                p.fill(200, 0, 0); p.text("חסר", textX + 150 * (p.width / BASE_WIDTH), currentSkinY);
+            p.text(skin.name, textX, currentSkinY - 15);
+            if (isAcquired) {
+                p.text(activePlayerAvatar === skin.name ? "פעיל" : "בחר", textX, currentSkinY + 15);
+            } else {
+                p.text(`מחיר: ${skin.cost} מטבעות`, textX, currentSkinY + 15);
             }
-            if (p.dist(p.mouseX, p.mouseY, skinX, currentSkinY) < buttonRadius) { p.cursor(p.HAND); } else { p.cursor(p.ARROW); }
         });
 
-        // מונה מטבעות במסך האווטארים
+        // מונה מטבעות במסך הסקינים
         p.fill(255);
         p.textSize(25 * (p.width / BASE_WIDTH));
         p.textAlign(p.LEFT);
         p.text(`מטבעות: ${currentCoinBalance}`, p.width * 0.05, p.height * 0.05);
-        p.textAlign(p.CENTER); // החזרת יישור למרכז
+        p.textAlign(p.CENTER);
 
-        // כפתור חזרה למסך הראשי
+        // כפתור חזרה
         const backButtonSize = 100 * (p.width / BASE_WIDTH);
-        p.fill(163, 163, 255, 100);
+        p.fill(200, 100, 0);
         if(p.dist(p.mouseX, p.mouseY, 100 * (p.width / BASE_WIDTH), p.height - (50 * (p.height / BASE_HEIGHT))) <= backButtonSize / 2) {
-            p.fill(163, 163, 255, 50);
+            p.fill(150, 70, 0);
             p.cursor(p.HAND);
         } else {
-            p.fill(163, 163, 255, 100);
+            p.fill(200, 100, 0);
             p.cursor(p.ARROW);
         }
         p.ellipse(100 * (p.width / BASE_WIDTH), p.height - (50 * (p.height / BASE_HEIGHT)), backButtonSize, backButtonSize);
         p.fill(255);
-        p.textSize(40 * (p.width / BASE_WIDTH)); // גודל טקסט יחסי
+        p.textSize(25 * (p.width / BASE_WIDTH));
         p.text("חזור", 100 * (p.width / BASE_WIDTH), p.height - (50 * (p.height / BASE_HEIGHT)));
+        p.textAlign(p.CENTER);
     };
 
     const renderGameOverScreen = () => {
         p.fill(255);
-        p.textSize(100 * (p.width / BASE_WIDTH)); // גודל טקסט יחסי
-        p.text("המסע נגמר", p.width/2, p.height/2 - (50 * (p.height / BASE_HEIGHT)));
-        p.textSize(50 * (p.width / BASE_WIDTH)); // גודל טקסט יחסי
-        p.text(`ניקוד סופי: ${playerAccumulatedScore}`, p.width/2, p.height/2 + (50 * (p.height / BASE_HEIGHT)));
-        
-        // כפתור חזרה למסך הכותרת
-        const buttonWidth = 200 * (p.width / BASE_WIDTH); // רוחב כפתור
-        const buttonHeight = 60 * (p.height / BASE_HEIGHT); // גובה כפתור
-        const buttonY = p.height/2 + (150 * (p.height / BASE_HEIGHT)); // מיקום Y של הכפתור
+        p.textSize(p.width * 0.1);
+        p.text("המשחק נגמר!", p.width/2, p.height * 0.2);
+        p.textSize(p.width * 0.05);
+        p.text(`הניקוד שלך: ${playerAccumulatedScore}`, p.width/2, p.height * 0.4);
+        p.text(`מטבעות שהרווחת: ${currentCoinBalance}`, p.width/2, p.height * 0.5);
+
+        // כפתור חזרה למסך הבית
+        const buttonWidth = 200 * (p.width / BASE_WIDTH);
+        const buttonHeight = 60 * (p.height / BASE_HEIGHT);
+        const buttonY = p.height/2 + (150 * (p.height / BASE_HEIGHT));
 
         p.fill(255, 0, 0);
         if (p.mouseX > p.width/2 - buttonWidth/2 && p.mouseX < p.width/2 + buttonWidth/2 &&
@@ -1013,16 +1094,9 @@ const gameSketch = function(p) {
             p.fill(255, 0, 0);
             p.cursor(p.ARROW);
         }
-        p.rect(p.width/2, buttonY, buttonWidth, buttonHeight, 10 * (p.width / BASE_WIDTH)); // כפתור מלבני עם פינות מעוגלות
+        p.rect(p.width/2, buttonY, buttonWidth, buttonHeight, 10 * (p.width / BASE_WIDTH));
         p.fill(255);
-        p.textSize(40 * (p.width / BASE_WIDTH)); // גודל טקסט יחסי
-        p.text("חזרה לתפריט", p.width/2, buttonY);
-
-        // מונה מטבעות במסך הסיום
-        p.fill(255);
-        p.textSize(25 * (p.width / BASE_WIDTH));
-        p.textAlign(p.LEFT);
-        p.text(`מטבעות: ${currentCoinBalance}`, p.width * 0.05, p.height * 0.05);
-        p.textAlign(p.CENTER); // החזרת יישור למרכז
+        p.textSize(40 * (p.width / BASE_WIDTH));
+        p.text("חזור לבית", p.width/2, buttonY);
     };
 };
