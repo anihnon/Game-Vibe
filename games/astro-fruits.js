@@ -368,10 +368,11 @@ function loadLevel(levelNum) {
     currentLevelFruits = 0;
     if (levelData[levelNum]) {
         currentLevelData = levelData[levelNum];
-        player = new Player(currentLevelData.playerStart.x, currentLevelData.playerStart.y, levelNum, p5Instance); // העבר את p5Instance
-        platforms = currentLevelData.platforms.map(pData => new Platform(pData.x, pData.y, pData.w, pData.h, p5Instance)); // העבר את p5Instance
-        collectibleFruits = currentLevelData.fruits.map(fData => new CollectibleFruit(fData.x, fData.y, fData.type, p5Instance)); // העבר את p5Instance
-        exitPoint = new ExitPoint(currentLevelData.exit.x, currentLevelData.exit.y, currentLevelData.exit.w, currentLevelData.exit.h, p5Instance); // העבר את p5Instance
+        // העבר את p5Instance לכל הקלאסים
+        player = new Player(currentLevelData.playerStart.x, currentLevelData.playerStart.y, levelNum, p5Instance);
+        platforms = currentLevelData.platforms.map(pData => new Platform(pData.x, pData.y, pData.w, pData.h, p5Instance));
+        collectibleFruits = currentLevelData.fruits.map(fData => new CollectibleFruit(fData.x, fData.y, fData.type, p5Instance));
+        exitPoint = new ExitPoint(currentLevelData.exit.x, currentLevelData.exit.y, currentLevelData.exit.w, currentLevelData.exit.h, p5Instance);
     } else {
         // Game completed!
         gamePhase = 'game_over';
@@ -386,7 +387,13 @@ const sketch = function(p) {
     window.p5Instance = p; 
 
     p.setup = function() {
-        let canvas = p.createCanvas(600, 600);
+        // קביעת גודל הקנבס כך שיתאים לגודל ה-gameContainer
+        let parentDiv = p.select('#gameContainer'); // בחר את ה-div ההורה
+        let canvasWidth = parentDiv.width;
+        let canvasHeight = parentDiv.height; // נתחיל עם גובה זהה לרוחב, נשנה בהמשך אם צריך
+        let canvas = p.createCanvas(canvasWidth, canvasHeight);
+        canvas.parent('gameContainer'); // ודא שהקנבס מוכנס לתוך ה-div הנכון
+
         p.pixelDensity(1);
         p.rectMode(p.CENTER);
         p.textAlign(p.CENTER, p.CENTER);
@@ -525,7 +532,7 @@ const sketch = function(p) {
         p.background(50); // Dark background
 
         // Draw game elements
-        for (let pObj of platforms) { // שינוי שם המשתנה
+        for (let pObj of platforms) {
             pObj.draw();
         }
         for (let f of collectibleFruits) {
@@ -591,12 +598,12 @@ const sketch = function(p) {
     p.touchStarted = function() {
         // Simulate spacebar press for gravity toggle on touch
         if (player && player.currentLevel >= GRAVITY_TOGGLE_LEVEL) {
-            activeKeys[p.keyCodes.SPACE] = true; // שימוש ב-p.keyCodes.SPACE
+            activeKeys[p.keyCodes.SPACE] = true;
             spacePressed = false; // Reset to allow toggle
         }
         // Simulate jump for touch
         if (player && player.jumpsLeft > 0) {
-            activeKeys[p.UP_ARROW] = true; // שימוש ב-p.UP_ARROW
+            activeKeys[p.UP_ARROW] = true;
         }
         return false; // Prevent default browser behavior
     };
@@ -608,9 +615,18 @@ const sketch = function(p) {
     };
 
     p.windowResized = function() {
-        // This function is called by the main play.html script when exiting fullscreen
-        // It's a good place to potentially resize the canvas if needed, but p5.js
-        // usually handles this well with its internal width/height variables.
-        // For this specific setup, the canvas size is fixed, so no action needed here.
+        // התאמת גודל הקנבס לגודל ה-gameContainer כאשר החלון משתנה
+        let parentDiv = p.select('#gameContainer');
+        if (parentDiv) {
+            let newWidth = parentDiv.width;
+            let newHeight = parentDiv.height;
+            // שמור על יחס גובה-רוחב אם המשחק שלך תלוי בזה
+            // לדוגמה, אם המשחק הוא תמיד ריבוע:
+            let size = p.min(newWidth, newHeight);
+            p.resizeCanvas(size, size);
+            
+            // אם אתה רוצה שהקנבס ימלא את כל הדיב:
+            // p.resizeCanvas(newWidth, newHeight);
+        }
     };
 };
