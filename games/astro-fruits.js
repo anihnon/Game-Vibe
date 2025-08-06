@@ -102,7 +102,8 @@ function checkAchievements() {
 
 // --- Player Class ---
 class Player {
-    constructor(x, y, level) {
+    constructor(x, y, level, p) { // הוסף p לקונסטרקטור
+        this.p = p; // שמור את מופע p5
         this.x = x;
         this.y = y;
         this.velX = 0;
@@ -123,29 +124,29 @@ class Player {
         }
 
         // Horizontal movement
-        if (activeKeys[LEFT_ARROW] || activeKeys[65]) { // Left or A
+        if (activeKeys[this.p.LEFT_ARROW] || activeKeys[65]) { // Left or A
             this.velX = -PLAYER_SPEED;
-        } else if (activeKeys[RIGHT_ARROW] || activeKeys[68]) { // Right or D
+        } else if (activeKeys[this.p.RIGHT_ARROW] || activeKeys[68]) { // Right or D
             this.velX = PLAYER_SPEED;
         } else {
             this.velX = 0;
         }
 
         // Vertical movement (jumping)
-        if ((activeKeys[UP_ARROW] || activeKeys[87]) && this.jumpsLeft > 0) { // Up or W
+        if ((activeKeys[this.p.UP_ARROW] || activeKeys[87]) && this.jumpsLeft > 0) { // Up or W
             this.velY = JUMP_POWER;
             this.jumpsLeft--;
             this.onGround = false; // Player is off ground after jump
-            activeKeys[UP_ARROW] = false; // Consume jump key press
+            activeKeys[this.p.UP_ARROW] = false; // Consume jump key press
             activeKeys[87] = false;
         }
 
         // Gravity toggle (spacebar)
-        if (this.currentLevel >= GRAVITY_TOGGLE_LEVEL && activeKeys[32] && !spacePressed) {
+        if (this.currentLevel >= GRAVITY_TOGGLE_LEVEL && activeKeys[this.p.keyCodes.SPACE] && !spacePressed) { // שימוש ב-p.keyCodes.SPACE
             this.gravityEnabled = !this.gravityEnabled;
             spacePressed = true; // Mark space as pressed to prevent rapid toggling
         }
-        if (!activeKeys[32]) { // If spacebar is released
+        if (!activeKeys[this.p.keyCodes.SPACE]) { // If spacebar is released
             spacePressed = false;
         }
 
@@ -156,40 +157,40 @@ class Player {
         if (this.x < this.width / 2) {
             this.x = this.width / 2;
             this.velX = 0;
-        } else if (this.x > width - this.width / 2) {
-            this.x = width - this.width / 2;
+        } else if (this.x > this.p.width - this.width / 2) { // שימוש ב-p.width
+            this.x = this.p.width - this.width / 2;
             this.velX = 0;
         }
 
         // Collision with platforms
         this.onGround = false;
-        for (let p of platforms) {
-            if (this.collidesWith(p)) {
+        for (let pObj of platforms) { // שינוי שם המשתנה כדי למנוע התנגשות עם p5 instance
+            if (this.collidesWith(pObj)) {
                 // If falling and hit top of platform
-                if (this.velY > 0 && this.y + this.height / 2 > p.y - p.height / 2 && this.y - this.height / 2 < p.y - p.height / 2) {
-                    this.y = p.y - p.height / 2 - this.height / 2;
+                if (this.velY > 0 && this.y + this.height / 2 > pObj.y - pObj.height / 2 && this.y - this.height / 2 < pObj.y - pObj.height / 2) {
+                    this.y = pObj.y - pObj.height / 2 - this.height / 2;
                     this.velY = 0;
                     this.onGround = true;
                     this.jumpsLeft = MAX_JUMPS; // Reset jumps on ground
                 }
                 // If jumping and hit bottom of platform
-                else if (this.velY < 0 && this.y - this.height / 2 < p.y + p.height / 2 && this.y + this.height / 2 > p.y + p.height / 2) {
-                    this.y = p.y + p.height / 2 + this.height / 2;
+                else if (this.velY < 0 && this.y - this.height / 2 < pObj.y + pObj.height / 2 && this.y + this.height / 2 > pObj.y + pObj.height / 2) {
+                    this.y = pObj.y + pObj.height / 2 + this.height / 2;
                     this.velY = 0;
                 }
                 // Horizontal collision
                 else if (this.velX > 0) { // Moving right
-                    this.x = p.x - p.width / 2 - this.width / 2;
+                    this.x = pObj.x - pObj.width / 2 - this.width / 2;
                     this.velX = 0;
                 } else if (this.velX < 0) { // Moving left
-                    this.x = p.x + p.width / 2 + this.width / 2;
+                    this.x = pObj.x + pObj.width / 2 + this.width / 2;
                     this.velX = 0;
                 }
             }
         }
 
         // If player falls off screen, game over
-        if (this.y > height + 50) {
+        if (this.y > this.p.height + 50) { // שימוש ב-p.height
             gamePhase = 'game_over';
             showMessageBox('הפסדת!', 'נפלת מהמפה. נסה שוב!');
         }
@@ -199,13 +200,13 @@ class Player {
     }
 
     draw() {
-        fill(255, 100, 100); // Player color
-        rect(this.x, this.y, this.width, this.height);
+        this.p.fill(255, 100, 100); // שימוש ב-p.fill
+        this.p.rect(this.x, this.y, this.width, this.height); // שימוש ב-p.rect
 
         // Draw sparkle effect (non-essential element)
         if (this.sparkleTimer < 30) {
-            fill(255, 255, 0, 150);
-            ellipse(this.x + random(-5, 5), this.y + random(-10, 10), 5, 5);
+            this.p.fill(255, 255, 0, 150); // שימוש ב-p.fill
+            this.p.ellipse(this.x + this.p.random(-5, 5), this.y + this.p.random(-10, 10), 5, 5); // שימוש ב-p.random ו-p.ellipse
         }
     }
 
@@ -221,7 +222,8 @@ class Player {
 
 // --- Platform Class ---
 class Platform {
-    constructor(x, y, w, h) {
+    constructor(x, y, w, h, p) { // הוסף p לקונסטרקטור
+        this.p = p; // שמור את מופע p5
         this.x = x;
         this.y = y;
         this.width = w;
@@ -229,14 +231,15 @@ class Platform {
     }
 
     draw() {
-        fill(100, 100, 100); // Platform color
-        rect(this.x, this.y, this.width, this.height);
+        this.p.fill(100, 100, 100); // שימוש ב-p.fill
+        this.p.rect(this.x, this.y, this.width, this.height); // שימוש ב-p.rect
     }
 }
 
 // --- Collectible Fruit Class ---
 class CollectibleFruit {
-    constructor(x, y, type) {
+    constructor(x, y, type, p) { // הוסף p לקונסטרקטור
+        this.p = p; // שמור את מופע p5
         this.x = x;
         this.y = y;
         this.radius = 15;
@@ -246,7 +249,7 @@ class CollectibleFruit {
 
     draw() {
         if (!this.collected) {
-            image(GameAssets.collectibleFruits[this.type], this.x, this.y, this.radius * 2, this.radius * 2);
+            this.p.image(GameAssets.collectibleFruits[this.type], this.x, this.y, this.radius * 2, this.radius * 2); // שימוש ב-p.image
         }
     }
 
@@ -261,7 +264,8 @@ class CollectibleFruit {
 
 // --- Exit Point Class ---
 class ExitPoint {
-    constructor(x, y, w, h) {
+    constructor(x, y, w, h, p) { // הוסף p לקונסטרקטור
+        this.p = p; // שמור את מופע p5
         this.x = x;
         this.y = y;
         this.width = w;
@@ -269,9 +273,9 @@ class ExitPoint {
     }
 
     draw() {
-        fill(0, 200, 0, 150); // Green exit point
-        rect(this.x, this.y, this.width, this.height);
-        image(GameAssets.bossIcon, this.x, this.y, this.width * 0.8, this.height * 0.8); // Use skull as exit icon
+        this.p.fill(0, 200, 0, 150); // שימוש ב-p.fill
+        this.p.rect(this.x, this.y, this.width, this.height); // שימוש ב-p.rect
+        this.p.image(GameAssets.bossIcon, this.x, this.y, this.width * 0.8, this.height * 0.8); // שימוש ב-p.image
     }
 }
 
@@ -364,10 +368,10 @@ function loadLevel(levelNum) {
     currentLevelFruits = 0;
     if (levelData[levelNum]) {
         currentLevelData = levelData[levelNum];
-        player = new Player(currentLevelData.playerStart.x, currentLevelData.playerStart.y, levelNum);
-        platforms = currentLevelData.platforms.map(p => new Platform(p.x, p.y, p.w, p.h));
-        collectibleFruits = currentLevelData.fruits.map(f => new CollectibleFruit(f.x, f.y, f.type));
-        exitPoint = new ExitPoint(currentLevelData.exit.x, currentLevelData.exit.y, currentLevelData.exit.w, currentLevelData.exit.h);
+        player = new Player(currentLevelData.playerStart.x, currentLevelData.playerStart.y, levelNum, p5Instance); // העבר את p5Instance
+        platforms = currentLevelData.platforms.map(pData => new Platform(pData.x, pData.y, pData.w, pData.h, p5Instance)); // העבר את p5Instance
+        collectibleFruits = currentLevelData.fruits.map(fData => new CollectibleFruit(fData.x, fData.y, fData.type, p5Instance)); // העבר את p5Instance
+        exitPoint = new ExitPoint(currentLevelData.exit.x, currentLevelData.exit.y, currentLevelData.exit.w, currentLevelData.exit.h, p5Instance); // העבר את p5Instance
     } else {
         // Game completed!
         gamePhase = 'game_over';
@@ -377,12 +381,13 @@ function loadLevel(levelNum) {
 }
 
 // --- p5.js Sketch ---
-const sketch = function(p) { // Changed 'const gameSketch' to 'const sketch'
+const sketch = function(p) {
+    // שמור את מופע p5.js במשתנה גלובלי כדי שיהיה נגיש מחוץ לסקצ'
+    window.p5Instance = p; 
+
     p.setup = function() {
-        // Ensure the canvas is created within the designated container
-        // The parent is now passed directly from the main HTML script
-        let canvas = p.createCanvas(600, 600); // No .parent(canvasParent) here as it's handled by new p5(sketch, gameContainerElement)
-        p.pixelDensity(1); // Equivalent to noSmooth() for sharp pixels
+        let canvas = p.createCanvas(600, 600);
+        p.pixelDensity(1);
         p.rectMode(p.CENTER);
         p.textAlign(p.CENTER, p.CENTER);
         p.imageMode(p.CENTER);
@@ -398,39 +403,36 @@ const sketch = function(p) { // Changed 'const gameSketch' to 'const sketch'
 
             // Helper for pixel art generation
             function createPixelArt(size, graphics, scaleFactors = null) {
-                // Create a temporary graphics buffer to draw the pixel art
                 let pg = p.createGraphics(p.width, p.height);
-                pg.pixelDensity(1); // Ensure pixel perfect drawing
-                pg.background(0, 0, 0, 0); // Transparent background
+                pg.pixelDensity(1);
+                pg.background(0, 0, 0, 0);
                 pg.push();
-                pg.translate(pg.width / 2, pg.height / 2); // Center for drawing
+                pg.translate(pg.width / 2, pg.height / 2);
                 pg.scale(size);
                 if (scaleFactors) {
                     pg.scale(scaleFactors[0], scaleFactors[1]);
                 }
                 pg.strokeWeight(1);
-                let limits = [[0, 0], [0, 0]]; // [minX, maxX], [minY, maxY]
+                let limits = [[0, 0], [0, 0]];
 
                 for (let i = 0; i < graphics.length; i++) {
-                    if (graphics[i].length === 2) { // It's a point [x, y]
+                    if (graphics[i].length === 2) {
                         pg.point(graphics[i][0], graphics[i][1]);
                         limits[0][0] = p.min(limits[0][0], graphics[i][0]);
                         limits[0][1] = p.max(limits[0][1], graphics[i][0]);
                         limits[1][0] = p.min(limits[1][0], graphics[i][1]);
                         limits[1][1] = p.max(limits[1][1], graphics[i][1]);
-                    } else { // It's a color [r, g, b, (a)]
+                    } else {
                         pg.stroke(graphics[i][0], graphics[i][1], graphics[i][2], graphics[i].length === 4 ? graphics[i][3] : 255);
                     }
                 }
                 pg.pop();
 
-                // Get the image based on calculated limits from the graphics buffer
                 let imgWidth = (p.abs(limits[0][1]) + p.abs(limits[0][0]) + 1) * size;
                 let imgHeight = (p.abs(limits[1][1]) + p.abs(limits[1][0]) + 1) * size;
                 let imgX = pg.width / 2 - p.abs(limits[0][0]) * size;
                 let imgY = pg.height / 2 - p.abs(limits[1][0]) * size;
 
-                // Ensure dimensions are positive and non-zero
                 imgWidth = p.max(1, imgWidth);
                 imgHeight = p.max(1, imgHeight);
 
@@ -523,8 +525,8 @@ const sketch = function(p) { // Changed 'const gameSketch' to 'const sketch'
         p.background(50); // Dark background
 
         // Draw game elements
-        for (let p of platforms) {
-            p.draw();
+        for (let pObj of platforms) { // שינוי שם המשתנה
+            pObj.draw();
         }
         for (let f of collectibleFruits) {
             f.draw();
@@ -589,19 +591,19 @@ const sketch = function(p) { // Changed 'const gameSketch' to 'const sketch'
     p.touchStarted = function() {
         // Simulate spacebar press for gravity toggle on touch
         if (player && player.currentLevel >= GRAVITY_TOGGLE_LEVEL) {
-            activeKeys[32] = true;
+            activeKeys[p.keyCodes.SPACE] = true; // שימוש ב-p.keyCodes.SPACE
             spacePressed = false; // Reset to allow toggle
         }
         // Simulate jump for touch
         if (player && player.jumpsLeft > 0) {
-            activeKeys[UP_ARROW] = true;
+            activeKeys[p.UP_ARROW] = true; // שימוש ב-p.UP_ARROW
         }
         return false; // Prevent default browser behavior
     };
 
     p.touchEnded = function() {
-        activeKeys[32] = false; // Release spacebar
-        activeKeys[UP_ARROW] = false; // Release jump
+        activeKeys[p.keyCodes.SPACE] = false; // Release spacebar
+        activeKeys[p.UP_ARROW] = false; // Release jump
         return false; // Prevent default browser behavior
     };
 
