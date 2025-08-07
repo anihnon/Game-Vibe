@@ -5,18 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vibe Games</title>
-    <link rel="preconnect" href="[https://fonts.googleapis.com](https://fonts.googleapis.com)">
-    <link rel="preconnect" href="[https://fonts.gstatic.com](https://fonts.gstatic.com)" crossorigin>
-    <link href="[https://fonts.googleapis.com/css2?family=Varela+Round&display=swap](https://fonts.googleapis.com/css2?family=Varela+Round&display=swap)" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Varela Round', sans-serif;
+            font-family: 'Varela Round', sans-serif; /* פונט חדש */
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #f4f4f9, #e0e0e5);
+            background: linear-gradient(135deg, #f4f4f9, #e0e0e5); /* רקע הדרגתי חדש */
             color: #333;
             line-height: 1.6;
-            direction: rtl;
+            direction: rtl; /* כיוון קריאה מימין לשמאל */
         }
 
         .container {
@@ -238,29 +238,11 @@
             text-decoration: underline;
         }
         
+        /* הסרת ה-hero section, אך השארת העיצובים למקרה שיחזור בעתיד */
         .hero-section {
-            text-align: center;
-            padding: 80px 20px;
-            background: url('[https://placehold.co/1200x400/2c3e50/fff?text=Vibe+Games](https://placehold.co/1200x400/2c3e50/fff?text=Vibe+Games)') no-repeat center center/cover;
-            color: #fff;
-            border-radius: 15px;
-            margin-bottom: 40px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            display: none;
         }
-
-        .hero-section h1 {
-            font-size: 4rem;
-            margin: 0;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-        }
-
-        .hero-section p {
-            font-size: 1.5rem;
-            margin-top: 15px;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-        }
-
-
+        
         /* כותרת תחתונה */
         footer {
             text-align: center;
@@ -303,9 +285,6 @@
             .game-grid, .category-grid {
                 grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             }
-            .hero-section h1 {
-                font-size: 3rem;
-            }
         }
 
         @media (max-width: 480px) {
@@ -317,12 +296,6 @@
                 padding: 10px 20px;
                 font-size: 1rem;
             }
-            .hero-section h1 {
-                font-size: 2.5rem;
-            }
-            .hero-section p {
-                font-size: 1.2rem;
-            }
         }
     </style>
 </head>
@@ -331,241 +304,149 @@
         <nav>
             <h1>Vibe Games</h1>
             <ul>
-                <li><a href="#/" data-target="home">דף הבית</a></li>
-                <li><a href="#/contact" data-target="contact-info">יצירת קשר</a></li>
+                <li><a href="index.html">דף הבית</a></li>
+                <li><a href="https://example.com/about">אודות</a></li>
             </ul>
         </nav>
     </header>
 
-    <main class="container" id="main-content">
-        <!-- התוכן ייטען כאן באופן דינמי -->
+    <main class="container">
+        <!-- קטע גיבור עם כותרת ותיאור קצר - הוסר מכאן -->
+
+        <!-- קטע מומלצים בשבילך -->
+        <section>
+            <h2>מומלצים בשבילך</h2>
+            <div class="game-grid" id="game-grid">
+                <!-- כרטיסיות המשחקים יתווספו כאן על ידי JavaScript -->
+            </div>
+        </section>
+
+        <!-- קטע קטגוריות -->
+        <section id="categories-section" class="content-section">
+            <h2>קטגוריות</h2>
+            <div class="category-grid" id="category-grid">
+                <!-- כרטיסיות הקטגוריות יתווספו כאן על ידי JavaScript -->
+            </div>
+        </section>
+        
+        <!-- קטע יצירת קשר -->
+        <section id="contact" class="content-section">
+            <h2>יצירת קשר</h2>
+            <p>אם יש לכם שאלות, הצעות למשחקים חדשים, או אם נתקלתם בבעיה כלשהי, אל תהססו ליצור איתנו קשר. אנחנו כאן כדי לעזור ולשמוע מכם!</p>
+            <p>דוא"ל: <a href="mailto:your.email@example.com">your.email@example.com</a></p>
+        </section>
     </main>
 
     <footer>
         <p>&copy; 2025 Vibe Games. כל הזכויות שמורות.</p>
         <div class="footer-links">
-            <a href="#/privacy" data-target="privacy-page">מדיניות פרטיות</a>
-            <a href="#/terms" data-target="terms-page">תנאי שימוש</a>
-            <a href="#/cookies" data-target="cookies-page">מדיניות עוגיות</a>
-            <a href="#/about" data-target="about-page">אודות</a>
-            <a href="#/faq" data-target="faq-page">שאלות נפוצות</a>
+            <a href="#">מדיניות פרטיות</a>
+            <a href="#">תנאי שימוש</a>
+            <a href="#">מדיניות עוגיות</a>
+            <a href="#">שאלות נפוצות</a>
         </div>
     </footer>
 
     <script>
-        const mainContent = document.getElementById('main-content');
-        const gameGridId = 'game-grid';
-        const categoryGridId = 'category-grid';
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.body.addEventListener('click', e => {
-                const link = e.target.closest('a');
-                if (link && link.href.startsWith(window.location.origin + window.location.pathname)) {
-                    e.preventDefault();
-                    // טיפול בניווט מבוסס האשטאג
-                    const path = link.getAttribute('href').substring(1); // הסר את ה-#
-                    navigate(path);
+        document.addEventListener('DOMContentLoaded', async () => {
+            // פונקציה לטעינת נתוני המשחקים מקובץ JSON
+            async function fetchGames() {
+                try {
+                    const response = await fetch('data.json');
+                    if (!response.ok) {
+                        throw new Error(`שגיאת רשת בטעינת קובץ הנתונים (status: ${response.status})`);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    console.error("שגיאה בטעינת נתוני המשחקים:", error);
+                    return null;
                 }
-            });
-
-            // ניתוב ראשוני בעת טעינת הדף, מבוסס על ה-hash
-            navigate(window.location.hash.substring(1));
-            
-            // טיפול בניווט אחורה/קדימה בדפדפן
-            window.addEventListener('hashchange', () => {
-                renderContent(window.location.hash.substring(1));
-            });
-        });
-
-        async function navigate(path) {
-            console.log(`נווט לנתיב: ${path}`);
-            window.location.hash = path;
-            // renderContent(path); // ההאזנה ל-hashchange תטפל בקריאה ל-renderContent
-        }
-
-        async function renderContent(path) {
-            mainContent.innerHTML = '';
-            
-            const normalizedPath = path.startsWith('/') ? path : '/' + path;
-
-            if (normalizedPath === '/' || normalizedPath === '/home') {
-                await renderHomePage();
-            } else if (normalizedPath.startsWith('/category/')) {
-                const categoryName = normalizedPath.split('/').pop();
-                await renderCategoryPage(decodeURIComponent(categoryName));
-            } else if (normalizedPath.startsWith('/games/')) {
-                const gameId = normalizedPath.split('/').pop();
-                await renderGamePage(gameId);
-            } else if (normalizedPath === '/contact') {
-                renderContactPage();
-            } else {
-                renderNotFoundPage(normalizedPath);
             }
-        }
-        
-        async function renderHomePage() {
-            const games = await fetchGames();
-            if (!games) return;
 
-            const homePageHtml = `
-                <section class="hero-section">
-                    <h1>Vibe Games</h1>
-                    <p>קולקציית משחקי דפדפן קלאסיים וכיפיים.</p>
-                </section>
-                <section id="categories-section">
-                    <h2>קטגוריות</h2>
-                    <div class="category-grid" id="${categoryGridId}"></div>
-                </section>
-                <section id="featured-games-section">
-                    <h2>מומלצים בשבילך</h2>
-                    <div class="game-grid" id="${gameGridId}"></div>
-                </section>
-            `;
-            mainContent.innerHTML = homePageHtml;
+            // פונקציה להצגת כרטיסיות משחקים
+            function displayGames(gamesArray, gameGrid) {
+                if (!gameGrid) return;
+                gameGrid.innerHTML = '';
+                if (!gamesArray || gamesArray.length === 0) {
+                    gameGrid.innerHTML = '<p style="text-align: center; color: #555;">אין משחקים זמינים כרגע.</p>';
+                    return;
+                }
+                gamesArray.forEach(game => {
+                    const card = document.createElement('div');
+                    card.className = 'game-card';
+
+                    const header = document.createElement('div');
+                    header.className = 'game-card-header';
+                    header.style.backgroundImage = `url('${game.image}')`;
+                    
+                    const h3 = document.createElement('h3');
+                    h3.textContent = game.title;
+                    header.appendChild(h3);
+
+                    const content = document.createElement('div');
+                    content.className = 'game-card-content';
+
+                    const desc = document.createElement('p');
+                    desc.className = 'description';
+                    desc.textContent = game.description;
+                    content.appendChild(desc);
+
+                    const btnDiv = document.createElement('div');
+                    btnDiv.className = 'buttons';
+                    // חשוב לוודא ש-game.id מועבר כפרמטר ב-URL
+                    btnDiv.innerHTML = `<a href="play.html?game=${encodeURIComponent(game.id)}" class="btn">שחק עכשיו</a>`;
+                    content.appendChild(btnDiv);
+
+                    card.appendChild(header);
+                    card.appendChild(content);
+
+                    gameGrid.appendChild(card);
+                });
+            }
             
-            const uniqueCategories = [...new Set(games.map(game => game.gameType))];
-            displayCategories(uniqueCategories, games, document.getElementById(categoryGridId));
-            
-            const featuredGames = games.slice(0, 3);
-            displayGames(featuredGames, document.getElementById(gameGridId));
-        }
-
-        async function renderCategoryPage(categoryName) {
-            const games = await fetchGames();
-            if (!games) return;
-
-            const filteredGames = games.filter(game => game.gameType === categoryName);
-            
-            const categoryPageHtml = `
-                <section>
-                    <h2>${categoryName}</h2>
-                    <div class="game-grid" id="${gameGridId}"></div>
-                </section>
-            `;
-            mainContent.innerHTML = categoryPageHtml;
-            displayGames(filteredGames, document.getElementById(gameGridId));
-        }
-
-        async function renderGamePage(gameId) {
-             try {
-                // Fetch the HTML content of play.html
-                const playPageResponse = await fetch('play.html');
-                if (!playPageResponse.ok) throw new Error('Failed to fetch play.html');
-                const playPageContent = await playPageResponse.text();
+            // פונקציה להצגת כרטיסיות קטגוריות
+            function displayCategories(categoriesArray, allGames, categoryGrid) {
+                if (!categoryGrid) return;
+                categoryGrid.innerHTML = '';
                 
-                // Set the content of the main container to the fetched HTML
-                mainContent.innerHTML = playPageContent;
-
-                // Load game data and then the game script
-                const gamesDataResponse = await fetch('data.json');
-                if (!gamesDataResponse.ok) throw new Error('Failed to fetch data.json');
-                const gamesData = await gamesDataResponse.json();
-                const gameData = gamesData.find(g => g.id === gameId);
-
-                if (gameData && gameData.jsFile) {
-                    const script = document.createElement('script');
-                    script.src = gameData.jsFile;
-                    // Append the script to the body to ensure it runs after the DOM is ready
-                    document.body.appendChild(script);
-                } else {
-                    // Handle case where game data or script file is missing
-                    mainContent.innerHTML = `
-                        <div class="content-section">
-                            <h2>שגיאה</h2>
-                            <p>המשחק לא נמצא או שקובץ הנתונים אינו תקין.</p>
-                            <a href="#/" class="btn">חזור לדף הבית</a>
+                categoriesArray.forEach(categoryName => {
+                    const gameExample = allGames.find(game => game.gameType === categoryName);
+                    const imageUrl = gameExample ? gameExample.image : 'https://placehold.co/600x400/cccccc/000000?text=Category';
+                    
+                    const card = document.createElement('div');
+                    card.className = 'category-card';
+                    card.innerHTML = `
+                        <div class="category-card-header" style="background-image: url('${imageUrl}')">
+                            <h3>${categoryName}</h3>
+                        </div>
+                        <div class="category-card-content">
+                            <!-- כאן הקישור יהיה לקטגוריה, לא למשחק ספציפי -->
+                            <a href="#">צפו במשחקים</a>
                         </div>
                     `;
-                }
-            } catch (error) {
-                console.error("שגיאה בטעינת דף המשחק:", error);
-                renderNotFoundPage('/games/' + gameId);
-            }
-        }
-        
-        function renderContactPage() {
-            const contactSection = document.createElement('section');
-            contactSection.id = 'contact-info';
-            contactSection.innerHTML = `
-                <h2>יצירת קשר</h2>
-                <p>אם יש לכם שאלות, אתם יכולים ליצור איתי קשר כאן:</p>
-                <p>דוא"ל: <a href="mailto:your.email@example.com">your.email@example.com</a></p>
-            `;
-            mainContent.appendChild(contactSection);
-        }
-
-        function renderNotFoundPage(path) {
-            console.warn(`נתיב לא מוכר: ${path}, מנווט לדף שגיאה`);
-            mainContent.innerHTML = `
-                <div class="content-section">
-                    <h2>אופס! הדף לא נמצא.</h2>
-                    <p>הדף שחיפשתם לא קיים. אנא חזרו לדף הבית.</p>
-                    <a href="#/" class="btn">חזור לדף הבית</a>
-                </div>
-            `;
-        }
-        
-        async function fetchGames() {
-            try {
-                const response = await fetch('data.json');
-                if (!response.ok) {
-                    throw new Error(`שגיאת רשת בטעינת קובץ הנתונים (status: ${response.status})`);
-                }
-                return await response.json();
-            } catch (error) {
-                console.error("שגיאה בטעינת נתוני המשחקים:", error);
-                mainContent.innerHTML = '<p style="color: red; text-align: center;">אופס! לא ניתן לטעון את המשחקים כרגע. אנא נסה שוב מאוחר יותר.</p>';
-                return null;
-            }
-        }
-
-        function displayGames(gamesArray, gameGridElement) {
-            if (!gameGridElement) return;
-            gameGridElement.innerHTML = '';
-            if (!gamesArray || gamesArray.length === 0) {
-                gameGridElement.innerHTML = '<p style="text-align: center; color: #555;">אין משחקים זמינים כרגע בקטגוריה זו.</p>';
-                return;
+                    categoryGrid.appendChild(card);
+                });
             }
 
-            gamesArray.forEach(game => {
-                const card = document.createElement('div');
-                card.className = 'game-card';
-                card.innerHTML = `
-                    <div class="game-card-header" style="background-image: url('${game.image}')">
-                        <h3>${game.title}</h3>
-                    </div>
-                    <div class="game-card-content">
-                        <p class="description">${game.description}</p>
-                        <div class="buttons">
-                            <a href="#/games/${game.id}" class="btn">שחקו עכשיו</a>
-                        </div>
-                    </div>
-                `;
-                gameGridElement.appendChild(card);
-            });
-        }
-        
-        function displayCategories(categoriesArray, allGames, categoryGridElement) {
-            if (!categoryGridElement) return;
-            categoryGridElement.innerHTML = '';
-            
-            categoriesArray.forEach(categoryName => {
-                const gameExample = allGames.find(game => game.gameType === categoryName);
-                const imageUrl = gameExample ? gameExample.image : '[https://placehold.co/600x400/cccccc/000000?text=Category](https://placehold.co/600x400/cccccc/000000?text=Category)';
+            // טען את המשחקים והצג אותם
+            const games = await fetchGames();
+            if (games) {
+                const gameGrid = document.getElementById('game-grid');
+                displayGames(games.slice(0, 3), gameGrid); // מציג רק 3 משחקים מומלצים
                 
-                const card = document.createElement('div');
-                card.className = 'category-card';
-                card.innerHTML = `
-                    <div class="category-card-header" style="background-image: url('${imageUrl}')">
-                        <h3>${categoryName}</h3>
-                    </div>
-                    <div class="category-card-content">
-                        <a href="#/category/${encodeURIComponent(categoryName)}">צפו במשחקים</a>
-                    </div>
-                `;
-                categoryGridElement.appendChild(card);
+                const categoryGrid = document.getElementById('category-grid');
+                const uniqueCategories = [...new Set(games.map(game => game.gameType))];
+                displayCategories(uniqueCategories, games, categoryGrid);
+            }
+
+            // טיפול בגלילה חלקה לקישורים פנימיים
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+                });
             });
-        }
+        });
     </script>
 </body>
 </html>
