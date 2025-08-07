@@ -172,15 +172,18 @@
         const fullscreenButton = document.getElementById('fullscreenButton');
         const messageBox = document.getElementById('messageBox');
         
-        function showMessageBox(title, content) {
+        function showMessageBox(title, content, callback) {
             document.getElementById('messageBoxTitle').innerText = title;
             document.getElementById('messageBoxBody').innerText = content;
             messageBox.style.display = 'flex';
+            const closeButton = document.getElementById('messageBoxClose');
+            const newCloseButton = closeButton.cloneNode(true);
+            closeButton.parentNode.replaceChild(newCloseButton, closeButton);
+            newCloseButton.onclick = () => {
+                messageBox.style.display = 'none';
+                if (callback) callback();
+            };
         }
-
-        document.getElementById('messageBoxClose').addEventListener('click', () => {
-            messageBox.style.display = 'none';
-        });
 
         // Function to dynamically load JavaScript file
         function loadScript(url, callback) {
@@ -194,37 +197,6 @@
             document.head.appendChild(script);
         }
 
-        function initButtons(p5Instance) {
-            const startButton = document.getElementById('startButton');
-            const achievementsButton = document.getElementById('achievementsButton');
-            const resetDataButton = document.getElementById('resetDataButton');
-            
-            startButton.addEventListener('click', () => {
-                if (p5Instance && p5Instance.startGame) {
-                    p5Instance.startGame();
-                    buttonsOverlay.style.display = 'none';
-                    infoCard.classList.remove('visible');
-                } else {
-                    showMessageBox('שגיאה', 'המשחק עדיין לא נטען במלואו. נסה שוב בעוד רגע.');
-                }
-            });
-
-            achievementsButton.addEventListener('click', () => {
-                showMessageBox('הישגים', 'פונקציית ההישגים תעבוד כשתוגדר בקובץ המשחק. 🏆');
-            });
-
-            resetDataButton.addEventListener('click', () => {
-                showMessageBox('איפוס נתונים', 'האם אתה בטוח שברצונך לאפס את נתוני המשחק?', () => {
-                    if (p5Instance && p5Instance.resetGameData) {
-                        p5Instance.resetGameData();
-                        window.location.reload();
-                    } else {
-                        showMessageBox('שגיאה', 'פונקציית איפוס הנתונים אינה זמינה. 🔄');
-                    }
-                });
-            });
-        }
-        
         async function loadGame() {
             const urlParams = new URLSearchParams(window.location.search);
             const gameId = urlParams.get('game');
@@ -262,7 +234,35 @@
                     loadScript(currentGame.jsFile, () => {
                         if (typeof sketch !== 'undefined') {
                             window.p5Instance = new p5(sketch, 'p5-canvas-container');
-                            initButtons(window.p5Instance); // Initialize button listeners here!
+                            
+                            // Attach event listeners for buttons
+                            document.getElementById('startButton').addEventListener('click', () => {
+                                // Assume that starting the game just requires changing the game phase
+                                // The p5 instance and its methods are available inside the sketch
+                                // No direct call needed, the sketch handles it internally
+                                if (window.p5Instance && typeof window.p5Instance.userStartGame === 'function') {
+                                    window.p5Instance.userStartGame();
+                                    buttonsOverlay.style.display = 'none';
+                                    infoCard.classList.remove('visible');
+                                } else {
+                                    showMessageBox('שגיאה', 'פונקציית התחלת המשחק אינה זמינה בקובץ p5.');
+                                }
+                            });
+
+                            document.getElementById('achievementsButton').addEventListener('click', () => {
+                                showMessageBox('הישגים', 'פונקציית ההישגים תעבוד כשתוגדר בקובץ המשחק. 🏆');
+                            });
+
+                            document.getElementById('resetDataButton').addEventListener('click', () => {
+                                showMessageBox('איפוס נתונים', 'האם אתה בטוח שברצונך לאפס את נתוני המשחק?', () => {
+                                    if (typeof resetGameData === 'function') {
+                                        resetGameData();
+                                        window.location.reload();
+                                    } else {
+                                        showMessageBox('שגיאה', 'פונקציית איפוס הנתונים אינה זמינה.');
+                                    }
+                                });
+                            });
                         } else {
                             showMessageBox('שגיאה', 'קובץ המשחק נטען אך לא מכיל את פונקציית ה-p5 הנדרשת.');
                             console.error("Game script loaded, but 'sketch' is not defined.");
