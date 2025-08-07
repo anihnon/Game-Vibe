@@ -1,78 +1,101 @@
+// קובץ משחק של Astro Fruits, משופר עם יצירת שלבים לוגית וקפיצה כפולה.
 const GAME_DATA_KEY = 'fruitDungeonGameData';
 let gamePhase = 'intro';
 let score = 0;
 let initialStage = 1;
-let player, fruits, enemies, platforms, timer;
+let player, fruits, enemies, platforms;
 const FRUIT_SIZE = 20;
 let timeRemaining;
 let gameStartTime;
-const NUM_LEVELS = 150;
+const NUM_LEVELS = 100;
 
 // הגדרות פיזיקה
 const GRAVITY = 0.5;
 const JUMP_POWER = -12;
 const PLAYER_SPEED = 5;
+const MAX_JUMP_DISTANCE_X = 200;
+const MAX_JUMP_HEIGHT = 150;
 
-// פונקציה ליצירת נתונים של שלבים באופן דינמי
-function generateLevels(numLevels) {
+let jumpCount = 0;
+let isKeyPressedForJump = false; // דגל למניעת קפיצה רציפה בלחיצה ארוכה
+
+// פונקציה ליצירת נתונים של שלבים באופן דינמי והגיוני
+function generateLevels(p, numLevels) {
     const levels = {};
-    const basePlatforms = [
-        { x: 0, y: 550, w: 900, h: 50 } // פלטפורמה תחתונה קבועה
-    ];
-
+    const width = p.width;
+    const height = p.height;
+    
     for (let i = 1; i <= numLevels; i++) {
-        // רמת הקושי עולה עם השלב
         const difficultyFactor = i / numLevels;
-
-        // יצירת פלטפורמות באופן דינמי
-        const numPlatforms = p5.prototype.floor(p5.prototype.random(2, 5 + difficultyFactor * 5));
-        const newPlatforms = [...basePlatforms];
-        for (let j = 0; j < numPlatforms; j++) {
-            newPlatforms.push({
-                x: p5.prototype.random(p5.prototype.width * 0.1, p5.prototype.width * 0.9),
-                y: p5.prototype.random(p5.prototype.height * 0.2, p5.prototype.height * 0.8),
-                w: p5.prototype.random(100, 250),
-                h: 20
-            });
-        }
-
-        // יצירת פירות
-        const numFruits = p5.prototype.floor(p5.prototype.random(3, 7 + difficultyFactor * 5));
+        const newPlatforms = [];
         const newFruits = [];
-        for (let j = 0; j < numFruits; j++) {
-            newFruits.push({
-                x: p5.prototype.random(p5.prototype.width * 0.1, p5.prototype.width * 0.9),
-                y: p5.prototype.random(p5.prototype.height * 0.1, p5.prototype.height * 0.9)
+        const newEnemies = [];
+        
+        // פלטפורמה התחלתית קבועה
+        let lastPlatform = { x: 0, y: height - 50, w: width * 0.2, h: 50 };
+        newPlatforms.push(lastPlatform);
+        
+        // יצירת פלטפורמות באופן הגיוני
+        const numPlatforms = p.floor(p.random(4, 8 + difficultyFactor * 7));
+        for (let j = 0; j < numPlatforms; j++) {
+            let newX, newY;
+            
+            // הגרלת מיקום לפלטפורמה חדשה במרחק קפיצה מהקודמת
+            newX = p.random(lastPlatform.x + 50, lastPlatform.x + MAX_JUMP_DISTANCE_X);
+            // אם המיקום יצא מחוץ למפה, נתחיל משמאל
+            if (newX + 150 > width) {
+                newX = p.random(width * 0.1, width * 0.4);
+            }
+            
+            newY = p.random(lastPlatform.y - MAX_JUMP_HEIGHT, lastPlatform.y);
+            // לוודא שהפלטפורמה לא נמוכה מדי או גבוהה מדי
+            newY = p.constrain(newY, height * 0.2, height * 0.8);
+
+            const newPlatform = {
+                x: newX,
+                y: newY,
+                w: p.random(100, 200),
+                h: 20
+            };
+            newPlatforms.push(newPlatform);
+            lastPlatform = newPlatform;
+
+            // יצירת פרי על הפלטפורמה החדשה
+            if (p.random() > 0.5) { // הסתברות של 50% ליצור פרי
+                newFruits.push({
+                    x: newPlatform.x + newPlatform.w / 2,
+                    y: newPlatform.y - FRUIT_SIZE / 2 - 5
+                });
+            }
+        }
+        
+        // יצירת אויבים, ממוקמים על פלטפורמות
+        const numEnemies = p.floor(p.random(1, 3 + difficultyFactor * 2));
+        for (let j = 0; j < numEnemies; j++) {
+            const platformForEnemy = newPlatforms[p.floor(p.random(newPlatforms.length))];
+            newEnemies.push({
+                x: p.random(platformForEnemy.x, platformForEnemy.x + platformForEnemy.w - 40),
+                y: platformForEnemy.y - 40,
+                w: 40,
+                h: 40,
+                speedX: p.random([-2, 2]) * (1 + difficultyFactor)
             });
         }
         
-        // יצירת אויבים
-        const numEnemies = p5.prototype.floor(p5.prototype.random(1, 3 + difficultyFactor * 3));
-        const newEnemies = [];
-        for (let j = 0; j < numEnemies; j++) {
-            newEnemies.push({
-                x: p5.prototype.random(p5.prototype.width * 0.1, p5.prototype.width * 0.9),
-                y: p5.prototype.random(p5.prototype.height * 0.5, p5.prototype.height * 0.9),
-                w: 40,
-                h: 40,
-                speedX: p5.prototype.random([-2, 2])
-            });
-        }
-
         // יצירת נתוני השלב
         levels[i] = {
-            playerStart: { x: 50, y: 50 },
+            playerStart: { x: 50, y: height - 100 },
             platforms: newPlatforms,
             fruits: newFruits,
             enemies: newEnemies,
-            timeLimit: 60 + p5.prototype.floor(difficultyFactor * 60)
+            timeLimit: p.floor(80 + difficultyFactor * 40)
         };
     }
     return levels;
 }
 
-// נתוני השלבים מיוצרים באופן דינמי במקום להיכתב ידנית
-const levelData = generateLevels(NUM_LEVELS);
+// נתוני השלבים מיוצרים באופן דינמי
+let levelData;
 
 /**
  * פונקציה לשמירת נתוני המשחק ל-localStorage
@@ -135,6 +158,7 @@ function loadLevel(p, levelNum) {
         timeRemaining = data.timeLimit;
         gameStartTime = p.millis();
         score = 0;
+        jumpCount = 0; // איפוס קפיצות
         console.log(`שלב ${levelNum} נטען.`);
     } else {
         console.error(`נתוני שלב ${levelNum} לא נמצאו.`);
@@ -147,6 +171,7 @@ const sketch = function(p) {
         const container = document.getElementById('p5-canvas-container');
         if (container) {
             p.createCanvas(container.clientWidth, container.clientHeight);
+            levelData = generateLevels(p, NUM_LEVELS); // יצירת שלבים ראשונית
             const savedData = loadGameData();
             if (savedData && savedData.currentLevel <= NUM_LEVELS) {
                 initialStage = savedData.currentLevel;
@@ -171,7 +196,7 @@ const sketch = function(p) {
             player.y += player.velY;
 
             // בדיקת התנגשויות עם פלטפורמות
-            player.isJumping = true;
+            let onPlatform = false;
             for (let platform of platforms) {
                 if (
                     player.y + player.h > platform.y &&
@@ -182,20 +207,24 @@ const sketch = function(p) {
                     if (player.y + player.h - player.velY <= platform.y) {
                         player.y = platform.y - player.h;
                         player.velY = 0;
-                        player.isJumping = false;
+                        onPlatform = true;
                     }
                 }
+            }
+
+            if (onPlatform) {
+                jumpCount = 0; // איפוס קפיצות כשהשחקן על פלטפורמה
+            }
+
+            // בדיקת נפילה מחוץ למפה
+            if (player.y > p.height) {
+                gamePhase = 'game_over';
             }
 
             // קלט מקשים
             if (p.keyIsDown(p.LEFT_ARROW)) player.x -= PLAYER_SPEED;
             if (p.keyIsDown(p.RIGHT_ARROW)) player.x += PLAYER_SPEED;
             
-            if (p.keyIsDown(p.UP_ARROW) && !player.isJumping) {
-                player.velY = JUMP_POWER;
-                player.isJumping = true;
-            }
-
             // ציור השחקן
             p.fill(255, 100, 0);
             p.rect(player.x, player.y, player.w, player.h);
@@ -274,6 +303,14 @@ const sketch = function(p) {
         }
     };
     
+    // טיפול בלחיצת מקש עבור קפיצה כפולה
+    p.keyPressed = function() {
+        if (gamePhase === 'playing' && p.keyCode === p.UP_ARROW && jumpCount < 2) {
+            player.velY = JUMP_POWER;
+            jumpCount++;
+        }
+    };
+
     window.startGame = function() {
         if (gamePhase === 'level_complete' && initialStage < NUM_LEVELS) {
             initialStage++;
@@ -291,8 +328,6 @@ const sketch = function(p) {
         if (infoCard) infoCard.classList.remove('visible');
         gameStartTime = p.millis();
     };
-
-    p.keyPressed = function() {}
 };
 
 window.onload = function() {
