@@ -111,10 +111,10 @@
     <main class="flex-1 flex justify-center items-center py-8 px-4">
         <div id="gamePageContainer" class="bg-[#222b3a] rounded-[20px] shadow-xl p-8 text-center max-w-[900px] w-full flex flex-col items-center">
             <!-- כותרת המשחק הדינמית תטען כאן -->
-            <h1 id="gameTitle" class="text-3xl font-bold mb-4 text-white">...</h1>
+            <h1 id="gameTitle" class="text-3xl font-bold mb-4 text-white"></h1>
 
             <div id="gameContainer" class="relative mt-5 w-full flex flex-col justify-center items-center bg-[#333] rounded-xl overflow-hidden aspect-video max-w-[900px] shadow-2xl">
-                <div id="loadingContainer" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-lg text-gray-400 z-10">טוען משחק...</div>
+                <div id="loadingContainer" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-lg text-gray-400 z-10"></div>
                 
                 <!-- זהו המיכל עבור קנבס ה-p5.js -->
                 <div id="p5-canvas-container" class="w-full h-full"></div>
@@ -266,9 +266,8 @@
 
             // If no game ID found, show the default landing message
             if (!gameId) {
-                document.getElementById('gameTitle').innerText = 'ברוכים הבאים ל-Game Vibe!';
-                loadingContainer.innerText = 'בחרו משחק מהרשימה כדי להתחיל.';
-                loadingContainer.style.display = 'block';
+                document.getElementById('gameTitle').innerText = '';
+                loadingContainer.style.display = 'none';
                 buttonsOverlay.style.display = 'none';
                 infoCard.classList.remove('visible');
                 updateMetadata(null);
@@ -306,15 +305,17 @@
                     updateMetadata(currentGame);
 
                     // Dynamically load the game script
-                    const scriptUrl = `games/${currentGame.jsFile}`;
+                    // בדיקה האם הנתיב כבר כולל את 'games/' או שצריך להוסיף אותו
+                    const scriptUrl = currentGame.jsFile.startsWith('games/') ? currentGame.jsFile : `games/${currentGame.jsFile}`;
                     await loadScript(scriptUrl);
                     
-                    if (typeof sketch !== 'undefined') {
-                        p5Instance = new p5(sketch, 'p5-canvas-container');
-                        currentSketch = sketch;
+                    // The 'sketch' function should be globally available after the script loads
+                    if (typeof window.sketch !== 'undefined') {
+                        p5Instance = new p5(window.sketch, 'p5-canvas-container');
+                        currentSketch = window.sketch;
                     } else {
-                        showMessageBox('שגיאה', 'קובץ המשחק נטען אך לא מכיל את פונקציית ה-p5 הנדרשת.');
-                        console.error("Game script loaded, but 'sketch' is not defined.");
+                        showMessageBox('שגיאה', `קובץ המשחק "${currentGame.jsFile}" נטען אך לא מכיל את פונקציית ה-p5 הנדרשת (sketch).`);
+                        console.error(`Game script loaded, but 'sketch' is not defined in ${currentGame.jsFile}`);
                     }
                 } else {
                     loadingContainer.innerText = `מזהה המשחק '${gameId}' לא נמצא.`;
@@ -324,7 +325,7 @@
                 }
             } catch (error) {
                 loadingContainer.innerText = 'אירעה שגיאה בטעינת הנתונים או הקובץ.';
-                showMessageBox('שגיאה', 'אירעה שגיאה בטעינת קובץ הנתונים או קובץ המשחק.');
+                showMessageBox('שגיאה', `אירעה שגיאה בטעינת קובץ הנתונים או קובץ המשחק: ${error.message}`);
                 console.error('Error loading game:', error);
             }
         }
