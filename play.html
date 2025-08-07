@@ -305,7 +305,6 @@
                     updateMetadata(currentGame);
 
                     // Dynamically load the game script
-                    // בדיקה האם הנתיב כבר כולל את 'games/' או שצריך להוסיף אותו
                     const scriptUrl = currentGame.jsFile.startsWith('games/') ? currentGame.jsFile : `games/${currentGame.jsFile}`;
                     await loadScript(scriptUrl);
                     
@@ -313,9 +312,12 @@
                     if (typeof window.sketch !== 'undefined') {
                         p5Instance = new p5(window.sketch, 'p5-canvas-container');
                         currentSketch = window.sketch;
-                    } else {
-                        showMessageBox('שגיאה', `קובץ המשחק "${currentGame.jsFile}" נטען אך לא מכיל את פונקציית ה-p5 הנדרשת (sketch).`);
-                        console.error(`Game script loaded, but 'sketch' is not defined in ${currentGame.jsFile}`);
+                    } else if (typeof window.initGame === 'function') { // Check for a generic initialization function
+                        window.initGame();
+                    }
+                    else {
+                        showMessageBox('שגיאה', `קובץ המשחק "${currentGame.jsFile}" נטען אך לא מכיל פונקציית אתחול תקנית (sketch או initGame).`);
+                        console.error(`Game script loaded, but 'sketch' or 'initGame' is not defined in ${currentGame.jsFile}`);
                     }
                 } else {
                     loadingContainer.innerText = `מזהה המשחק '${gameId}' לא נמצא.`;
