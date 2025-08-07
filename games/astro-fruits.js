@@ -1,6 +1,6 @@
         const GAME_DATA_KEY = 'fruitDungeonGameData';
-
-        // Custom showMessageBox function to avoid alert()
+        
+        // פונקציית עזר להצגת תיבת הודעה
         function showMessageBox(title, content, callback) {
             const msgBox = document.getElementById('messageBox');
             if (msgBox) {
@@ -18,20 +18,6 @@
                 if (callback) callback();
             }
         }
-        
-        // This function is defined globally but uses the p5 instance passed to it
-        window.confirmResetData = function(p) {
-            showMessageBox(
-                'איפוס נתונים',
-                'האם אתה בטוח שברצונך לאפס את נתוני המשחק?',
-                () => {
-                    if (p.resetGameData) {
-                        p.resetGameData();
-                        window.location.reload();
-                    }
-                }
-            );
-        };
 
         // נתוני השלבים
         const levelData = {
@@ -141,6 +127,22 @@
             const MAX_JUMPS = 2;
             const GRAVITY_TOGGLE_LEVEL = 3;
 
+            // פונקציה חיצונית שתופעל מה-HTML כדי להתחיל את המשחק
+            p.startGame = function() {
+                p.gamePhase = 'playing';
+                p.startTime = p.millis();
+                p.loadLevel(p.initialStage);
+                p.toggleButtonsOverlay(false);
+            };
+
+            // פונקציה להצגת או הסתרת שכבת הכפתורים
+            p.toggleButtonsOverlay = function(show) {
+                const buttonsOverlay = document.getElementById('buttonsOverlay');
+                if (buttonsOverlay) {
+                    buttonsOverlay.style.display = show ? 'flex' : 'none';
+                }
+            };
+            
             // --- לוגיקת הישגים ---
             p.checkAchievements = function() {
                 if (p.totalFruitsCollected >= 10 && !p.unlockedAchievements['fruitCollector']) {
@@ -268,7 +270,7 @@
                                 this.x = pObj.x - pObj.width / 2 - this.width / 2;
                                 this.velX = 0;
                             } else if (this.velX < 0) {
-                                this.x = pObj.x + pObj.width / 2 + this.width / 2;
+                                this.x = pObj.x + p.width / 2 + this.width / 2;
                                 this.velX = 0;
                             }
                         }
@@ -436,17 +438,6 @@
                     
                 } else if (p.gamePhase === 'level_complete' || p.gamePhase === 'game_over') {
                     drawEndingScreen();
-                } else if (p.gamePhase === 'intro') {
-                    // Display intro screen logic.
-                }
-
-                // If game is in 'intro', 'level_complete', or 'game_over' phase,
-                // we want the buttons overlay to be visible.
-                if (p.gamePhase === 'intro' || p.gamePhase === 'level_complete' || p.gamePhase === 'game_over') {
-                    const buttonsOverlay = document.getElementById('buttonsOverlay');
-                    if (buttonsOverlay) {
-                        buttonsOverlay.style.display = 'flex';
-                    }
                 }
             };
             
@@ -495,16 +486,15 @@
                 activeKeys[p.keyCode] = true;
                 if (p.gamePhase === 'intro') {
                     if (p.keyCode === 83) { // S
-                        p.gamePhase = 'playing';
-                        p.startTime = p.millis();
+                        p.startGame();
                     } else if (p.keyCode === 73) { // I
                         p.gamePhase = 'instructions';
+                        // Add code to show instructions overlay
                     } else if (p.keyCode === 65) { // A
                         p.gamePhase = 'achievements';
+                        // Add code to show achievements overlay
                     } else {
-                        p.loadLevel(p.initialStage);
-                        p.gamePhase = 'playing';
-                        p.startTime = p.millis();
+                        p.startGame();
                     }
                 } else if (p.gamePhase === 'level_complete') {
                     p.initialStage++;
@@ -517,6 +507,7 @@
                     p.gamePhase = 'intro';
                     p.startTime = p.millis();
                 } else if (p.gamePhase === 'instructions' || p.gamePhase === 'achievements') {
+                    // Back to intro
                     p.gamePhase = 'intro';
                 }
             };
@@ -533,8 +524,3 @@
                 }
             };
         };
-        
-        window.onload = function() {
-            window.p5Instance = new p5(sketch, 'p5-canvas-container');
-        };
-
