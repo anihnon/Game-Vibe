@@ -1,5 +1,6 @@
         const GAME_DATA_KEY = 'fruitDungeonGameData';
 
+        // Custom showMessageBox function to avoid alert()
         function showMessageBox(title, content, callback) {
             const msgBox = document.getElementById('messageBox');
             if (msgBox) {
@@ -17,12 +18,19 @@
                 if (callback) callback();
             }
         }
-
-        window.confirmResetData = function() {
-            if (window.confirm("האם אתה בטוח שברצונך לאפס את נתוני המשחק?")) {
-                resetGameData(window.p5Instance);
-                window.location.reload();
-            }
+        
+        // This function is defined globally but uses the p5 instance passed to it
+        window.confirmResetData = function(p) {
+            showMessageBox(
+                'איפוס נתונים',
+                'האם אתה בטוח שברצונך לאפס את נתוני המשחק?',
+                () => {
+                    if (p.resetGameData) {
+                        p.resetGameData();
+                        window.location.reload();
+                    }
+                }
+            );
         };
 
         // נתוני השלבים
@@ -109,22 +117,22 @@
 
         const sketch = (p) => {
             // משתנים גלובליים עבור סקיצת p5.js
-            let gamePhase = 'intro';
-            let startTime = 0;
+            p.gamePhase = 'intro';
+            p.startTime = 0;
             let transitionAlpha = 1;
             let activeKeys = {};
             let spacePressed = false;
             let jumpPressed = false;
-            let player;
+            p.player;
             let currentLevelData;
-            let platforms = [];
-            let collectibleFruits = [];
-            let exitPoint;
-            let totalFruitsCollected = 0;
-            let currentLevelFruits = 0;
-            let unlockedAchievements = {};
-            let initialStage = 1;
-            let GameAssets = {};
+            p.platforms = [];
+            p.collectibleFruits = [];
+            p.exitPoint;
+            p.totalFruitsCollected = 0;
+            p.currentLevelFruits = 0;
+            p.unlockedAchievements = {};
+            p.initialStage = 1;
+            p.GameAssets = {};
 
             // הגדרות המשחק
             const GRAVITY_STRENGTH = 0.3;
@@ -134,23 +142,51 @@
             const GRAVITY_TOGGLE_LEVEL = 3;
 
             // --- לוגיקת הישגים ---
-            function checkAchievements() {
-                if (totalFruitsCollected >= 10 && !unlockedAchievements['fruitCollector']) {
-                    unlockedAchievements['fruitCollector'] = true;
+            p.checkAchievements = function() {
+                if (p.totalFruitsCollected >= 10 && !p.unlockedAchievements['fruitCollector']) {
+                    p.unlockedAchievements['fruitCollector'] = true;
                     showMessageBox('הישג חדש!', 'אספן פירות: אספת 10 פירות!');
-                    saveGameData(totalFruitsCollected, unlockedAchievements, player);
+                    p.saveGameData(p.totalFruitsCollected, p.unlockedAchievements, p.player);
                 }
-                if (player && player.currentLevel >= 5 && !unlockedAchievements['superJumper']) {
-                    unlockedAchievements['superJumper'] = true;
+                if (p.player && p.player.currentLevel >= 5 && !p.unlockedAchievements['superJumper']) {
+                    p.unlockedAchievements['superJumper'] = true;
                     showMessageBox('הישג חדש!', 'קפצן על: השלמת שלב 5!');
-                    saveGameData(totalFruitsCollected, unlockedAchievements, player);
+                    p.saveGameData(p.totalFruitsCollected, p.unlockedAchievements, p.player);
                 }
-                if (player && player.currentLevel >= 10 && !unlockedAchievements['skilledExplorer']) {
-                    unlockedAchievements['skilledExplorer'] = true;
+                if (p.player && p.player.currentLevel >= 10 && !p.unlockedAchievements['skilledExplorer']) {
+                    p.unlockedAchievements['skilledExplorer'] = true;
                     showMessageBox('הישג חדש!', 'חוקר מיומן: השלמת שלב 10!');
-                    saveGameData(totalFruitsCollected, unlockedAchievements, player);
+                    p.saveGameData(p.totalFruitsCollected, p.unlockedAchievements, p.player);
                 }
             }
+            
+            // --- פונקציות לאיפוס וטעינת נתונים ---
+            p.saveGameData = function(fruits, achievements, playerState) {
+                const data = {
+                    totalFruitsCollected: fruits,
+                    unlockedAchievements: achievements,
+                    lastLevel: playerState ? playerState.currentLevel : 1
+                };
+                localStorage.setItem(GAME_DATA_KEY, JSON.stringify(data));
+            };
+
+            p.loadGameData = function() {
+                const data = localStorage.getItem(GAME_DATA_KEY);
+                if (data) {
+                    const parsedData = JSON.parse(data);
+                    p.totalFruitsCollected = parsedData.totalFruitsCollected || 0;
+                    p.unlockedAchievements = parsedData.unlockedAchievements || {};
+                    p.initialStage = parsedData.lastLevel || 1;
+                }
+            };
+            
+            p.resetGameData = function() {
+                localStorage.removeItem(GAME_DATA_KEY);
+                p.totalFruitsCollected = 0;
+                p.unlockedAchievements = {};
+                p.initialStage = 1;
+                showMessageBox('איפוס בוצע!', 'נתוני המשחק אופסו בהצלחה.');
+            };
 
             // --- מחלקת שחקן ---
             class Player {
@@ -218,7 +254,7 @@
                     }
 
                     this.onGround = false;
-                    for (let pObj of platforms) {
+                    for (let pObj of p.platforms) {
                         if (this.collidesWith(pObj)) {
                             if (this.velY > 0 && this.y + this.height / 2 > pObj.y - pObj.height / 2 && this.y - this.height / 2 < pObj.y - pObj.height / 2) {
                                 this.y = pObj.y - pObj.height / 2 - this.height / 2;
@@ -239,7 +275,7 @@
                     }
 
                     if (this.p.height && this.y > this.p.height + 50) {
-                        gamePhase = 'game_over';
+                        p.gamePhase = 'game_over';
                         showMessageBox('הפסדת!', 'נפלת מהמפה. נסה שוב!');
                     }
 
@@ -299,8 +335,8 @@
 
                 draw() {
                     if (!this.collected) {
-                        if (GameAssets.collectibleFruits[this.type]) {
-                            this.p.image(GameAssets.collectibleFruits[this.type], this.x, this.y, this.width, this.height);
+                        if (p.GameAssets.collectibleFruits[this.type]) {
+                            this.p.image(p.GameAssets.collectibleFruits[this.type], this.x, this.y, this.width, this.height);
                         } else {
                             console.warn(`Collectible fruit asset type ${this.type} not found.`);
                             this.p.fill(255, 0, 0);
@@ -311,10 +347,10 @@
 
                 collect() {
                     this.collected = true;
-                    totalFruitsCollected++;
-                    currentLevelFruits++;
-                    checkAchievements();
-                    saveGameData(totalFruitsCollected, unlockedAchievements, player);
+                    p.totalFruitsCollected++;
+                    p.currentLevelFruits++;
+                    p.checkAchievements();
+                    p.saveGameData(p.totalFruitsCollected, p.unlockedAchievements, p.player);
                 }
             }
 
@@ -331,8 +367,8 @@
                 draw() {
                     this.p.fill(0, 200, 0, 150);
                     this.p.rect(this.x, this.y, this.width, this.height);
-                    if (GameAssets.bossIcon) {
-                        this.p.image(GameAssets.bossIcon, this.x, this.y, this.width * 0.8, this.height * 0.8);
+                    if (p.GameAssets.bossIcon) {
+                        this.p.image(p.GameAssets.bossIcon, this.x, this.y, this.width * 0.8, this.height * 0.8);
                     } else {
                         console.warn("Boss icon asset not found.");
                         this.p.fill(0);
@@ -341,271 +377,147 @@
                 }
             }
 
-            // --- אתחול המשחק ---
-            function loadLevel(levelNum) {
-                currentLevelFruits = 0;
-                if (levelData[levelNum]) {
-                    currentLevelData = levelData[levelNum];
-                    player = new Player(currentLevelData.playerStart.x, currentLevelData.playerStart.y, levelNum);
-                    platforms = currentLevelData.platforms.map(pData => new Platform(pData.x, pData.y, pData.w, pData.h));
-                    collectibleFruits = currentLevelData.fruits.map(fData => new CollectibleFruit(fData.x, fData.y, fData.type));
-                    exitPoint = new ExitPoint(currentLevelData.exit.x, currentLevelData.exit.y, currentLevelData.exit.w, currentLevelData.exit.h);
-                    activeKeys = {};
-                } else {
-                    gamePhase = 'game_over';
-                    showMessageBox('כל הכבוד!', 'השלמת את כל השלבים הזמינים! אתה גיבור הפירות!');
-                    player = null;
-                    activeKeys = {};
-                }
-            }
-
-            function saveGameData(totalFruitsCollected, unlockedAchievements, player) {
-                const gameData = {
-                    totalFruitsCollected: totalFruitsCollected,
-                    unlockedAchievements: unlockedAchievements,
-                    lastPlayedLevel: player ? player.currentLevel : 1
-                };
-                localStorage.setItem(GAME_DATA_KEY, JSON.stringify(gameData));
-                console.log('Game data saved:', gameData);
-            }
-
-            function loadGameData() {
-                const savedData = localStorage.getItem(GAME_DATA_KEY);
-                if (savedData) {
-                    const gameData = JSON.parse(savedData);
-                    totalFruitsCollected = gameData.totalFruitsCollected || 0;
-                    unlockedAchievements = gameData.unlockedAchievements || {};
-                    initialStage = gameData.lastPlayedLevel || 1;
-                    console.log('Game data loaded:', gameData);
-                } else {
-                    console.log('No saved game data found.');
-                    initialStage = 1;
-                }
-            }
-            
-            function resetGameData() {
-                localStorage.removeItem(GAME_DATA_KEY);
-                totalFruitsCollected = 0;
-                unlockedAchievements = {};
-                initialStage = 1;
-                showMessageBox('איפוס נתונים', 'כל נתוני המשחק אופסו בהצלחה!');
-                console.log('Game data reset.');
-            }
-
-            // פונקציית עזר ליצירת פיקסל ארט
-            function createPixelArt(size, graphics) {
-                let pg = p.createGraphics(size * 10, size * 10);
-                pg.pixelDensity(1);
-                pg.background(0, 0, 0, 0);
-                pg.noStroke();
-                pg.rectMode(p.CENTER);
-
-                for (let part of graphics) {
-                    pg.fill(part.color[0], part.color[1], part.color[2]);
-                    for (let point of part.points) {
-                        pg.rect(point[0] * size + pg.width / 2, point[1] * size + pg.height / 2, size, size);
-                    }
-                }
-                return pg;
-            }
-
+            // --- טעינת משאבים ---
             p.preload = function() {
-                GameAssets.collectibleFruits = [
-                    createPixelArt(3, [{ color: [255, 120, 120], points: [[0, 0]] }, { color: [255, 255, 0], points: [[-1, 1], [1, 1]] }]),
-                    createPixelArt(3, [{ color: [100, 255, 100], points: [[0, 0], [1, 0]] }, { color: [255, 255, 0], points: [[0, 1], [1, 1]] }]),
-                    createPixelArt(3, [{ color: [150, 150, 255], points: [[-1, 0], [0, 0], [1, 0], [0, -1]] }])
+                // ... (add asset loading here if needed)
+                // For now, using placeholder assets
+                p.GameAssets.playerIcon = p.createGraphics(32, 32);
+                p.GameAssets.playerIcon.background(255, 100, 100);
+                p.GameAssets.bossIcon = p.createGraphics(32, 32);
+                p.GameAssets.bossIcon.background(0);
+                p.GameAssets.collectibleFruits = [
+                    p.createGraphics(20, 20),
+                    p.createGraphics(20, 20),
+                    p.createGraphics(20, 20)
                 ];
-                GameAssets.bossIcon = createPixelArt(5, [{ color: [50, 50, 50], points: [[0, 0], [1, 0], [0, 1], [1, 1]] }]);
+                p.GameAssets.collectibleFruits[0].background(255, 0, 0); // Apple
+                p.GameAssets.collectibleFruits[1].background(0, 255, 0); // Lime
+                p.GameAssets.collectibleFruits[2].background(0, 0, 255); // Blueberry
             };
-
+            
             p.setup = function() {
                 const container = document.getElementById('p5-canvas-container');
-                const canvas = p.createCanvas(container.clientWidth, container.clientHeight);
-                canvas.parent('p5-canvas-container');
-                p.rectMode(p.CENTER);
-                p.textAlign(p.CENTER, p.CENTER);
-                p.imageMode(p.CENTER);
-                p.frameRate(60);
-
-                loadGameData();
-                loadLevel(initialStage);
+                if (container) {
+                    p.createCanvas(container.clientWidth, container.clientHeight).parent('p5-canvas-container');
+                    p.rectMode(p.CENTER);
+                    p.imageMode(p.CENTER);
+                    p.loadGameData();
+                    p.loadLevel(p.initialStage);
+                } else {
+                    console.error("Canvas container not found!");
+                }
+            };
+            
+            p.loadLevel = function(levelNum) {
+                p.currentLevelFruits = 0;
+                if (levelData[levelNum]) {
+                    currentLevelData = levelData[levelNum];
+                    p.player = new Player(currentLevelData.playerStart.x, currentLevelData.playerStart.y, levelNum);
+                    p.platforms = currentLevelData.platforms.map(plat => new Platform(plat.x, plat.y, plat.w, plat.h));
+                    p.collectibleFruits = currentLevelData.fruits.map(fruit => new CollectibleFruit(fruit.x, fruit.y, fruit.type));
+                    p.exitPoint = new ExitPoint(currentLevelData.exit.x, currentLevelData.exit.y, currentLevelData.exit.w, currentLevelData.exit.h);
+                } else {
+                    p.gamePhase = 'game_over';
+                    showMessageBox('כל הכבוד!', 'השלמת את כל השלבים! נתוני המשחק אופסו כדי שתוכל לשחק שוב.');
+                    p.resetGameData();
+                }
             };
 
             p.draw = function() {
-                p.background(50, 50, 50);
-
-                if (gamePhase === 'playing') {
-                    updateGame();
-                    drawGame();
-                } else if (gamePhase === 'intro') {
-                    drawIntroScreen();
-                } else if (gamePhase === 'game_over') {
-                    drawGameOverScreen();
-                } else if (gamePhase === 'level_complete') {
-                    drawLevelCompleteScreen();
-                } else if (gamePhase === 'instructions') {
-                    drawInstructionsScreen();
-                } else if (gamePhase === 'achievements') {
-                    drawAchievementsScreen();
+                p.background(0);
+                if (p.gamePhase === 'playing') {
+                    p.player.update();
+                    p.player.draw();
+                    p.platforms.forEach(plat => plat.draw());
+                    p.collectibleFruits.forEach(fruit => fruit.draw());
+                    p.exitPoint.draw();
+                    checkCollisions();
+                    drawHUD();
+                    
+                } else if (p.gamePhase === 'level_complete' || p.gamePhase === 'game_over') {
+                    drawEndingScreen();
+                } else if (p.gamePhase === 'intro') {
+                    // Display intro screen logic.
                 }
-                
-                drawUI();
+
+                // If game is in 'intro', 'level_complete', or 'game_over' phase,
+                // we want the buttons overlay to be visible.
+                if (p.gamePhase === 'intro' || p.gamePhase === 'level_complete' || p.gamePhase === 'game_over') {
+                    const buttonsOverlay = document.getElementById('buttonsOverlay');
+                    if (buttonsOverlay) {
+                        buttonsOverlay.style.display = 'flex';
+                    }
+                }
             };
-
-            function updateGame() {
-                if (player) {
-                    player.update();
-
-                    // בדיקת איסוף פירות
-                    for (let i = collectibleFruits.length - 1; i >= 0; i--) {
-                        if (player.collidesWith(collectibleFruits[i])) {
-                            collectibleFruits[i].collect();
-                            collectibleFruits.splice(i, 1);
-                        }
-                    }
-
-                    // בדיקת הגעה ליציאה
-                    if (player.collidesWith(exitPoint)) {
-                        if (collectibleFruits.length === 0) {
-                            gamePhase = 'level_complete';
-                            saveGameData(totalFruitsCollected, unlockedAchievements, player);
-                        } else {
-                            showMessageBox('חסרים פירות!', `אסוף את כל ${currentLevelData.fruits.length - collectibleFruits.length} הפירות הנותרים כדי לעבור לשלב הבא.`);
-                        }
-                    }
-                }
-            }
-
-            function drawGame() {
-                p.background(50, 50, 50);
-                for (let pObj of platforms) {
-                    pObj.draw();
-                }
-                for (let fObj of collectibleFruits) {
-                    fObj.draw();
-                }
-                if (exitPoint) {
-                    exitPoint.draw();
-                }
-                if (player) {
-                    player.draw();
-                }
-            }
-
-            function drawUI() {
+            
+            function drawHUD() {
+                p.fill(255);
                 p.textSize(16);
-                p.fill(255);
-                p.textAlign(p.LEFT);
-                p.text(`שלב: ${player ? player.currentLevel : initialStage}`, 10, 20);
-                p.text(`פירות: ${totalFruitsCollected}`, 10, 40);
-                if (player && player.currentLevel >= GRAVITY_TOGGLE_LEVEL) {
-                    p.text(`גרביטציה: ${player.gravityEnabled ? 'פעילה' : 'כבוי'}` + " (מקש רווח)", 10, 60);
-                }
-                p.textAlign(p.RIGHT);
-                if (player && currentLevelData) {
-                    p.text(`פירות בשלב: ${currentLevelFruits}/${currentLevelData.fruits.length}`, p.width - 10, 20);
-                }
-
-                p.textAlign(p.CENTER);
-                if (gamePhase !== 'playing') {
-                    p.fill(50, transitionAlpha);
-                    p.rect(p.width / 2, p.height / 2, p.width, p.height);
-                    transitionAlpha = p.min(200, transitionAlpha + 5);
-                } else {
-                    transitionAlpha = 1;
-                }
-            }
-
-            // --- מסכים שונים ---
-            function drawIntroScreen() {
-                p.fill(255);
-                p.textSize(48);
-                p.text('מבוך הפירות', p.width / 2, p.height / 2 - 50);
-                p.textSize(24);
-                p.text('לחץ על מקש כלשהו כדי להתחיל', p.width / 2, p.height / 2 + 50);
-                p.textSize(16);
-                p.text('לחץ על H להוראות, A להישגים', p.width / 2, p.height / 2 + 100);
-            }
-
-            function drawLevelCompleteScreen() {
-                p.fill(255);
-                p.textSize(32);
-                p.text('שלב הושלם!', p.width / 2, p.height / 2 - 50);
-                p.textSize(24);
-                p.text('לחץ על מקש כלשהו כדי להמשיך', p.width / 2, p.height / 2 + 50);
-            }
-
-            function drawGameOverScreen() {
-                p.fill(255);
-                p.textSize(32);
-                p.text('המשחק נגמר!', p.width / 2, p.height / 2 - 50);
-                p.textSize(24);
-                p.text('לחץ על מקש כלשהו כדי להתחיל מחדש', p.width / 2, p.height / 2 + 50);
-            }
-
-            function drawInstructionsScreen() {
-                p.fill(255);
-                p.textSize(32);
-                p.text('הוראות', p.width / 2, p.height / 2 - 150);
-                p.textSize(20);
-                p.text('השתמש ב-A/D או בחצים ימינה/שמאלה כדי לזוז', p.width / 2, p.height / 2 - 100);
-                p.text('השתמש ב-W או בחץ למעלה כדי לקפוץ', p.width / 2, p.height / 2 - 50);
-                p.text('אסוף את כל הפירות כדי לעבור לשלב הבא', p.width / 2, p.height / 2);
-                p.text('החל משלב 3, השתמש במקש רווח כדי להחליף את כוח המשיכה', p.width / 2, p.height / 2 + 50);
-                p.text('לחץ על מקש כלשהו כדי לחזור לתפריט הראשי', p.width / 2, p.height / 2 + 100);
-            }
-
-            function drawAchievementsScreen() {
-                p.fill(255);
-                p.textSize(32);
-                p.text('הישגים', p.width / 2, p.height / 2 - 150);
-                p.textSize(20);
-                const achievementDescriptions = {
-                    'fruitCollector': 'אספן פירות: אסוף 10 פירות',
-                    'superJumper': 'קפצן על: השלם שלב 5',
-                    'skilledExplorer': 'חוקר מיומן: השלם שלב 10'
-                };
-                let y = p.height / 2 - 100;
-                for (const key in achievementDescriptions) {
-                    const desc = achievementDescriptions[key];
-                    const isUnlocked = unlockedAchievements[key];
-                    p.fill(isUnlocked ? 100 : 255);
-                    p.text(desc, p.width / 2, y);
-                    if (isUnlocked) {
-                        p.fill(0, 255, 0);
-                        p.text('✓', p.width / 2 + p.textWidth(desc) / 2 + 15, y);
-                    }
-                    y += 40;
-                }
-                p.fill(255);
-                p.text('לחץ על מקש כלשהו כדי לחזור לתפריט הראשי', p.width / 2, p.height / 2 + 100);
+                p.textAlign(p.LEFT, p.TOP);
+                p.text(`שלב: ${p.player.currentLevel}`, 10, 10);
+                p.text(`פירות: ${p.totalFruitsCollected}`, 10, 30);
+                p.text(`קפיצות נותרו: ${p.player.jumpsLeft}`, 10, 50);
             }
             
-            // --- ניהול אירועי קלט ---
+            function drawEndingScreen() {
+                p.fill(0, 0, 0, 150);
+                p.rect(p.width / 2, p.height / 2, p.width, p.height);
+                p.fill(255);
+                p.textSize(32);
+                p.textAlign(p.CENTER, p.CENTER);
+                if (p.gamePhase === 'level_complete') {
+                    p.text('כל הכבוד! השלמת את השלב.', p.width / 2, p.height / 2 - 50);
+                    p.textSize(20);
+                    p.text('לחץ על מקש כלשהו כדי להמשיך', p.width / 2, p.height / 2 + 50);
+                } else if (p.gamePhase === 'game_over') {
+                    p.text('הפסדת!', p.width / 2, p.height / 2 - 50);
+                    p.textSize(20);
+                    p.text('לחץ על מקש כלשהו כדי להתחיל מחדש', p.width / 2, p.height / 2 + 50);
+                }
+            }
+            
+            function checkCollisions() {
+                for (let i = p.collectibleFruits.length - 1; i >= 0; i--) {
+                    if (p.player.collidesWith(p.collectibleFruits[i]) && !p.collectibleFruits[i].collected) {
+                        p.collectibleFruits[i].collect();
+                        p.collectibleFruits.splice(i, 1);
+                    }
+                }
+                
+                if (p.player.collidesWith(p.exitPoint) && p.collectibleFruits.length === 0) {
+                    p.gamePhase = 'level_complete';
+                    showMessageBox('כל הכבוד!', `אספת את כל הפירות בשלב ${p.player.currentLevel}!`);
+                    p.saveGameData(p.totalFruitsCollected, p.unlockedAchievements, p.player);
+                }
+            }
+
             p.keyPressed = function() {
                 activeKeys[p.keyCode] = true;
-                if (gamePhase === 'intro') {
-                    if (p.keyCode === 72) { // H
-                        gamePhase = 'instructions';
+                if (p.gamePhase === 'intro') {
+                    if (p.keyCode === 83) { // S
+                        p.gamePhase = 'playing';
+                        p.startTime = p.millis();
+                    } else if (p.keyCode === 73) { // I
+                        p.gamePhase = 'instructions';
                     } else if (p.keyCode === 65) { // A
-                        gamePhase = 'achievements';
+                        p.gamePhase = 'achievements';
                     } else {
-                        loadLevel(initialStage);
-                        gamePhase = 'playing';
-                        startTime = p.millis();
+                        p.loadLevel(p.initialStage);
+                        p.gamePhase = 'playing';
+                        p.startTime = p.millis();
                     }
-                } else if (gamePhase === 'level_complete') {
-                    initialStage++;
-                    loadLevel(initialStage);
-                    gamePhase = 'playing';
-                    startTime = p.millis();
-                } else if (gamePhase === 'game_over') {
-                    loadGameData();
-                    loadLevel(initialStage);
-                    gamePhase = 'intro';
-                    startTime = p.millis();
-                } else if (gamePhase === 'instructions' || gamePhase === 'achievements') {
-                    gamePhase = 'intro';
+                } else if (p.gamePhase === 'level_complete') {
+                    p.initialStage++;
+                    p.loadLevel(p.initialStage);
+                    p.gamePhase = 'playing';
+                    p.startTime = p.millis();
+                } else if (p.gamePhase === 'game_over') {
+                    p.loadGameData();
+                    p.loadLevel(p.initialStage);
+                    p.gamePhase = 'intro';
+                    p.startTime = p.millis();
+                } else if (p.gamePhase === 'instructions' || p.gamePhase === 'achievements') {
+                    p.gamePhase = 'intro';
                 }
             };
 
@@ -621,7 +533,8 @@
                 }
             };
         };
-
+        
         window.onload = function() {
             window.p5Instance = new p5(sketch, 'p5-canvas-container');
         };
+
