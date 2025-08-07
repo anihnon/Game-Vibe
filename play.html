@@ -251,11 +251,21 @@
         async function loadGame(pathname) {
             removeExistingP5(); // Clear any previous game
 
-            const pathParts = pathname.split('/').filter(part => part !== '');
-            const isGamePage = pathParts[0] === 'games' && pathParts[1];
-            
-            // Set up default view for the home page or a non-game page
-            if (!isGamePage) {
+            // A: Attempt to get game ID from a friendly URL path, e.g. /games/snake
+            let pathParts = pathname.split('/').filter(part => part !== '');
+            let gameId = null;
+            if (pathParts[0] === 'games' && pathParts[1]) {
+                gameId = pathParts[1];
+            } else {
+                // B: Fallback - get game ID from a query parameter, e.g. ?game=snake
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('game')) {
+                    gameId = urlParams.get('game');
+                }
+            }
+
+            // If no game ID found, show the default landing message
+            if (!gameId) {
                 document.getElementById('gameTitle').innerText = 'ברוכים הבאים ל-Game Vibe!';
                 loadingContainer.innerText = 'בחרו משחק מהרשימה כדי להתחיל.';
                 loadingContainer.style.display = 'block';
@@ -265,7 +275,6 @@
                 return;
             }
 
-            const gameId = pathParts[1];
             loadingContainer.innerText = 'טוען משחק...';
             loadingContainer.style.display = 'block';
             
