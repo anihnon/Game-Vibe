@@ -32,7 +32,6 @@
             overflow-x: hidden;
         }
         
-        /* עיצוב כותרת עליונה ותחתונה */
         header, footer {
             background: #2d3748;
             color: white;
@@ -42,7 +41,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         
-        /* מיכל ראשי למרכז את התוכן */
         .container {
             flex: 1;
             display: flex;
@@ -51,7 +49,6 @@
             padding: 30px 15px;
         }
         
-        /* כרטיס המשחק המרכזי */
         .game-card {
             background: #222b3a;
             border-radius: 20px;
@@ -65,7 +62,6 @@
             align-items: center;
         }
         
-        /* כותרת המשחק הראשית */
         h1 {
             font-size: 2.2em;
             margin: 0 0 15px 0;
@@ -73,7 +69,6 @@
             color: #ffffff;
         }
         
-        /* מיכל המשחק שמכיל את הקנבס */
         #gameContainer {
             position: relative;
             margin-top: 20px;
@@ -84,11 +79,10 @@
             background-color: #333;
             border-radius: 10px;
             overflow: hidden;
-            aspect-ratio: 16 / 9; /* יחס גובה-רוחב קלאסי של 16:9 */
+            aspect-ratio: 16 / 9;
             max-width: 900px;
         }
         
-        /* עיצוב הקנבס שיצר p5.js */
         canvas {
             display: block;
             max-width: 100%;
@@ -98,7 +92,6 @@
             background-color: #141464;
         }
         
-        /* עיצוב לקישור בכותרת העליונה */
         header h2 a {
             color: inherit;
             text-decoration: none;
@@ -109,7 +102,6 @@
             text-decoration: underline;
         }
 
-        /* מסך טעינה */
         #loadingContainer {
             position: absolute;
             top: 50%;
@@ -120,15 +112,14 @@
             z-index: 10;
         }
         
-        /* כרטיס מידע (intro, game over) כ-overlay */
         #infoCard {
             position: absolute;
             top: 0;
-            right: 0; /* יישור לימין עבור RTL */
+            right: 0;
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.9);
-            display: none; /* נסתר כברירת מחדל */
+            display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -139,7 +130,6 @@
             box-sizing: border-box;
         }
         
-        /* כפתורים - סגנון כללי */
         .button {
             background-color: #4CAF50;
             border: none;
@@ -165,7 +155,6 @@
             background-color: #da190b;
         }
 
-        /* תיבת הודעה מותאמת אישית (במקום alert) */
         .message-box {
             position: fixed;
             top: 0;
@@ -187,272 +176,187 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.7);
             max-width: 90vw;
         }
-
-        /* קטע פרטי המשחק מתחת לקנבס */
-        #gameDetailsSection {
-            text-align: right;
-            margin-top: 2rem;
-            padding: 1.5rem;
-            background-color: #2d3748;
-            border-radius: 1rem;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            width: 100%;
-            box-sizing: border-box;
-        }
-        #gameDetailsSection h2 {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #90cdf4;
-            margin-bottom: 1rem;
-            border-bottom: 2px solid #4a5568;
-            padding-bottom: 0.5rem;
-        }
-        #gameDetailsSection p {
-            font-size: 1.1rem;
-            line-height: 1.6;
-            margin-bottom: 1rem;
-            color: #cbd5e0;
-        }
-        #detailedInstructions p {
-            margin-bottom: 0.5rem;
-        }
-
-        /* כפתור מסך מלא */
-        #fullscreenButton {
-            position: absolute;
-            bottom: 1rem;
-            right: 1rem;
-            background-color: rgba(0, 0, 0, 0.5);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            z-index: 15;
-        }
-        #fullscreenButton:hover {
-            background-color: rgba(0, 0, 0, 0.7);
-        }
-
-        /* הסתרת כפתור מסך מלא כשהוא כבר במסך מלא */
-        #gameContainer:fullscreen #fullscreenButton {
-            display: none;
-        }
-
-        #gameContainer:not(:fullscreen) {
-            overflow: hidden;
-        }
     </style>
 </head>
 <body>
     <header>
-        <h2><a href="https://anihnon.github.io/Game-Vibe/">Vibe Games</a></h2>
+        <h2 class="text-xl font-bold"><a href="/">Game Vibe 🎮</a></h2>
     </header>
 
-    <div class="container">
+    <main class="container">
         <div class="game-card">
-            <!-- כותרת המשחק הראשית - תמיד גלויה -->
-            <h1 id="gameTitle">טוען משחק...</h1>
+            <!-- כותרת המשחק הדינמית תטען כאן -->
+            <h1 id="gameTitle">...</h1>
             
             <div id="gameContainer">
-                <!-- הקנבס של p5.js ייווצר כאן באופן דינמי -->
-                <div id="loadingContainer">טוען משחק…</div>
+                <div id="loadingContainer">טוען משחק...</div>
                 
-                <!-- infoCard - משמש כמסך כיסוי (overlay) -->
-                <div id="infoCard">
-                    <!-- תמונה בתוך infoCard, עם fallback למקרה שאין תמונה -->
-                    <img id="infoCardImage" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3C/svg%3E" alt="תמונת משחק" class="w-full h-auto rounded-lg mb-4 hidden" onerror="this.onerror=null;this.src='https://placehold.co/400x300/2d3748/fff?text=No+Image';">
-                    <p id="infoCardDesc" class="text-lg mb-6"></p>
-                    <div id="infoCardMessage" class="text-3xl font-bold mb-4"></div>
-                    
-                    <div class="flex flex-col md:flex-row items-center justify-center gap-4">
-                        <button id="startGameButton" class="button">התחל משחק</button>
+                <!-- מסך פתיחה/סיום/הוראות -->
+                <div id="infoCard" style="display: none;">
+                    <h2 id="infoTitle" class="text-3xl font-bold mb-4">...</h2>
+                    <p id="infoStory" class="text-lg text-gray-300 mb-4"></p>
+                    <div id="infoInstructions">
+                        <h3 class="text-xl font-semibold mb-2">הוראות:</h3>
+                        <ul id="instructionsList" class="text-left text-gray-400 list-disc list-inside"></ul>
+                    </div>
+                    <button id="startButton" class="button">התחל לשחק</button>
+                    <div id="additionalButtons" class="flex gap-4 mt-4">
                         <button id="achievementsButton" class="button">הישגים</button>
                         <button id="resetDataButton" class="button red">איפוס נתונים</button>
                     </div>
                 </div>
+            </div>
+
+            <div class="flex mt-8 gap-4">
+                <button id="restartButton" class="button" style="display: none;">התחל מחדש</button>
                 <button id="fullscreenButton" class="button">מסך מלא</button>
             </div>
-
-            <!-- קטע חדש לפרטי משחק והוראות מפורטות - מתחת לקנבס -->
-            <div id="gameDetailsSection">
-                <h2 class="text-xl font-bold mb-2">סיפור המשחק</h2>
-                <p id="gameStory" class="mb-4"></p>
-                <h2 class="text-xl font-bold mb-2">הוראות</h2>
-                <div id="detailedInstructions" class="text-right"></div>
-            </div>
         </div>
-    </div>
+    </main>
 
-    <!-- Custom Message Box HTML -->
+    <footer>
+        <p>&copy; 2025 Game Vibe. כל הזכויות שמורות.</p>
+    </footer>
+
+    <!-- תיבת הודעה מותאמת אישית -->
     <div id="messageBox" class="message-box">
         <div class="message-box-content">
-            <h2 id="messageBoxTitle"></h2>
-            <p id="messageBoxContent"></p>
-            <button id="messageBoxClose">אישור</button>
+            <h3 id="messageBoxTitle" class="text-2xl font-bold mb-4"></h3>
+            <p id="messageBoxBody" class="mb-6"></p>
+            <button id="messageBoxClose" class="button">אישור</button>
         </div>
     </div>
-
-    <!-- p5.js library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
     
-    <!-- Your game sketch will be loaded here dynamically -->
-
+    <!-- טעינת ספריית p5.js קודם כל -->
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.4.0/lib/p5.js"></script>
+    
     <script>
-        // משתנים גלובליים לאלמנטים של ממשק המשתמש
-        const gameTitleElement = document.getElementById("gameTitle");
-        const loadingContainer = document.getElementById("loadingContainer");
-        const gameContainerElement = document.getElementById("gameContainer");
+        // אלמנטים מה-DOM
+        const gameContainerElement = document.getElementById('gameContainer');
         const infoCard = document.getElementById('infoCard');
-        const infoCardImageElement = document.getElementById('infoCardImage');
-        const infoCardDescElement = document.getElementById('infoCardDesc');
-        const infoCardMessageElement = document.getElementById('infoCardMessage');
-        const startGameButton = document.getElementById('startGameButton');
+        const loadingContainer = document.getElementById('loadingContainer');
+        const startButton = document.getElementById('startButton');
+        const restartButton = document.getElementById('restartButton');
         const achievementsButton = document.getElementById('achievementsButton');
         const resetDataButton = document.getElementById('resetDataButton');
         const fullscreenButton = document.getElementById('fullscreenButton');
-        const gameDetailsSection = document.getElementById("gameDetailsSection");
-        const gameStoryElement = document.getElementById("gameStory");
-        const detailedInstructionsElement = document.getElementById("detailedInstructions");
+        const messageBox = document.getElementById('messageBox');
         
-        let gamePhase = 'intro'; // מצב המשחק, מוגדר כגלובלי כדי שניתן יהיה לשנותו מהסקצ'
-
-        /**
-         * פונקציה להצגת תיבת הודעות מותאמת אישית.
-         * @param {string} title כותרת ההודעה
-         * @param {string} content תוכן ההודעה
-         * @param {function} [callback] פונקציה שתופעל לאחר סגירת התיבה
-         */
-        function showMessageBox(title, content, callback) {
-            const msgBox = document.getElementById('messageBox');
-            if (!msgBox) {
-                console.error("Message box element not found.");
-                return;
-            }
+        function showMessageBox(title, content) {
             document.getElementById('messageBoxTitle').innerText = title;
-            document.getElementById('messageBoxContent').innerText = content;
-            msgBox.style.display = 'flex';
-            const closeButton = document.getElementById('messageBoxClose');
-            closeButton.onclick = () => {
-                msgBox.style.display = 'none';
-                if (callback) callback();
-            };
+            document.getElementById('messageBoxBody').innerText = content;
+            messageBox.style.display = 'flex';
         }
 
-        // פונקציה ראשית לטעינת המשחק
-        function loadGame() {
+        document.getElementById('messageBoxClose').addEventListener('click', () => {
+            messageBox.style.display = 'none';
+        });
+        
+        // פונקציה לטעינה דינמית של קובץ JavaScript
+        function loadScript(url, callback) {
+            const script = document.createElement('script');
+            script.src = url;
+            script.onload = callback;
+            script.onerror = () => {
+                showMessageBox('שגיאת טעינה', `אירעה שגיאה בטעינת קובץ המשחק: ${url}`);
+                console.error(`Error loading script: ${url}`);
+            };
+            document.head.appendChild(script);
+        }
+
+        async function loadGame() {
+            // מזהה המשחק נלקח מפרמטר ה-URL
             const urlParams = new URLSearchParams(window.location.search);
-            const gameId = urlParams.get("game");
+            const gameId = urlParams.get('id');
 
             if (!gameId) {
-                gameTitleElement.textContent = "שגיאה – חסר ID משחק.";
-                loadingContainer.style.display = "none";
-                gameDetailsSection.style.display = 'none';
+                loadingContainer.innerText = 'בחר משחק בכתובת, למשל: ?id=astroFruits';
                 return;
             }
 
-            fetch('data.json')
-                .then(res => {
-                    if (!res.ok) throw new Error("Failed to load game data (data.json)");
-                    return res.json();
-                })
-                .then(gamesData => {
-                    const gameObj = gamesData.find(g => g.id === gameId);
+            try {
+                // טעינת קובץ ה-JSON
+                const response = await fetch('data.json');
+                const games = await response.json();
+                const currentGame = games.find(game => game.id === gameId);
 
-                    if (!gameObj) {
-                        gameTitleElement.textContent = `שגיאה – המשחק "${gameId}" לא נמצא.`;
-                        loadingContainer.style.display = "none";
-                        gameDetailsSection.style.display = 'none';
-                        return;
-                    }
-
-                    // עדכון אלמנטים של ממשק המשתמש עם נתוני המשחק
-                    gameTitleElement.textContent = gameObj.title;
-                    document.title = `${gameObj.title} | משחק Vibe`;
-                    infoCardDescElement.textContent = gameObj.description;
+                if (currentGame) {
+                    // עדכון כותרות ומידע מה-JSON
+                    document.getElementById('gameTitle').innerText = currentGame.title;
+                    document.getElementById('infoTitle').innerText = currentGame.title;
+                    document.getElementById('infoStory').innerText = currentGame.story;
                     
-                    if (gameObj.image) {
-                        infoCardImageElement.src = gameObj.image;
-                        infoCardImageElement.alt = `תמונה של ${gameObj.title}`;
-                        infoCardImageElement.classList.remove('hidden');
-                    } else {
-                        infoCardImageElement.classList.add('hidden');
-                    }
+                    const instructionsList = document.getElementById('instructionsList');
+                    instructionsList.innerHTML = ''; // ניקוי הוראות קודמות
+                    currentGame.instructions.forEach(instruction => {
+                        const li = document.createElement('li');
+                        li.innerText = instruction;
+                        instructionsList.appendChild(li);
+                    });
 
-                    gameDetailsSection.style.display = 'block';
-                    gameStoryElement.textContent = gameObj.story || gameObj.description;
-                    
-                    detailedInstructionsElement.innerHTML = '';
-                    if (gameObj.instructions && gameObj.instructions.length > 0) {
-                        gameObj.instructions.forEach(instruction => {
-                            const p = document.createElement('p');
-                            p.textContent = `• ${instruction}`;
-                            detailedInstructionsElement.appendChild(p);
-                        });
-                    } else {
-                        detailedInstructionsElement.innerHTML = '<p>אין הוראות מפורטות זמינות למשחק זה.</p>';
-                    }
+                    // טעינה דינמית של קובץ הלוגיקה של המשחק
+                    loadScript(currentGame.jsFile, () => {
+                        loadingContainer.style.display = 'none';
+                        infoCard.style.display = 'flex';
+                        // לאחר טעינת הקובץ, ניצור את מופע p5
+                        if (typeof sketch !== 'undefined') {
+                            window.p5Instance = new p5(sketch, 'p5-canvas-container');
+                        } else {
+                            showMessageBox('שגיאה', 'קובץ המשחק נטען אך לא מכיל את פונקציית ה-p5 הנדרשת.');
+                            console.error("Game script loaded, but 'sketch' is not defined.");
+                        }
+                    });
 
-                    // טעינת קובץ ה-JS של המשחק
-                    loadGameScript(gameObj.jsFile);
-                })
-                .catch(err => {
-                    loadingContainer.textContent = `שגיאה בטעינת נתוני המשחקים: ${err.message}`;
-                    gameTitleElement.textContent = "משהו השתבש...";
-                    console.error(err);
-                });
+                } else {
+                    loadingContainer.innerText = 'מזהה המשחק לא נמצא בקובץ הנתונים.';
+                    showMessageBox('שגיאה', 'מזהה המשחק לא נמצא בקובץ הנתונים.');
+                    console.error('Game ID not found in data.json');
+                }
+            } catch (error) {
+                loadingContainer.innerText = 'אירעה שגיאה בטעינת קובץ הנתונים.';
+                showMessageBox('שגיאה', 'אירעה שגיאה בטעינת קובץ הנתונים.');
+                console.error('Error loading game data:', error);
+            }
         }
         
-        /**
-         * פונקציה לטעינה דינמית של סקריפט המשחק.
-         * @param {string} scriptPath נתיב קובץ ה-JS של המשחק
-         */
-        function loadGameScript(scriptPath) {
-            const script = document.createElement('script');
-            script.src = scriptPath;
-            script.onload = () => {
-                // לאחר טעינת הסקריפט, בודקים אם הוגדר פונקציית sketch
-                if (typeof sketch !== 'undefined') {
-                    loadingContainer.style.display = "none";
-                    infoCard.style.display = "flex";
-                    infoCardMessageElement.textContent = 'לחץ על "התחל משחק" כדי להתחיל!';
-                    // יצירת מופע של p5 רק לאחר טעינת הסקריפט בהצלחה
-                    if (!window.p5Instance) {
-                        window.p5Instance = new p5(sketch, gameContainerElement);
-                    }
-                } else {
-                    console.error("קובץ המשחק נטען, אך הגדרת המשחק (sketch) לא נמצאה.");
-                    loadingContainer.innerText = "שגיאה: הגדרת המשחק לא נמצאה.";
-                }
-            };
-            script.onerror = (err) => {
-                loadingContainer.textContent = `שגיאה בטעינת קובץ המשחק: ${err.message}`;
-                gameTitleElement.textContent = "משהו השתבש...";
-                console.error(`Failed to load game script: ${scriptPath}`, err);
-            };
-            document.body.appendChild(script);
-        }
+        // טעינת המשחק בעת טעינת הדף
+        document.addEventListener('DOMContentLoaded', loadGame);
 
-        // Event listeners for UI buttons
-        startGameButton.addEventListener('click', () => {
-            // בדיקה שgamePhase הוגדר (כלומר, המשחק נטען)
-            if (typeof gamePhase !== 'undefined') {
-                gamePhase = 'playing';
+        // לחיצה על כפתור התחל משחק
+        startButton.addEventListener('click', () => {
+            // קריאה לפונקציה מתוך קובץ ה-p5.js כדי להתחיל את המשחק
+            if (window.p5Instance && typeof window.p5Instance.gamePhase !== 'undefined') {
+                window.p5Instance.gamePhase = 'playing';
                 infoCard.style.display = 'none';
             } else {
                 showMessageBox('שגיאה', 'המשחק עדיין לא נטען במלואו. נסה שוב בעוד רגע.');
             }
         });
 
+        // כפתורים נוספים
+        restartButton.addEventListener('click', () => {
+            if (window.p5Instance) {
+                window.p5Instance.loadGameData();
+                window.p5Instance.initialStage = 1;
+                window.p5Instance.loadLevel(window.p5Instance.initialStage);
+                window.p5Instance.gamePhase = 'playing';
+                infoCard.style.display = 'none';
+            }
+        });
+
         achievementsButton.addEventListener('click', () => {
-            // כפתור זה דורש לוגיקה שתכתוב בקובץ p5.js החיצוני.
             showMessageBox('הישגים', 'פונקציית ההישגים תעבוד כשתוגדר בקובץ המשחק. 🏆');
         });
 
         resetDataButton.addEventListener('click', () => {
-            // כפתור זה דורש פונקציות איפוס שיכתבו בקובץ p5.js.
-            showMessageBox('איפוס נתונים', 'פונקציית איפוס הנתונים תעבוד כשתוגדר בקובץ המשחק. 🔄');
+            if (window.confirm("האם אתה בטוח שברצונך לאפס את נתוני המשחק?")) {
+                if (window.p5Instance && window.p5Instance.resetGameData) {
+                    window.p5Instance.resetGameData();
+                    window.location.reload();
+                } else {
+                    showMessageBox('שגיאה', 'פונקציית איפוס הנתונים אינה זמינה. 🔄');
+                }
+            }
         });
 
         fullscreenButton.addEventListener('click', () => {
@@ -467,8 +371,13 @@
             }
         });
 
-        // הפעלת לוגיקת טעינת המשחק כשהעמוד מוכן
-        window.onload = loadGame;
+        // שינוי גודל הקנבס בהתאם למיכל
+        window.addEventListener('resize', () => {
+            const container = document.getElementById('p5-canvas-container');
+            if (container && window.p5Instance) {
+                window.p5Instance.resizeCanvas(container.clientWidth, container.clientHeight);
+            }
+        });
     </script>
 </body>
 </html>
