@@ -10,13 +10,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Varela Round', sans-serif; /* פונט חדש */
+            font-family: 'Varela Round', sans-serif;
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #f4f4f9, #e0e0e5); /* רקע הדרגתי חדש */
+            background: linear-gradient(135deg, #f4f4f9, #e0e0e5);
             color: #333;
             line-height: 1.6;
-            direction: rtl; /* כיוון קריאה מימין לשמאל */
+            direction: rtl;
         }
 
         .container {
@@ -28,7 +28,7 @@
 
         /* כותרת עליונה וניווט */
         header {
-            background-color: #2c3e50; /* כהה יותר */
+            background-color: #2c3e50;
             color: #fff;
             padding: 1.5rem 0;
             text-align: center;
@@ -132,7 +132,7 @@
 
         .game-card-header h3, .category-card-header h3 {
             position: relative;
-            z-index: 2; /* מוודא שהטקסט יהיה מעל שכבת הכיסוי */
+            z-index: 2;
             font-size: 1.5rem;
             margin: 15px;
             color: #fff;
@@ -185,7 +185,7 @@
             font-size: 1.1rem;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             width: 100%;
-            box-sizing: border-box; /* מוודא שהריפוד לא ירחיב את הכפתור */
+            box-sizing: border-box;
         }
         
         .game-card .btn:hover, .category-card a:hover {
@@ -331,8 +331,8 @@
         <nav>
             <h1>Vibe Games</h1>
             <ul>
-                <li><a href="/" data-target="home">דף הבית</a></li>
-                <li><a href="/contact" data-target="contact-info">יצירת קשר</a></li>
+                <li><a href="#/" data-target="home">דף הבית</a></li>
+                <li><a href="#/contact" data-target="contact-info">יצירת קשר</a></li>
             </ul>
         </nav>
     </header>
@@ -344,11 +344,11 @@
     <footer>
         <p>&copy; 2025 Vibe Games. כל הזכויות שמורות.</p>
         <div class="footer-links">
-            <a href="/privacy" data-target="privacy-page">מדיניות פרטיות</a>
-            <a href="/terms" data-target="terms-page">תנאי שימוש</a>
-            <a href="/cookies" data-target="cookies-page">מדיניות עוגיות</a>
-            <a href="/about" data-target="about-page">אודות</a>
-            <a href="/faq" data-target="faq-page">שאלות נפוצות</a>
+            <a href="#/privacy" data-target="privacy-page">מדיניות פרטיות</a>
+            <a href="#/terms" data-target="terms-page">תנאי שימוש</a>
+            <a href="#/cookies" data-target="cookies-page">מדיניות עוגיות</a>
+            <a href="#/about" data-target="about-page">אודות</a>
+            <a href="#/faq" data-target="faq-page">שאלות נפוצות</a>
         </div>
     </footer>
 
@@ -357,55 +357,52 @@
         const gameGridId = 'game-grid';
         const categoryGridId = 'category-grid';
 
-        // המטרה היא למנוע טעינה מחדש של הדף
         document.addEventListener('DOMContentLoaded', () => {
-            // הוספת האזנה לאירועי לחיצה על כל הקישורים הפנימיים
             document.body.addEventListener('click', e => {
                 const link = e.target.closest('a');
-                if (link && link.href.startsWith(window.location.origin)) {
+                if (link && link.href.startsWith(window.location.origin + window.location.pathname)) {
                     e.preventDefault();
-                    const path = link.getAttribute('href');
+                    // טיפול בניווט מבוסס האשטאג
+                    const path = link.getAttribute('href').substring(1); // הסר את ה-#
                     navigate(path);
                 }
             });
 
-            // ניתוב ראשוני בעת טעינת הדף
-            navigate(window.location.pathname);
+            // ניתוב ראשוני בעת טעינת הדף, מבוסס על ה-hash
+            navigate(window.location.hash.substring(1));
             
             // טיפול בניווט אחורה/קדימה בדפדפן
-            window.addEventListener('popstate', () => {
-                renderContent(window.location.pathname);
+            window.addEventListener('hashchange', () => {
+                renderContent(window.location.hash.substring(1));
             });
         });
 
-        // פונקציית הניתוב הראשית
         async function navigate(path) {
             console.log(`נווט לנתיב: ${path}`);
-            history.pushState({}, '', path);
-            renderContent(path);
+            window.location.hash = path;
+            // renderContent(path); // ההאזנה ל-hashchange תטפל בקריאה ל-renderContent
         }
 
-        // פונקציה שמטפלת בהצגת התוכן המתאים
         async function renderContent(path) {
             mainContent.innerHTML = '';
             
-            // הצג תוכן בהתאם לנתיב
-            if (path === '/' || path === '/home') {
+            const normalizedPath = path.startsWith('/') ? path : '/' + path;
+
+            if (normalizedPath === '/' || normalizedPath === '/home') {
                 await renderHomePage();
-            } else if (path.startsWith('/category/')) {
-                const categoryName = path.split('/').pop();
+            } else if (normalizedPath.startsWith('/category/')) {
+                const categoryName = normalizedPath.split('/').pop();
                 await renderCategoryPage(decodeURIComponent(categoryName));
-            } else if (path.startsWith('/games/')) {
-                const gameId = path.split('/').pop();
+            } else if (normalizedPath.startsWith('/games/')) {
+                const gameId = normalizedPath.split('/').pop();
                 await renderGamePage(gameId);
-            } else if (path === '/contact') {
+            } else if (normalizedPath === '/contact') {
                 renderContactPage();
             } else {
-                renderNotFoundPage(path);
+                renderNotFoundPage(normalizedPath);
             }
         }
         
-        // פונקציה שמציגה את דף הבית החדש עם קטגוריות ומומלצים
         async function renderHomePage() {
             const games = await fetchGames();
             if (!games) return;
@@ -429,11 +426,10 @@
             const uniqueCategories = [...new Set(games.map(game => game.gameType))];
             displayCategories(uniqueCategories, games, document.getElementById(categoryGridId));
             
-            const featuredGames = games.slice(0, 3); // דוגמה: 3 המשחקים הראשונים כמומלצים
+            const featuredGames = games.slice(0, 3);
             displayGames(featuredGames, document.getElementById(gameGridId));
         }
 
-        // פונקציה שמציגה את דף הקטגוריה
         async function renderCategoryPage(categoryName) {
             const games = await fetchGames();
             if (!games) return;
@@ -450,7 +446,6 @@
             displayGames(filteredGames, document.getElementById(gameGridId));
         }
 
-        // פונקציה שמציגה דף משחק בודד
         async function renderGamePage(gameId) {
              try {
                 const playPageResponse = await fetch('play.html');
@@ -472,7 +467,7 @@
                         <div class="content-section">
                             <h2>שגיאה</h2>
                             <p>המשחק לא נמצא או שקובץ הנתונים אינו תקין.</p>
-                            <a href="/" class="btn">חזור לדף הבית</a>
+                            <a href="#/" class="btn">חזור לדף הבית</a>
                         </div>
                     `;
                 }
@@ -482,7 +477,6 @@
             }
         }
         
-        // פונקציה שמציגה את דף יצירת הקשר
         function renderContactPage() {
             const contactSection = document.createElement('section');
             contactSection.id = 'contact-info';
@@ -494,19 +488,17 @@
             mainContent.appendChild(contactSection);
         }
 
-        // פונקציה שמציגה דף לא נמצא (404)
         function renderNotFoundPage(path) {
             console.warn(`נתיב לא מוכר: ${path}, מנווט לדף שגיאה`);
             mainContent.innerHTML = `
                 <div class="content-section">
                     <h2>אופס! הדף לא נמצא.</h2>
                     <p>הדף שחיפשתם לא קיים. אנא חזרו לדף הבית.</p>
-                    <a href="/" class="btn">חזור לדף הבית</a>
+                    <a href="#/" class="btn">חזור לדף הבית</a>
                 </div>
             `;
         }
         
-        // פונקציה לטעינת נתוני המשחקים
         async function fetchGames() {
             try {
                 const response = await fetch('data.json');
@@ -521,7 +513,6 @@
             }
         }
 
-        // פונקציה שמציגה את המשחקים בדף
         function displayGames(gamesArray, gameGridElement) {
             if (!gameGridElement) return;
             gameGridElement.innerHTML = '';
@@ -540,7 +531,7 @@
                     <div class="game-card-content">
                         <p class="description">${game.description}</p>
                         <div class="buttons">
-                            <a href="/games/${game.id}" class="btn">שחקו עכשיו</a>
+                            <a href="#/games/${game.id}" class="btn">שחקו עכשיו</a>
                         </div>
                     </div>
                 `;
@@ -548,13 +539,11 @@
             });
         }
         
-        // פונקציה שמציגה את הקטגוריות
         function displayCategories(categoriesArray, allGames, categoryGridElement) {
             if (!categoryGridElement) return;
             categoryGridElement.innerHTML = '';
             
             categoriesArray.forEach(categoryName => {
-                // מצא את המשחק הראשון בקטגוריה כדי לקבל תמונה לדוגמה
                 const gameExample = allGames.find(game => game.gameType === categoryName);
                 const imageUrl = gameExample ? gameExample.image : 'https://placehold.co/600x400/cccccc/000000?text=Category';
                 
@@ -565,7 +554,7 @@
                         <h3>${categoryName}</h3>
                     </div>
                     <div class="category-card-content">
-                        <a href="/category/${encodeURIComponent(categoryName)}">צפו במשחקים</a>
+                        <a href="#/category/${encodeURIComponent(categoryName)}">צפו במשחקים</a>
                     </div>
                 `;
                 categoryGridElement.appendChild(card);
