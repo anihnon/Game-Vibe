@@ -6,92 +6,18 @@
     <title>טוען משחק...</title>
     <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                },
-            },
-        };
-    </script>
     <style>
         /* סגנונות בסיסיים, רקע כהה וצבע טקסט בהיר */
         body {
-            margin: 0;
-            font-family: 'Inter', sans-serif;
-            background: #1a202c;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
             direction: rtl;
-            color: #e2e8f0;
-            overflow-y: auto;
-            overflow-x: hidden;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
         }
         
+        /* עיצוב כותרת עליונה ותחתונה */
         header, footer {
-            background: #2d3748;
-            color: white;
-            text-align: center;
-            padding: 15px 0;
             user-select: none;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        
-        .container {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 30px 15px;
-        }
-        
-        .game-card {
-            background: #222b3a;
-            border-radius: 20px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-            padding: 30px 20px 40px;
-            text-align: center;
-            max-width: 90vw;
-            width: 800px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        h1 {
-            font-size: 2.2em;
-            margin: 0 0 15px 0;
-            user-select: text;
-            color: #ffffff;
-        }
-        
-        #gameContainer {
-            position: relative;
-            margin-top: 20px;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #333;
-            border-radius: 10px;
-            overflow: hidden;
-            aspect-ratio: 16 / 9;
-            max-width: 900px;
-        }
-        
-        canvas {
-            display: block;
-            max-width: 100%;
-            max-height: 100%;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            background-color: #141464;
-        }
-        
+
         header h2 a {
             color: inherit;
             text-decoration: none;
@@ -102,34 +28,11 @@
             text-decoration: underline;
         }
 
-        #loadingContainer {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 1.2em;
-            color: #a0aec0;
-            z-index: 10;
+        canvas {
+            background-color: #141464;
         }
-        
-        #infoCard {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 1rem;
-            padding: 2rem;
-            border-radius: 0.75rem;
-            z-index: 10;
-            box-sizing: border-box;
-        }
-        
+
+        /* Custom styles for buttons to avoid inline styles */
         .button {
             background-color: #4CAF50;
             border: none;
@@ -154,56 +57,50 @@
         .button.red:hover {
             background-color: #da190b;
         }
-
-        .message-box {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .message-box-content {
-            background-color: #2d3748;
-            padding: 2rem;
+        .info-card-container {
+            margin-top: 1.5rem;
+            text-align: right;
+            padding: 1.5rem;
+            background: #2d3748;
             border-radius: 1rem;
-            text-align: center;
-            color: white;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.7);
-            max-width: 90vw;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
     </style>
 </head>
-<body>
-    <header>
+<body class="bg-[#1a202c] text-[#e2e8f0] flex flex-col min-h-screen overflow-y-auto overflow-x-hidden">
+    <header class="bg-[#2d3748] text-white text-center py-4 shadow-md">
         <h2 class="text-xl font-bold"><a href="/">Game Vibe 🎮</a></h2>
     </header>
 
-    <main class="container">
-        <div class="game-card">
+    <main class="flex-1 flex justify-center items-center py-8 px-4">
+        <div class="bg-[#222b3a] rounded-[20px] shadow-xl p-8 text-center max-w-[900px] w-full flex flex-col items-center">
             <!-- כותרת המשחק הדינמית תטען כאן -->
-            <h1 id="gameTitle">...</h1>
-            
-            <div id="gameContainer">
-                <div id="loadingContainer">טוען משחק...</div>
+            <h1 id="gameTitle" class="text-3xl font-bold mb-4 text-white">...</h1>
+
+            <div id="gameContainer" class="relative mt-5 w-full flex justify-center items-center bg-[#333] rounded-xl overflow-hidden aspect-video max-w-[900px]">
+                <div id="loadingContainer" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-lg text-gray-400 z-10">טוען משחק...</div>
                 
-                <!-- מסך פתיחה/סיום/הוראות -->
-                <div id="infoCard" style="display: none;">
-                    <h2 id="infoTitle" class="text-3xl font-bold mb-4">...</h2>
-                    <p id="infoStory" class="text-lg text-gray-300 mb-4"></p>
-                    <div id="infoInstructions">
-                        <h3 class="text-xl font-semibold mb-2">הוראות:</h3>
-                        <ul id="instructionsList" class="text-left text-gray-400 list-disc list-inside"></ul>
-                    </div>
-                    <button id="startButton" class="button">התחל לשחק</button>
+                <!-- זהו המיכל עבור קנבס ה-p5.js -->
+                <div id="p5-canvas-container"></div>
+                
+                <!-- כפתורים שיוצגו על הקנבס, בשלב טרום המשחק -->
+                <div id="buttonsOverlay" class="absolute inset-0 flex flex-col justify-center items-center gap-4 p-8 rounded-xl z-10 box-border" style="display: none;">
                     <div id="additionalButtons" class="flex gap-4 mt-4">
+                        <button id="startButton" class="button">התחל לשחק</button>
                         <button id="achievementsButton" class="button">הישגים</button>
                         <button id="resetDataButton" class="button red">איפוס נתונים</button>
                     </div>
+                </div>
+
+            </div>
+
+            <!-- כעת הסיפור וההוראות נמצאים מתחת לקנבס -->
+            <div id="infoCard" class="info-card-container" style="display: none;">
+                <h2 id="infoTitle" class="text-3xl font-bold mb-4">...</h2>
+                <p id="infoStory" class="text-lg text-gray-300 mb-4"></p>
+                <div id="infoInstructions">
+                    <h3 class="text-xl font-semibold mb-2">הוראות:</h3>
+                    <ul id="instructionsList" class="text-left text-gray-400 list-disc list-inside"></ul>
                 </div>
             </div>
 
@@ -214,13 +111,13 @@
         </div>
     </main>
 
-    <footer>
+    <footer class="bg-[#2d3748] text-white text-center py-4 shadow-md mt-auto">
         <p>&copy; 2025 Game Vibe. כל הזכויות שמורות.</p>
     </footer>
 
     <!-- תיבת הודעה מותאמת אישית -->
-    <div id="messageBox" class="message-box">
-        <div class="message-box-content">
+    <div id="messageBox" class="fixed inset-0 bg-[rgba(0,0,0,0.8)] hidden justify-center items-center z-[1000]">
+        <div class="bg-[#2d3748] p-8 rounded-2xl text-center text-white shadow-xl max-w-[90vw]">
             <h3 id="messageBoxTitle" class="text-2xl font-bold mb-4"></h3>
             <p id="messageBoxBody" class="mb-6"></p>
             <button id="messageBoxClose" class="button">אישור</button>
@@ -231,10 +128,11 @@
     <script src="https://cdn.jsdelivr.net/npm/p5@1.4.0/lib/p5.js"></script>
     
     <script>
-        // אלמנטים מה-DOM
+        // DOM elements
         const gameContainerElement = document.getElementById('gameContainer');
         const infoCard = document.getElementById('infoCard');
         const loadingContainer = document.getElementById('loadingContainer');
+        const buttonsOverlay = document.getElementById('buttonsOverlay');
         const startButton = document.getElementById('startButton');
         const restartButton = document.getElementById('restartButton');
         const achievementsButton = document.getElementById('achievementsButton');
@@ -252,7 +150,7 @@
             messageBox.style.display = 'none';
         });
         
-        // פונקציה לטעינה דינמית של קובץ JavaScript
+        // Function to dynamically load JavaScript file
         function loadScript(url, callback) {
             const script = document.createElement('script');
             script.src = url;
@@ -265,40 +163,45 @@
         }
 
         async function loadGame() {
-            // מזהה המשחק נלקח מפרמטר ה-URL
+            // Get game ID from URL parameter
             const urlParams = new URLSearchParams(window.location.search);
             const gameId = urlParams.get('game');
 
             if (!gameId) {
                 loadingContainer.innerText = 'בחר משחק בכתובת, למשל: ?game=astroFruits';
+                // show the info card even if no game is selected to provide instructions
+                infoCard.style.display = 'block'; 
                 return;
             }
 
             try {
-                // טעינת קובץ ה-JSON
+                // Load the JSON file
                 const response = await fetch('data.json');
                 const games = await response.json();
                 const currentGame = games.find(game => game.id === gameId);
 
                 if (currentGame) {
-                    // עדכון כותרות ומידע מה-JSON
+                    // Update titles and info from JSON
                     document.getElementById('gameTitle').innerText = currentGame.title;
                     document.getElementById('infoTitle').innerText = currentGame.title;
                     document.getElementById('infoStory').innerText = currentGame.story;
                     
                     const instructionsList = document.getElementById('instructionsList');
-                    instructionsList.innerHTML = ''; // ניקוי הוראות קודמות
+                    instructionsList.innerHTML = ''; // Clear previous instructions
                     currentGame.instructions.forEach(instruction => {
                         const li = document.createElement('li');
                         li.innerText = instruction;
                         instructionsList.appendChild(li);
                     });
+                    
+                    // Show the info card when game data is loaded
+                    infoCard.style.display = 'block'; 
+                    buttonsOverlay.style.display = 'flex'; // Show buttons on canvas
 
-                    // טעינה דינמית של קובץ הלוגיקה של המשחק
+                    // Dynamically load the game logic file
                     loadScript(currentGame.jsFile, () => {
                         loadingContainer.style.display = 'none';
-                        infoCard.style.display = 'flex';
-                        // לאחר טעינת הקובץ, ניצור את מופע p5
+                        // After loading, create the p5 instance
                         if (typeof sketch !== 'undefined') {
                             window.p5Instance = new p5(sketch, 'p5-canvas-container');
                         } else {
@@ -319,28 +222,27 @@
             }
         }
         
-        // טעינת המשחק בעת טעינת הדף
+        // Load the game when the page loads
         document.addEventListener('DOMContentLoaded', loadGame);
 
-        // לחיצה על כפתור התחל משחק
+        // Click on "Start Game" button
         startButton.addEventListener('click', () => {
-            // קריאה לפונקציה מתוך קובץ ה-p5.js כדי להתחיל את המשחק
+            // Call the function from the p5.js file to start the game
             if (window.p5Instance && typeof window.p5Instance.gamePhase !== 'undefined') {
                 window.p5Instance.gamePhase = 'playing';
-                infoCard.style.display = 'none';
+                buttonsOverlay.style.display = 'none'; // Hide buttons when game starts
             } else {
                 showMessageBox('שגיאה', 'המשחק עדיין לא נטען במלואו. נסה שוב בעוד רגע.');
             }
         });
 
-        // כפתורים נוספים
+        // Additional buttons
         restartButton.addEventListener('click', () => {
             if (window.p5Instance) {
                 window.p5Instance.loadGameData();
                 window.p5Instance.initialStage = 1;
                 window.p5Instance.loadLevel(window.p5Instance.initialStage);
                 window.p5Instance.gamePhase = 'playing';
-                infoCard.style.display = 'none';
             }
         });
 
@@ -371,7 +273,7 @@
             }
         });
 
-        // שינוי גודל הקנבס בהתאם למיכל
+        // Resize the canvas to fit the container
         window.addEventListener('resize', () => {
             const container = document.getElementById('p5-canvas-container');
             if (container && window.p5Instance) {
