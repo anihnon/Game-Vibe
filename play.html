@@ -237,27 +237,23 @@
                             
                             // Attach event listeners for buttons
                             document.getElementById('startButton').addEventListener('click', () => {
-                                // Assume that starting the game just requires changing the game phase
-                                // The p5 instance and its methods are available inside the sketch
-                                // No direct call needed, the sketch handles it internally
-                                if (window.p5Instance && typeof window.p5Instance.userStartGame === 'function') {
-                                    window.p5Instance.userStartGame();
-                                    buttonsOverlay.style.display = 'none';
-                                    infoCard.classList.remove('visible');
+                                // Calling the globally exposed function from the p5 script
+                                if (typeof window.startGame === 'function') {
+                                    window.startGame();
                                 } else {
-                                    showMessageBox('שגיאה', 'פונקציית התחלת המשחק אינה זמינה בקובץ p5.');
+                                    showMessageBox('שגיאה', 'פונקציית התחלת המשחק אינה זמינה. 🔄');
                                 }
                             });
 
                             document.getElementById('achievementsButton').addEventListener('click', () => {
-                                showMessageBox('הישגים', 'פונקציית ההישגים תעבוד כשתוגדר בקובץ המשחק. 🏆');
+                                showMessageBox('הישגים', 'פונקציית ההישגים עדיין לא ממומשת. 🏆');
                             });
 
                             document.getElementById('resetDataButton').addEventListener('click', () => {
                                 showMessageBox('איפוס נתונים', 'האם אתה בטוח שברצונך לאפס את נתוני המשחק?', () => {
-                                    if (typeof resetGameData === 'function') {
-                                        resetGameData();
-                                        window.location.reload();
+                                    // Calling the globally exposed function from the p5 script
+                                    if (typeof window.resetGameData === 'function') {
+                                        window.resetGameData();
                                     } else {
                                         showMessageBox('שגיאה', 'פונקציית איפוס הנתונים אינה זמינה.');
                                     }
