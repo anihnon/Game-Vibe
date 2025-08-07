@@ -3,7 +3,14 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title id="pageTitle">טוען משחק...</title>
+    <!-- תגיות מטא דינמיות - יתעדכנו על ידי JavaScript -->
+    <title id="pageTitle">Game Vibe</title>
+    <meta name="description" id="metaDescription" content="קולקציית משחקי דפדפן קלאסיים וכיפיים." />
+    <meta property="og:title" id="ogTitle" content="Game Vibe" />
+    <meta property="og:description" id="ogDescription" content="קולקציית משחקי דפדפן קלאסיים וכיפיים." />
+    <meta property="og:image" id="ogImage" content="https://anihnon.github.io/Game-Vibe/assets/game-vibe-logo.png" />
+    <meta property="og:url" id="ogUrl" content="https://anihnon.github.io/Game-Vibe/" />
+    
     <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -18,7 +25,7 @@
         };
     </script>
     <style>
-        /* סגנונות בסיסיים, רקע כהה וצבע טקסט בהיר */
+        /* סגנונות בסיסיים */
         body {
             direction: rtl;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -31,8 +38,6 @@
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
-
-        /* עיצוב כותרת עליונה ותחתונה */
         header, footer {
             background: #2d3748;
             color: white;
@@ -41,7 +46,6 @@
             user-select: none;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-
         header h2 a {
             color: inherit;
             text-decoration: none;
@@ -51,13 +55,10 @@
             color: #a0aec0;
             text-decoration: underline;
         }
-
         canvas {
             background-color: #1a202c;
             border-radius: 1rem;
         }
-
-        /* Custom styles for buttons to avoid inline styles */
         .button {
             background-color: #4CAF50;
             border: none;
@@ -108,7 +109,7 @@
     </header>
 
     <main class="flex-1 flex justify-center items-center py-8 px-4">
-        <div class="bg-[#222b3a] rounded-[20px] shadow-xl p-8 text-center max-w-[900px] w-full flex flex-col items-center">
+        <div id="gamePageContainer" class="bg-[#222b3a] rounded-[20px] shadow-xl p-8 text-center max-w-[900px] w-full flex flex-col items-center">
             <!-- כותרת המשחק הדינמית תטען כאן -->
             <h1 id="gameTitle" class="text-3xl font-bold mb-4 text-white">...</h1>
 
@@ -127,7 +128,6 @@
                         <button id="resetDataButton" class="button red">איפוס נתונים</button>
                     </div>
                 </div>
-
             </div>
 
             <!-- כפתור מסך מלא מתחת לקנבס -->
@@ -164,141 +164,230 @@
     <!-- טעינת ספריית p5.js קודם כל -->
     <script src="https://cdn.jsdelivr.net/npm/p5@1.4.0/lib/p5.js"></script>
     
-    <script>
-        // DOM elements
-        const gameContainerElement = document.getElementById('gameContainer');
-        const infoCard = document.getElementById('infoCard');
-        const loadingContainer = document.getElementById('loadingContainer');
-        const buttonsOverlay = document.getElementById('buttonsOverlay');
-        const fullscreenButton = document.getElementById('fullscreenButton');
-        const messageBox = document.getElementById('messageBox');
-        
-        function showMessageBox(title, content, callback) {
-            document.getElementById('messageBoxTitle').innerText = title;
-            document.getElementById('messageBoxBody').innerText = content;
-            messageBox.style.display = 'flex';
-            const closeButton = document.getElementById('messageBoxClose');
-            const newCloseButton = closeButton.cloneNode(true);
-            closeButton.parentNode.replaceChild(newCloseButton, closeButton);
-            newCloseButton.onclick = () => {
-                messageBox.style.display = 'none';
-                if (callback) callback();
-            };
-        }
-
-        // Function to dynamically load JavaScript file
-        function loadScript(url, callback) {
-            const script = document.createElement('script');
-            script.src = url;
-            script.onload = callback;
-            script.onerror = () => {
-                showMessageBox('שגיאת טעינה', `אירעה שגיאה בטעינת קובץ המשחק: ${url}`);
-                console.error(`Error loading script: ${url}`);
-            };
-            document.head.appendChild(script);
-        }
-
-        async function loadGame() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const gameId = urlParams.get('game');
-            const pageTitle = document.getElementById('pageTitle');
-
-            if (!gameId) {
-                loadingContainer.innerText = 'בחר משחק בכתובת, למשל: ?game=astroFruits';
-                infoCard.classList.add('visible');
-                return;
-            }
-
-            try {
-                const response = await fetch('data.json');
-                const games = await response.json();
-                const currentGame = games.find(game => game.id === gameId);
-
-                if (currentGame) {
-                    document.getElementById('gameTitle').innerText = currentGame.title;
-                    pageTitle.innerText = currentGame.title;
-                    document.getElementById('infoTitle').innerText = currentGame.title;
-                    document.getElementById('infoStory').innerText = currentGame.story;
-                    
-                    const instructionsList = document.getElementById('instructionsList');
-                    instructionsList.innerHTML = '';
-                    currentGame.instructions.forEach(instruction => {
-                        const li = document.createElement('li');
-                        li.innerText = instruction;
-                        instructionsList.appendChild(li);
-                    });
-                    
-                    infoCard.classList.add('visible'); 
-                    buttonsOverlay.style.display = 'flex';
-                    loadingContainer.style.display = 'none';
-
-                    loadScript(currentGame.jsFile, () => {
-                        if (typeof sketch !== 'undefined') {
-                            window.p5Instance = new p5(sketch, 'p5-canvas-container');
-                            
-                            // Attach event listeners for buttons
-                            document.getElementById('startButton').addEventListener('click', () => {
-                                // Calling the globally exposed function from the p5 script
-                                if (typeof window.startGame === 'function') {
-                                    window.startGame();
-                                } else {
-                                    showMessageBox('שגיאה', 'פונקציית התחלת המשחק אינה זמינה. 🔄');
-                                }
-                            });
-
-                            document.getElementById('achievementsButton').addEventListener('click', () => {
-                                showMessageBox('הישגים', 'פונקציית ההישגים עדיין לא ממומשת. 🏆');
-                            });
-
-                            document.getElementById('resetDataButton').addEventListener('click', () => {
-                                showMessageBox('איפוס נתונים', 'האם אתה בטוח שברצונך לאפס את נתוני המשחק?', () => {
-                                    // Calling the globally exposed function from the p5 script
-                                    if (typeof window.resetGameData === 'function') {
-                                        window.resetGameData();
-                                    } else {
-                                        showMessageBox('שגיאה', 'פונקציית איפוס הנתונים אינה זמינה.');
-                                    }
-                                });
-                            });
-                        } else {
-                            showMessageBox('שגיאה', 'קובץ המשחק נטען אך לא מכיל את פונקציית ה-p5 הנדרשת.');
-                            console.error("Game script loaded, but 'sketch' is not defined.");
-                        }
-                    });
-
-                } else {
-                    loadingContainer.innerText = 'מזהה המשחק לא נמצא בקובץ הנתונים.';
-                    showMessageBox('שגיאה', 'מזהה המשחק לא נמצא בקובץ הנתונים.');
-                    console.error('Game ID not found in data.json');
-                }
-            } catch (error) {
-                loadingContainer.innerText = 'אירעה שגיאה בטעינת קובץ הנתונים.';
-                showMessageBox('שגיאה', 'אירעה שגיאה בטעינת קובץ הנתונים.');
-                console.error('Error loading game data:', error);
-            }
-        }
-        
-        fullscreenButton.addEventListener('click', () => {
-            if (gameContainerElement.requestFullscreen) {
-                gameContainerElement.requestFullscreen();
-            } else if (gameContainerElement.mozRequestFullScreen) {
-                gameContainerElement.mozRequestFullScreen();
-            } else if (gameContainerElement.webkitRequestFullscreen) {
-                gameContainerElement.webkitRequestFullscreen();
-            } else if (gameContainerElement.msRequestFullscreen) {
-                gameContainerElement.msRequestFullscreen();
-            }
-        });
-        
-        document.addEventListener('DOMContentLoaded', loadGame);
-
-        // Resize the canvas to fit the container
-        window.addEventListener('resize', () => {
-            const container = document.getElementById('p5-canvas-container');
-            if (container && window.p5Instance) {
-                window.p5Instance.resizeCanvas(container.clientWidth, container.clientHeight);
-            }
-        });
-    </script>
+    <!-- קובץ JavaScript ראשי שיטפל בניתוב -->
+    <script src="main.js"></script>
 </body>
 </html>
+```javascript
+// main.js
+
+// DOM elements
+const gamePageContainer = document.getElementById('gamePageContainer');
+const gameContainerElement = document.getElementById('gameContainer');
+const infoCard = document.getElementById('infoCard');
+const loadingContainer = document.getElementById('loadingContainer');
+const buttonsOverlay = document.getElementById('buttonsOverlay');
+const fullscreenButton = document.getElementById('fullscreenButton');
+const messageBox = document.getElementById('messageBox');
+
+// Metadata elements for SEO
+const pageTitle = document.getElementById('pageTitle');
+const metaDescription = document.getElementById('metaDescription');
+const ogTitle = document.getElementById('ogTitle');
+const ogDescription = document.getElementById('ogDescription');
+const ogImage = document.getElementById('ogImage');
+const ogUrl = document.getElementById('ogUrl');
+
+// Global variable for the p5 instance
+let p5Instance = null;
+let currentSketch = null;
+
+// Function to show a custom message box
+function showMessageBox(title, content, callback) {
+    document.getElementById('messageBoxTitle').innerText = title;
+    document.getElementById('messageBoxBody').innerText = content;
+    messageBox.style.display = 'flex';
+    const closeButton = document.getElementById('messageBoxClose');
+    const newCloseButton = closeButton.cloneNode(true);
+    closeButton.parentNode.replaceChild(newCloseButton, closeButton);
+    newCloseButton.onclick = () => {
+        messageBox.style.display = 'none';
+        if (callback) callback();
+    };
+}
+
+// Function to dynamically load a JavaScript file
+function loadScript(url) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = url;
+        script.onload = () => resolve(script);
+        script.onerror = () => reject(new Error(`Error loading script: ${url}`));
+        document.head.appendChild(script);
+    });
+}
+
+// Function to remove an existing p5 instance
+function removeExistingP5() {
+    if (p5Instance) {
+        p5Instance.remove();
+        p5Instance = null;
+    }
+    const canvasContainer = document.getElementById('p5-canvas-container');
+    canvasContainer.innerHTML = ''; // Clear the container
+    currentSketch = null;
+}
+
+// Function to update the document metadata for SEO
+function updateMetadata(game) {
+    if (game) {
+        document.title = game.title + ' | Game Vibe';
+        pageTitle.innerText = game.title + ' | Game Vibe';
+        metaDescription.setAttribute('content', game.story);
+        ogTitle.setAttribute('content', game.title);
+        ogDescription.setAttribute('content', game.story);
+        if (game.image) {
+            ogImage.setAttribute('content', game.image);
+        }
+        ogUrl.setAttribute('content', window.location.href);
+    } else {
+        // Default metadata for the main page
+        document.title = 'Game Vibe';
+        pageTitle.innerText = 'Game Vibe';
+        metaDescription.setAttribute('content', 'קולקציית משחקי דפדפן קלאסיים וכיפיים.');
+        ogTitle.setAttribute('content', 'Game Vibe');
+        ogDescription.setAttribute('content', 'קולקציית משחקי דפדפן קלאסיים וכיפיים.');
+        ogImage.setAttribute('content', '[https://anihnon.github.io/Game-Vibe/assets/game-vibe-logo.png](https://anihnon.github.io/Game-Vibe/assets/game-vibe-logo.png)');
+        ogUrl.setAttribute('content', '[https://anihnon.github.io/Game-Vibe/](https://anihnon.github.io/Game-Vibe/)');
+    }
+}
+
+// Main function to handle game loading based on URL
+async function loadGame(pathname) {
+    removeExistingP5(); // Clear any previous game
+
+    const pathParts = pathname.split('/').filter(part => part !== '');
+    const isGamePage = pathParts[0] === 'games' && pathParts[1];
+    
+    // Set up default view for the home page or a non-game page
+    if (!isGamePage) {
+        document.getElementById('gameTitle').innerText = 'ברוכים הבאים ל-Game Vibe!';
+        loadingContainer.innerText = 'בחרו משחק מהרשימה כדי להתחיל.';
+        loadingContainer.style.display = 'block';
+        buttonsOverlay.style.display = 'none';
+        infoCard.classList.remove('visible');
+        updateMetadata(null);
+        return;
+    }
+
+    const gameId = pathParts[1];
+    loadingContainer.innerText = 'טוען משחק...';
+    loadingContainer.style.display = 'block';
+    
+    try {
+        const response = await fetch('data/games.json');
+        if (!response.ok) throw new Error('Error loading game data');
+        const games = await response.json();
+        const currentGame = games.find(game => game.id === gameId);
+
+        if (currentGame) {
+            // Update UI with game data
+            document.getElementById('gameTitle').innerText = currentGame.title;
+            document.getElementById('infoTitle').innerText = currentGame.title;
+            document.getElementById('infoStory').innerText = currentGame.story;
+            
+            const instructionsList = document.getElementById('instructionsList');
+            instructionsList.innerHTML = '';
+            currentGame.instructions.forEach(instruction => {
+                const li = document.createElement('li');
+                li.innerText = instruction;
+                instructionsList.appendChild(li);
+            });
+            
+            infoCard.classList.add('visible');
+            buttonsOverlay.style.display = 'flex';
+            loadingContainer.style.display = 'none';
+            
+            // Update metadata for SEO
+            updateMetadata(currentGame);
+
+            // Dynamically load the game script
+            const scriptUrl = `games/${currentGame.jsFile}`;
+            await loadScript(scriptUrl);
+            
+            if (typeof sketch !== 'undefined') {
+                p5Instance = new p5(sketch, 'p5-canvas-container');
+                currentSketch = sketch;
+            } else {
+                showMessageBox('שגיאה', 'קובץ המשחק נטען אך לא מכיל את פונקציית ה-p5 הנדרשת.');
+                console.error("Game script loaded, but 'sketch' is not defined.");
+            }
+        } else {
+            loadingContainer.innerText = `מזהה המשחק '${gameId}' לא נמצא.`;
+            showMessageBox('שגיאה', `מזהה המשחק '${gameId}' לא נמצא בקובץ הנתונים.`);
+            infoCard.classList.remove('visible');
+            updateMetadata(null);
+        }
+    } catch (error) {
+        loadingContainer.innerText = 'אירעה שגיאה בטעינת הנתונים או הקובץ.';
+        showMessageBox('שגיאה', 'אירעה שגיאה בטעינת קובץ הנתונים או קובץ המשחק.');
+        console.error('Error loading game:', error);
+    }
+}
+
+// Event listeners
+window.addEventListener('popstate', () => {
+    loadGame(window.location.pathname);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadGame(window.location.pathname);
+
+    // Initial event listeners for buttons
+    document.getElementById('startButton').addEventListener('click', () => {
+        if (typeof window.startGame === 'function') {
+            window.startGame();
+        } else {
+            showMessageBox('שגיאה', 'פונקציית התחלת המשחק אינה זמינה. 🔄');
+        }
+    });
+
+    document.getElementById('achievementsButton').addEventListener('click', () => {
+        showMessageBox('הישגים', 'פונקציית ההישגים עדיין לא ממומשת. 🏆');
+    });
+
+    document.getElementById('resetDataButton').addEventListener('click', () => {
+        showMessageBox('איפוס נתונים', 'האם אתה בטוח שברצונך לאפס את נתוני המשחק?', () => {
+            if (typeof window.resetGameData === 'function') {
+                window.resetGameData();
+            } else {
+                showMessageBox('שגיאה', 'פונקציית איפוס הנתונים אינה זמינה.');
+            }
+        });
+    });
+
+    // Handle internal navigation for links
+    document.body.addEventListener('click', e => {
+        const link = e.target.closest('a');
+        if (link && link.href.startsWith(window.location.origin)) {
+            e.preventDefault();
+            const newPath = link.pathname;
+            history.pushState({}, '', newPath);
+            loadGame(newPath);
+        }
+    });
+});
+
+fullscreenButton.addEventListener('click', () => {
+    if (gamePageContainer.requestFullscreen) {
+        gamePageContainer.requestFullscreen();
+    } else if (gamePageContainer.mozRequestFullScreen) {
+        gamePageContainer.mozRequestFullScreen();
+    } else if (gamePageContainer.webkitRequestFullscreen) {
+        gamePageContainer.webkitRequestFullscreen();
+    } else if (gamePageContainer.msRequestFullscreen) {
+        gamePageContainer.msRequestFullscreen();
+    }
+});
+
+// Resize the canvas to fit the container
+window.addEventListener('resize', () => {
+    const container = document.getElementById('p5-canvas-container');
+    if (container && p5Instance && currentSketch) {
+        if (currentSketch.resizeCanvas) {
+            currentSketch.resizeCanvas(container.clientWidth, container.clientHeight);
+        } else {
+            p5Instance.resizeCanvas(container.clientWidth, container.clientHeight);
+        }
+    }
+});
