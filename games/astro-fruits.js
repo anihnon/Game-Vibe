@@ -1,24 +1,58 @@
-// קובץ משחק של Astro Fruits, משופר עם יצירת שלבים לוגית וקפיצה כפולה.
+// קובץ משחק Astro Fruits משופר, עם מטבעות, חנות ושדרוגים
 const GAME_DATA_KEY = 'fruitDungeonGameData';
 let gamePhase = 'intro';
 let score = 0;
 let initialStage = 1;
-let player, fruits, enemies, platforms;
+let player, fruits, enemies, platforms, coins;
 const FRUIT_SIZE = 20;
+const COIN_SIZE = 15;
 let timeRemaining;
 let gameStartTime;
 const NUM_LEVELS = 100;
 
-// הגדרות פיזיקה
-const GRAVITY = 0.5;
-const JUMP_POWER = -12;
-const PLAYER_SPEED = 5;
-const MAX_JUMP_DISTANCE_X = 200;
+// הגדרות פיזיקה, אותן נשדרג בחנות
+let GRAVITY = 0.5;
+let JUMP_POWER = -12;
+let PLAYER_SPEED = 5;
 const MAX_JUMP_HEIGHT = 150;
 
 let jumpCount = 0;
 
-// פונקציה ליצירת נתונים של שלבים באופן דינמי והגיוני
+// משתנים חדשים עבור החנות
+let coinsCollected = 0;
+let currentSkin = 'default';
+let jumpUpgradeLevel = 0;
+let speedUpgradeLevel = 0;
+
+const skinOptions = {
+    'default': { color: '#FF6400', name: 'רגיל' },
+    'blue_star': { color: '#00BFFF', name: 'כוכב כחול', cost: 50 },
+    'green_slime': { color: '#00FF7F', name: 'ריר ירוק', cost: 100 }
+};
+
+const upgradeOptions = {
+    jump: {
+        name: 'שדרוג קפיצה',
+        levels: [
+            { power: -14, cost: 75 },
+            { power: -16, cost: 150 },
+            { power: -18, cost: 250 }
+        ]
+    },
+    speed: {
+        name: 'שדרוג מהירות',
+        levels: [
+            { speed: 7, cost: 75 },
+            { speed: 9, cost: 150 },
+            { speed: 11, cost: 250 }
+        ]
+    }
+};
+
+/**
+ * פונקציה ליצירת נתונים של שלבים באופן דינמי והגיוני
+ * כולל הוספת מטבעות
+ */
 function generateLevels(p, numLevels) {
     const levels = {};
     const width = p.width;
@@ -29,6 +63,7 @@ function generateLevels(p, numLevels) {
         const newPlatforms = [];
         const newFruits = [];
         const newEnemies = [];
+        const newCoins = [];
         
         // פלטפורמה התחלתית קבועה בתחתית המסך
         let lastPlatform = { x: 50, y: height - 50, w: width * 0.2, h: 50 };
@@ -70,11 +105,18 @@ function generateLevels(p, numLevels) {
             newPlatforms.push(newPlatform);
             lastPlatform = newPlatform;
 
-            // יצירת פרי על הפלטפורמה החדשה
-            newFruits.push({
-                x: newPlatform.x + newPlatform.w / 2,
-                y: newPlatform.y - FRUIT_SIZE / 2 - 5
-            });
+            // יצירת פרי ו/או מטבע על הפלטפורמה החדשה
+            if (p.random() > 0.3) {
+                newFruits.push({
+                    x: newPlatform.x + newPlatform.w / 2,
+                    y: newPlatform.y - FRUIT_SIZE / 2 - 5
+                });
+            } else {
+                newCoins.push({
+                    x: newPlatform.x + newPlatform.w / 2,
+                    y: newPlatform.y - COIN_SIZE / 2 - 5
+                });
+            }
         }
         
         // יצירת אויבים, ממוקמים על פלטפורמות
@@ -96,6 +138,7 @@ function generateLevels(p, numLevels) {
             platforms: newPlatforms,
             fruits: newFruits,
             enemies: newEnemies,
+            coins: newCoins,
             timeLimit: p.floor(80 + difficultyFactor * 40)
         };
     }
@@ -111,7 +154,11 @@ let levelData;
 function saveGameData() {
     const data = {
         currentLevel: initialStage,
-        highScore: score
+        highScore: score,
+        coins: coinsCollected,
+        skin: currentSkin,
+        jumpLevel: jumpUpgradeLevel,
+        speedLevel: speedUpgradeLevel
     };
     try {
         localStorage.setItem(GAME_DATA_KEY, JSON.stringify(data));
@@ -130,7 +177,21 @@ function loadGameData() {
         const data = localStorage.getItem(GAME_DATA_KEY);
         if (data) {
             console.log('נתוני המשחק נטענו בהצלחה.');
-            return JSON.parse(data);
+            const parsedData = JSON.parse(data);
+            coinsCollected = parsedData.coins || 0;
+            currentSkin = parsedData.skin || 'default';
+            jumpUpgradeLevel = parsedData.jumpLevel || 0;
+            speedUpgradeLevel = parsedData.speedLevel || 0;
+            
+            // עדכון כוח הקפיצה והמהירות על פי השדרוגים
+            if (jumpUpgradeLevel > 0) {
+                JUMP_POWER = upgradeOptions.jump.levels[jumpUpgradeLevel - 1].power;
+            }
+            if (speedUpgradeLevel > 0) {
+                PLAYER_SPEED = upgradeOptions.speed.levels[speedUpgradeLevel - 1].speed;
+            }
+            
+            return parsedData;
         }
     } catch (e) {
         console.error('שגיאה בטעינת נתונים מ-localStorage:', e);
@@ -163,6 +224,7 @@ function loadLevel(p, levelNum) {
         platforms = data.platforms.map(pl => ({ ...pl }));
         fruits = data.fruits.map(f => ({ ...f, size: FRUIT_SIZE, collected: false }));
         enemies = data.enemies.map(e => ({ ...e }));
+        coins = data.coins.map(c => ({ ...c, size: COIN_SIZE, collected: false }));
         timeRemaining = data.timeLimit;
         gameStartTime = p.millis();
         score = 0;
@@ -234,7 +296,7 @@ const sketch = function(p) {
             if (p.keyIsDown(p.RIGHT_ARROW)) player.x += PLAYER_SPEED;
             
             // ציור השחקן
-            p.fill(255, 100, 0);
+            p.fill(skinOptions[currentSkin].color);
             p.rect(player.x, player.y, player.w, player.h);
 
             // ציור פלטפורמות
@@ -245,10 +307,19 @@ const sketch = function(p) {
             p.fill(0, 255, 0);
             fruits.forEach(f => p.ellipse(f.x, f.y, f.size));
 
+            // ציור מטבעות
+            p.fill(255, 200, 0);
+            coins.forEach(c => p.ellipse(c.x, c.y, c.size));
+
             // בדיקת איסוף פירות ועדכון ציון
             let collectedFruits = fruits.filter(f => p.dist(player.x + player.w / 2, player.y + player.h / 2, f.x, f.y) < (player.w / 2 + f.size / 2));
             collectedFruits.forEach(() => score += 10);
             fruits = fruits.filter(f => !collectedFruits.includes(f));
+
+            // בדיקת איסוף מטבעות ועדכון
+            let collectedCoins = coins.filter(c => p.dist(player.x + player.w / 2, player.y + player.h / 2, c.x, c.y) < (player.w / 2 + c.size / 2));
+            collectedCoins.forEach(() => coinsCollected += 1);
+            coins = coins.filter(c => !collectedCoins.includes(c));
 
             // תנועה וציור אויבים
             p.fill(255, 0, 0);
@@ -273,12 +344,13 @@ const sketch = function(p) {
                 }
             }
             
-            // הצגת ציון, שלב וטיימר
+            // הצגת ציון, שלב, טיימר ומטבעות
             p.fill(255);
             p.textSize(20);
             p.textAlign(p.LEFT, p.TOP);
             p.text(`שלב: ${initialStage}`, 10, 10);
             p.text(`ניקוד: ${score}`, 10, 40);
+            p.text(`מטבעות: ${coinsCollected}`, 10, 70);
             p.textAlign(p.RIGHT, p.TOP);
             p.text(`זמן: ${currentTimer}`, p.width - 10, 10);
 
@@ -308,18 +380,132 @@ const sketch = function(p) {
             p.text('כל הכבוד! ניצחת את המשחק!', p.width / 2, p.height / 2);
             p.textSize(20);
             p.text('לחץ על "התחל לשחק" כדי להתחיל מחדש', p.width / 2, p.height / 2 + 40);
+        } else if (gamePhase === 'store') {
+            p.textAlign(p.CENTER, p.TOP);
+            p.textSize(48);
+            p.text('חנות', p.width / 2, 50);
+
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(24);
+            p.text(`מטבעות: ${coinsCollected}`, 20, 20);
+
+            p.textSize(32);
+            p.text('סקינים:', 50, 150);
+            
+            let xPos = 50;
+            let yPos = 200;
+            for (let skinId in skinOptions) {
+                const skin = skinOptions[skinId];
+                p.fill(skin.color);
+                p.rect(xPos, yPos, 80, 80);
+                p.fill(255);
+                p.textSize(16);
+                p.textAlign(p.CENTER, p.TOP);
+                p.text(skin.name, xPos + 40, yPos + 85);
+                
+                if (skinId !== 'default' && currentSkin !== skinId) {
+                    const isAffordable = coinsCollected >= skin.cost;
+                    p.fill(isAffordable ? 0 : 255);
+                    p.textSize(14);
+                    p.text(`מחיר: ${skin.cost}`, xPos + 40, yPos + 105);
+                    p.text(`(לחץ על ${skinId.charAt(0)})`, xPos + 40, yPos + 125);
+                } else if (currentSkin === skinId) {
+                    p.fill(0, 255, 0);
+                    p.textSize(14);
+                    p.text('נבחר', xPos + 40, yPos + 105);
+                }
+                xPos += 120;
+            }
+
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(32);
+            p.text('שדרוגים:', 50, 350);
+
+            xPos = 50;
+            yPos = 400;
+            for (let upgradeId in upgradeOptions) {
+                const upgrade = upgradeOptions[upgradeId];
+                p.fill(255);
+                p.textAlign(p.LEFT, p.TOP);
+                p.text(upgrade.name, xPos, yPos);
+                
+                const currentLevel = (upgradeId === 'jump') ? jumpUpgradeLevel : speedUpgradeLevel;
+                const nextLevelIndex = currentLevel;
+
+                if (nextLevelIndex < upgrade.levels.length) {
+                    const nextLevel = upgrade.levels[nextLevelIndex];
+                    const isAffordable = coinsCollected >= nextLevel.cost;
+                    p.textSize(20);
+                    p.fill(isAffordable ? 0 : 255);
+                    p.text(`דרגה הבאה: ${currentLevel + 1}`, xPos, yPos + 40);
+                    p.text(`מחיר: ${nextLevel.cost}`, xPos, yPos + 70);
+                    p.text(`(לחץ על ${upgradeId.charAt(0).toUpperCase()})`, xPos, yPos + 100);
+                } else {
+                    p.fill(0, 255, 0);
+                    p.textSize(20);
+                    p.text('מקסימום שדרוג', xPos, yPos + 40);
+                }
+                xPos += 300;
+            }
+            
+            p.fill(255);
+            p.textAlign(p.CENTER, p.BOTTOM);
+            p.textSize(20);
+            p.text('לחץ על מקש הרווח כדי לחזור', p.width / 2, p.height - 20);
         }
     };
     
-    // טיפול בלחיצת מקש עבור קפיצה כפולה וגם התקדמות
+    // טיפול בלחיצת מקש עבור קפיצה כפולה, התקדמות וגישה לחנות
     p.keyPressed = function() {
         if (gamePhase === 'playing') {
             if (p.keyCode === p.UP_ARROW && jumpCount < 2) {
                 player.velY = JUMP_POWER;
                 jumpCount++;
             }
-        } else if (p.keyCode === 32) { // 32 הוא keycode של רווח
-            window.startGame();
+        } else if (gamePhase === 'intro' || gamePhase === 'game_over' || gamePhase === 'level_complete' || gamePhase === 'game_won') {
+            if (p.keyCode === 32) { // מקש רווח
+                window.startGame();
+            } else if (p.keyCode === 83) { // מקש 'S'
+                gamePhase = 'store';
+            }
+        } else if (gamePhase === 'store') {
+            if (p.keyCode === 32) { // מקש רווח
+                gamePhase = 'intro'; // חזרה למסך פתיחה
+            } else if (p.keyCode === 66) { // B for Blue
+                if (coinsCollected >= skinOptions.blue_star.cost && currentSkin !== 'blue_star') {
+                    coinsCollected -= skinOptions.blue_star.cost;
+                    currentSkin = 'blue_star';
+                    saveGameData();
+                }
+            } else if (p.keyCode === 71) { // G for Green
+                 if (coinsCollected >= skinOptions.green_slime.cost && currentSkin !== 'green_slime') {
+                    coinsCollected -= skinOptions.green_slime.cost;
+                    currentSkin = 'green_slime';
+                    saveGameData();
+                }
+            } else if (p.keyCode === 74) { // J for Jump
+                const nextLevelIndex = jumpUpgradeLevel;
+                if (nextLevelIndex < upgradeOptions.jump.levels.length) {
+                    const upgradeCost = upgradeOptions.jump.levels[nextLevelIndex].cost;
+                    if (coinsCollected >= upgradeCost) {
+                        coinsCollected -= upgradeCost;
+                        JUMP_POWER = upgradeOptions.jump.levels[nextLevelIndex].power;
+                        jumpUpgradeLevel++;
+                        saveGameData();
+                    }
+                }
+            } else if (p.keyCode === 83) { // S for Speed
+                const nextLevelIndex = speedUpgradeLevel;
+                if (nextLevelIndex < upgradeOptions.speed.levels.length) {
+                    const upgradeCost = upgradeOptions.speed.levels[nextLevelIndex].cost;
+                    if (coinsCollected >= upgradeCost) {
+                        coinsCollected -= upgradeCost;
+                        PLAYER_SPEED = upgradeOptions.speed.levels[nextLevelIndex].speed;
+                        speedUpgradeLevel++;
+                        saveGameData();
+                    }
+                }
+            }
         }
     };
 
