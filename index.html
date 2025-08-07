@@ -354,7 +354,7 @@
                     const btnDiv = document.createElement('div');
                     btnDiv.className = 'buttons';
                     // חשוב לוודא ש-game.id מועבר כפרמטר ב-URL
-                    btnDiv.innerHTML = `<a href="play.html?game=${encodeURIComponent(game.id)}" class="btn">שחק עכשיו</a>`;
+                    btnDiv.innerHTML = `<a href="/game/${game.id}" class="btn">שחקו עכשיו</a>`;
                     content.appendChild(btnDiv);
 
                     card.appendChild(header);
@@ -379,3 +379,4 @@
     </script>
 </body>
 </html>
+
