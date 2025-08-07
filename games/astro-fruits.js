@@ -1,5 +1,7 @@
+        // מזהה לאחסון נתוני המשחק ב-localStorage
         const GAME_DATA_KEY = 'fruitDungeonGameData';
-        
+        const MAX_LEVELS = 55; // הגדרת מספר השלבים המקסימלי במשחק
+
         // פונקציית עזר להצגת תיבת הודעה
         function showMessageBox(title, content, callback) {
             const msgBox = document.getElementById('messageBox');
@@ -19,87 +21,51 @@
             }
         }
 
-        // נתוני השלבים
-        const levelData = {
-            1: {
-                playerStart: { x: 100, y: 100 },
-                platforms: [
-                    { x: 300, y: 500, w: 600, h: 50 },
-                    { x: 150, y: 400, w: 100, h: 20 },
-                    { x: 450, y: 300, w: 150, h: 20 },
-                    { x: 200, y: 200, w: 80, h: 20 }
-                ],
-                fruits: [
-                    { x: 150, y: 350, type: 0 },
-                    { x: 450, y: 250, type: 1 }
-                ],
-                exit: { x: 550, y: 150, w: 50, h: 50 }
-            },
-            2: {
-                playerStart: { x: 50, y: 50 },
-                platforms: [
-                    { x: 300, y: 550, w: 600, h: 50 },
-                    { x: 100, y: 450, w: 100, h: 20 },
-                    { x: 250, y: 350, w: 120, h: 20 },
-                    { x: 400, y: 250, w: 100, h: 20 },
-                    { x: 550, y: 150, w: 80, h: 20 }
-                ],
-                fruits: [
-                    { x: 100, y: 400, type: 1 },
-                    { x: 300, y: 300, type: 2 },
-                    { x: 500, y: 100, type: 0 }
-                ],
-                exit: { x: 700, y: 50, w: 50, h: 50 }
-            },
-            3: {
-                playerStart: { x: 100, y: 100 },
-                platforms: [
-                    { x: 300, y: 500, w: 600, h: 50 },
-                    { x: 150, y: 400, w: 100, h: 20 },
-                    { x: 450, y: 300, w: 150, h: 20 },
-                    { x: 200, y: 200, w: 80, h: 20 },
-                    { x: 500, y: 100, w: 100, h: 20 }
-                ],
-                fruits: [
-                    { x: 150, y: 350, type: 0 },
-                    { x: 450, y: 250, type: 1 },
-                    { x: 500, y: 50, type: 2 }
-                ],
-                exit: { x: 700, y: 50, w: 50, h: 50 }
-            },
-            4: {
-                playerStart: { x: 50, y: 500 },
-                platforms: [
-                    { x: 300, y: 550, w: 600, h: 50 },
-                    { x: 150, y: 450, w: 100, h: 20 },
-                    { x: 350, y: 350, w: 120, h: 20 },
-                    { x: 550, y: 250, w: 100, h: 20 },
-                    { x: 750, y: 150, w: 80, h: 20 }
-                ],
-                fruits: [
-                    { x: 150, y: 400, type: 2 },
-                    { x: 350, y: 300, type: 0 },
-                    { x: 550, y: 200, type: 1 }
-                ],
-                exit: { x: 750, y: 100, w: 50, h: 50 }
-            },
-            5: {
-                playerStart: { x: 100, y: 500 },
-                platforms: [
-                    { x: 300, y: 550, w: 600, h: 50 },
-                    { x: 200, y: 400, w: 100, h: 20 },
-                    { x: 400, y: 300, w: 120, h: 20 },
-                    { x: 600, y: 200, w: 100, h: 20 },
-                    { x: 700, y: 100, w: 80, h: 20 }
-                ],
-                fruits: [
-                    { x: 200, y: 350, type: 1 },
-                    { x: 400, y: 250, type: 0 },
-                    { x: 600, y: 150, type: 2 }
-                ],
-                exit: { x: 700, y: 50, w: 50, h: 50 }
+        /**
+         * פונקציה שמייצרת נתוני שלב באופן דינמי.
+         * הקושי עולה ככל שמספר השלב עולה.
+         * @param {number} levelNum - מספר השלב.
+         * @returns {object} - אובייקט עם נתוני השלב.
+         */
+        function generateLevelData(levelNum) {
+            // הגדרות בסיסיות
+            const playerStart = { x: 100, y: 100 };
+            const platforms = [];
+            const fruits = [];
+            
+            // הגדרה הדרגתית של קושי
+            const numPlatforms = p.floor(p.map(levelNum, 1, MAX_LEVELS, 4, 15));
+            const numFruits = p.floor(p.map(levelNum, 1, MAX_LEVELS, 2, 7));
+            const levelHeight = 600;
+
+            // יצירת פלטפורמות
+            let lastY = 500;
+            platforms.push({ x: p.width / 2, y: lastY, w: p.width - 100, h: 50 }); // פלטפורמת התחלה
+            
+            for (let i = 0; i < numPlatforms; i++) {
+                const w = p.random(80, 200);
+                const h = 20;
+                const x = p.random(w / 2 + 50, p.width - w / 2 - 50);
+                const y = lastY - p.random(50, 150);
+                platforms.push({ x, y, w, h });
+                lastY = y;
             }
-        };
+
+            // יצירת פירות
+            for (let i = 0; i < numFruits; i++) {
+                const plat = p.random(platforms);
+                const x = p.random(plat.x - plat.w / 2 + 10, plat.x + plat.w / 2 - 10);
+                const y = plat.y - plat.h / 2 - 20;
+                const type = p.floor(p.random(3));
+                fruits.push({ x, y, type });
+            }
+
+            // הגדרת נקודת יציאה
+            const highestPlatform = platforms.reduce((prev, curr) => (prev.y < curr.y ? prev : curr));
+            const exit = { x: highestPlatform.x, y: highestPlatform.y - highestPlatform.h / 2 - 50, w: 50, h: 50 };
+
+            return { playerStart, platforms, fruits, exit };
+        }
 
         const sketch = (p) => {
             // משתנים גלובליים עבור סקיצת p5.js
@@ -145,21 +111,37 @@
             
             // --- לוגיקת הישגים ---
             p.checkAchievements = function() {
-                if (p.totalFruitsCollected >= 10 && !p.unlockedAchievements['fruitCollector']) {
-                    p.unlockedAchievements['fruitCollector'] = true;
-                    showMessageBox('הישג חדש!', 'אספן פירות: אספת 10 פירות!');
+                if (p.totalFruitsCollected >= 10 && !p.unlockedAchievements['fruitCollector1']) {
+                    p.unlockedAchievements['fruitCollector1'] = true;
+                    showMessageBox('הישג חדש!', 'אספן פירות מתחיל: אספת 10 פירות!');
                     p.saveGameData(p.totalFruitsCollected, p.unlockedAchievements, p.player);
                 }
-                if (p.player && p.player.currentLevel >= 5 && !p.unlockedAchievements['superJumper']) {
-                    p.unlockedAchievements['superJumper'] = true;
-                    showMessageBox('הישג חדש!', 'קפצן על: השלמת שלב 5!');
+                if (p.totalFruitsCollected >= 50 && !p.unlockedAchievements['fruitCollector2']) {
+                    p.unlockedAchievements['fruitCollector2'] = true;
+                    showMessageBox('הישג חדש!', 'אספן פירות מיומן: אספת 50 פירות!');
                     p.saveGameData(p.totalFruitsCollected, p.unlockedAchievements, p.player);
                 }
-                if (p.player && p.player.currentLevel >= 10 && !p.unlockedAchievements['skilledExplorer']) {
-                    p.unlockedAchievements['skilledExplorer'] = true;
-                    showMessageBox('הישג חדש!', 'חוקר מיומן: השלמת שלב 10!');
+                if (p.player && p.player.currentLevel >= 5 && !p.unlockedAchievements['stage5']) {
+                    p.unlockedAchievements['stage5'] = true;
+                    showMessageBox('הישג חדש!', 'כובש שלבים: השלמת שלב 5!');
                     p.saveGameData(p.totalFruitsCollected, p.unlockedAchievements, p.player);
                 }
+                if (p.player && p.player.currentLevel >= 10 && !p.unlockedAchievements['stage10']) {
+                    p.unlockedAchievements['stage10'] = true;
+                    showMessageBox('הישג חדש!', 'התקדמות מרשימה: השלמת שלב 10!');
+                    p.saveGameData(p.totalFruitsCollected, p.unlockedAchievements, p.player);
+                }
+                if (p.player && p.player.currentLevel >= 25 && !p.unlockedAchievements['stage25']) {
+                    p.unlockedAchievements['stage25'] = true;
+                    showMessageBox('הישג חדש!', 'חצי דרך: השלמת שלב 25!');
+                    p.saveGameData(p.totalFruitsCollected, p.unlockedAchievements, p.player);
+                }
+                if (p.player && p.player.currentLevel >= 50 && !p.unlockedAchievements['stage50']) {
+                    p.unlockedAchievements['stage50'] = true;
+                    showMessageBox('הישג חדש!', 'אגדה: השלמת שלב 50!');
+                    p.saveGameData(p.totalFruitsCollected, p.unlockedAchievements, p.player);
+                }
+                // ניתן להוסיף כאן הישגים נוספים
             }
             
             // --- פונקציות לאיפוס וטעינת נתונים ---
@@ -412,8 +394,8 @@
             
             p.loadLevel = function(levelNum) {
                 p.currentLevelFruits = 0;
-                if (levelData[levelNum]) {
-                    currentLevelData = levelData[levelNum];
+                if (levelNum <= MAX_LEVELS) {
+                    currentLevelData = generateLevelData(levelNum);
                     p.player = new Player(currentLevelData.playerStart.x, currentLevelData.playerStart.y, levelNum);
                     p.platforms = currentLevelData.platforms.map(plat => new Platform(plat.x, plat.y, plat.w, plat.h));
                     p.collectibleFruits = currentLevelData.fruits.map(fruit => new CollectibleFruit(fruit.x, fruit.y, fruit.type));
