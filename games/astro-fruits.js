@@ -405,7 +405,7 @@ const sketch = function(p) {
                 
                 if (skinId !== 'default' && currentSkin !== skinId) {
                     const isAffordable = coinsCollected >= skin.cost;
-                    p.fill(isAffordable ? 0 : 255);
+                    p.fill(isAffordable ? 255 : p.color(255, 100, 100)); // צבע אדום למחיר לא מספיק
                     p.textSize(14);
                     p.text(`מחיר: ${skin.cost}`, xPos + 40, yPos + 105);
                     p.text(`(לחץ על ${skinId.charAt(0)})`, xPos + 40, yPos + 125);
@@ -436,10 +436,12 @@ const sketch = function(p) {
                     const nextLevel = upgrade.levels[nextLevelIndex];
                     const isAffordable = coinsCollected >= nextLevel.cost;
                     p.textSize(20);
-                    p.fill(isAffordable ? 0 : 255);
+                    p.fill(isAffordable ? 255 : p.color(255, 100, 100)); // צבע אדום למחיר לא מספיק
                     p.text(`דרגה הבאה: ${currentLevel + 1}`, xPos, yPos + 40);
                     p.text(`מחיר: ${nextLevel.cost}`, xPos, yPos + 70);
-                    p.text(`(לחץ על ${upgradeId.charAt(0).toUpperCase()})`, xPos, yPos + 100);
+                    // שינוי המקש מ-S ל-D כדי למנוע התנגשות
+                    const keyToPress = (upgradeId === 'jump') ? 'J' : 'D';
+                    p.text(`(לחץ על ${keyToPress})`, xPos, yPos + 100);
                 } else {
                     p.fill(0, 255, 0);
                     p.textSize(20);
@@ -455,6 +457,24 @@ const sketch = function(p) {
         }
     };
     
+    // פונקציה חדשה שנקראת מכפתור ה-HTML
+    window.openStore = function() {
+        // ודא שהמשחק אינו במצב פעיל
+        if (gamePhase !== 'playing') {
+            gamePhase = 'store';
+            const buttonsOverlay = document.getElementById('buttonsOverlay');
+            if (buttonsOverlay) buttonsOverlay.style.display = 'none';
+        } else {
+            showMessageBox('אין גישה', 'לא ניתן להיכנס לחנות בזמן משחק.');
+        }
+    };
+    
+    // פונקציה חדשה לאיפוס נתונים שנקראת מכפתור ה-HTML
+    window.resetGameDataAndReload = function() {
+      window.resetGameData();
+      window.location.reload();
+    }
+    
     // טיפול בלחיצת מקש עבור קפיצה כפולה, התקדמות וגישה לחנות
     p.keyPressed = function() {
         if (gamePhase === 'playing') {
@@ -467,10 +487,14 @@ const sketch = function(p) {
                 window.startGame();
             } else if (p.keyCode === 83) { // מקש 'S'
                 gamePhase = 'store';
+                const buttonsOverlay = document.getElementById('buttonsOverlay');
+                if (buttonsOverlay) buttonsOverlay.style.display = 'none';
             }
         } else if (gamePhase === 'store') {
             if (p.keyCode === 32) { // מקש רווח
                 gamePhase = 'intro'; // חזרה למסך פתיחה
+                const buttonsOverlay = document.getElementById('buttonsOverlay');
+                if (buttonsOverlay) buttonsOverlay.style.display = 'flex';
             } else if (p.keyCode === 66) { // B for Blue
                 if (coinsCollected >= skinOptions.blue_star.cost && currentSkin !== 'blue_star') {
                     coinsCollected -= skinOptions.blue_star.cost;
@@ -494,7 +518,7 @@ const sketch = function(p) {
                         saveGameData();
                     }
                 }
-            } else if (p.keyCode === 83) { // S for Speed
+            } else if (p.keyCode === 68) { // D for מהירות
                 const nextLevelIndex = speedUpgradeLevel;
                 if (nextLevelIndex < upgradeOptions.speed.levels.length) {
                     const upgradeCost = upgradeOptions.speed.levels[nextLevelIndex].cost;
