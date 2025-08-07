@@ -1,481 +1,390 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vibe Games</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- תגיות מטא דינמיות - יתעדכנו על ידי JavaScript -->
+    <title id="pageTitle">Game Vibe</title>
+    <meta name="description" id="metaDescription" content="קולקציית משחקי דפדפן קלאסיים וכיפיים." />
+    <meta property="og:title" id="ogTitle" content="Game Vibe" />
+    <meta property="og:description" id="ogDescription" content="קולקציית משחקי דפדפן קלאסיים וכיפיים." />
+    <meta property="og:image" id="ogImage" content="https://anihnon.github.io/Game-Vibe/assets/game-vibe-logo.png" />
+    <meta property="og:url" id="ogUrl" content="https://anihnon.github.io/Game-Vibe/" />
+    
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        };
+    </script>
     <style>
+        /* סגנונות בסיסיים */
         body {
-            font-family: 'Varela Round', sans-serif; /* פונט חדש */
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #f4f4f9, #e0e0e5); /* רקע הדרגתי חדש */
-            color: #333;
-            line-height: 1.6;
-            direction: rtl; /* כיוון קריאה מימין לשמאל */
-        }
-
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 0 20px;
-        }
-
-        /* כותרת עליונה וניווט */
-        header {
-            background-color: #2c3e50;
-            color: #fff;
-            padding: 1.5rem 0;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        header h1 {
-            margin: 0;
-            font-size: 2.8rem;
-        }
-
-        nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 15px 0 0 0;
+            direction: rtl;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            background: #1a202c;
+            color: #e2e8f0;
             display: flex;
-            justify-content: center;
-            gap: 25px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
-
-        nav ul li a {
-            color: #fff;
+        header, footer {
+            background: #2d3748;
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            user-select: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        header h2 a {
+            color: inherit;
             text-decoration: none;
-            font-weight: bold;
-            padding: 8px 15px;
-            transition: background-color 0.3s ease, transform 0.3s ease;
-            border-radius: 20px;
+            transition: color 0.3s ease, text-decoration 0.3s ease;
         }
-
-        nav ul li a:hover {
-            background-color: #34495e;
-            transform: translateY(-2px);
+        header h2 a:hover {
+            color: #a0aec0;
+            text-decoration: underline;
         }
-
-        /* כותרות סעיפים */
-        h2 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 30px;
-            font-size: 2.5rem;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        canvas {
+            background-color: #1a202c;
+            border-radius: 1rem;
         }
-
-        /* רשת גלריית המשחקים */
-        .game-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 40px;
-            padding: 20px 0;
-        }
-        
-        /* רשת כרטיסיות הקטגוריות */
-        .category-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-            padding: 20px 0;
-            margin-bottom: 50px;
-        }
-
-        .game-card, .category-card {
-            border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            text-align: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            cursor: pointer;
-        }
-        
-        .game-card:hover, .category-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
-        }
-        
-        /* חלק עליון של הכרטיס עם תמונת רקע וכותרת */
-        .game-card-header, .category-card-header {
-            position: relative;
-            height: 200px;
-            background-size: cover;
-            background-position: center;
-            border-radius: 15px 15px 0 0;
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-        }
-        
-        /* שכבת כיסוי כהה על התמונה לשיפור קריאות הטקסט */
-        .game-card-header::after, .category-card-header::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
-            border-radius: 15px 15px 0 0;
-        }
-
-        .game-card-header h3, .category-card-header h3 {
-            position: relative;
-            z-index: 2;
-            font-size: 1.5rem;
-            margin: 15px;
-            color: #fff;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-        }
-        
-        /* החלק התחתון של הכרטיס עם התיאור והכפתור */
-        .game-card-content {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 0 0 15px 15px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .category-card-content {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 0 0 15px 15px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .game-card .description {
-            font-size: 1rem;
-            color: #555;
-            flex-grow: 1;
-            margin-bottom: 15px;
-        }
-
-        .game-card .buttons {
-            padding: 0;
-        }
-
-        .game-card .btn, .category-card a {
-            display: inline-block;
-            background: linear-gradient(45deg, #3498db, #2980b9);
-            color: #fff;
-            padding: 12px 25px;
-            border-radius: 30px;
-            text-decoration: none;
-            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+        .button {
+            background-color: #4CAF50;
             border: none;
+            color: white;
+            padding: 12px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
             cursor: pointer;
-            font-size: 1.1rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            box-sizing: border-box;
+            border-radius: 8px;
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
-        .game-card .btn:hover, .category-card a:hover {
-            background: linear-gradient(45deg, #2980b9, #3498db);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        .button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
         }
-
-        .category-card a {
-            width: auto;
-            text-align: center;
+        .button.red {
+            background-color: #f44336;
         }
-        
-        .content-section {
-            background-color: #fff;
-            padding: 50px;
-            border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            margin-top: 50px;
+        .button.red:hover {
+            background-color: #da190b;
         }
-        
-        .content-section h2 {
+        .info-card-container {
+            text-align: right;
+            padding: 1.5rem;
+            background: #2d3748;
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.3s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
             margin-top: 0;
+            opacity: 0;
         }
-
-        /* עיצוב ספציפי לדף יצירת קשר */
-        #contact-info {
-            background-color: #fff;
-            padding: 50px;
-            border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            margin-top: 50px;
-        }
-
-        #contact-info p {
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-        }
-
-        #contact-info a {
-            color: #3498db;
-            text-decoration: none;
-            font-weight: bold;
-            transition: color 0.3s ease;
-        }
-
-        #contact-info a:hover {
-            color: #2980b9;
-            text-decoration: underline;
-        }
-        
-        /* הסרת ה-hero section, אך השארת העיצובים למקרה שיחזור בעתיד */
-        .hero-section {
-            display: none;
-        }
-        
-        /* כותרת תחתונה */
-        footer {
-            text-align: center;
-            padding: 25px 0;
-            background-color: #2c3e50;
-            color: #ecf0f1;
-            margin-top: 50px;
-        }
-        
-        footer .footer-links {
-            margin-top: 10px;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        
-        footer .footer-links a {
-            color: #fff;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-        
-        footer .footer-links a:hover {
-            color: #3498db;
-            text-decoration: underline;
-        }
-
-        /* עיצוב רספונסיבי */
-        @media (max-width: 768px) {
-            header h1 {
-                font-size: 2.2rem;
-            }
-
-            nav ul {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .game-grid, .category-grid {
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            }
-        }
-
-        @media (max-width: 480px) {
-            header h1 {
-                font-size: 2rem;
-            }
-
-            .game-card .btn, .category-card a {
-                padding: 10px 20px;
-                font-size: 1rem;
-            }
+        .info-card-container.visible {
+            max-height: 500px; /* Adjust this value */
+            margin-top: 1.5rem;
+            opacity: 1;
         }
     </style>
 </head>
-<body>
-    <header>
-        <nav>
-            <h1>Vibe Games</h1>
-            <ul>
-                <li><a href="index.html">דף הבית</a></li>
-                <li><a href="https://example.com/about">אודות</a></li>
-            </ul>
-        </nav>
+<body class="flex flex-col min-h-screen">
+    <header class="bg-[#2d3748] text-white text-center py-4 shadow-md">
+        <h2 class="text-xl font-bold"><a href="/Game-Vibe/">Game Vibe 🎮</a></h2>
     </header>
 
-    <main class="container">
-        <section>
-            <h2>מומלצים בשבילך</h2>
-            <div class="game-grid" id="game-grid">
-                <!-- כרטיסיות המשחקים יתווספו כאן על ידי JavaScript -->
-            </div>
-        </section>
+    <main class="flex-1 flex justify-center items-center py-8 px-4">
+        <div id="gamePageContainer" class="bg-[#222b3a] rounded-[20px] shadow-xl p-8 text-center max-w-[900px] w-full flex flex-col items-center">
+            <!-- כותרת המשחק הדינמית תטען כאן -->
+            <h1 id="gameTitle" class="text-3xl font-bold mb-4 text-white">...</h1>
 
-        <section id="categories-section" class="content-section">
-            <h2>קטגוריות</h2>
-            <div class="category-grid" id="category-grid">
-                <!-- כרטיסיות הקטגוריות יתווספו כאן על ידי JavaScript -->
+            <div id="gameContainer" class="relative mt-5 w-full flex flex-col justify-center items-center bg-[#333] rounded-xl overflow-hidden aspect-video max-w-[900px] shadow-2xl">
+                <div id="loadingContainer" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-lg text-gray-400 z-10">טוען משחק...</div>
+                
+                <!-- זהו המיכל עבור קנבס ה-p5.js -->
+                <div id="p5-canvas-container" class="w-full h-full"></div>
+                
+                <!-- כפתורים שיוצגו על הקנבס, בשלב טרום המשחק -->
+                <div id="buttonsOverlay" class="absolute inset-0 flex flex-col justify-center items-center gap-4 p-8 rounded-xl z-10 box-border bg-[rgba(34,43,58,0.9)]" style="display: none;">
+                    <div id="additionalButtons" class="flex flex-col md:flex-row gap-4 mt-4">
+                        <button id="startButton" class="button">התחל לשחק</button>
+                        <button id="achievementsButton" class="button">הישגים</button>
+                        <button id="storeButton" class="button">חנות</button>
+                        <button id="resetDataButton" class="button red">איפוס נתונים</button>
+                    </div>
+                </div>
             </div>
-        </section>
-        
-        <section id="contact" class="content-section">
-            <h2>יצירת קשר</h2>
-            <p>אם יש לכם שאלות, הצעות למשחקים חדשים, או אם נתקלתם בבעיה כלשהי, אל תהססו ליצור איתנו קשר. אנחנו כאן כדי לעזור ולשמוע מכם!</p>
-            <p>דוא"ל: <a href="mailto:your.email@example.com">your.email@example.com</a></p>
-        </section>
+
+            <!-- כפתור מסך מלא מתחת לקנבס -->
+            <div class="mt-4">
+                <button id="fullscreenButton" class="button">מסך מלא</button>
+            </div>
+
+            <!-- כעת הסיפור וההוראות נמצאים מתחת לכפתור -->
+            <div id="infoCard" class="info-card-container">
+                <h2 id="infoTitle" class="text-2xl font-bold mb-2">...</h2>
+                <p id="infoStory" class="text-lg text-gray-300 mb-4"></p>
+                <div id="infoInstructions">
+                    <h3 class="text-xl font-semibold mb-2">הוראות:</h3>
+                    <ul id="instructionsList" class="text-gray-400 list-disc list-inside"></ul>
+                </div>
+            </div>
+            
+        </div>
     </main>
 
-    <footer>
-        <p>&copy; 2025 Vibe Games. כל הזכויות שמורות.</p>
-        <div class="footer-links">
-            <a href="#">מדיניות פרטיות</a>
-            <a href="#">תנאי שימוש</a>
-            <a href="#">מדיניות עוגיות</a>
-            <a href="#">שאלות נפוצות</a>
-        </div>
+    <footer class="bg-[#2d3748] text-white text-center py-4 shadow-md mt-auto">
+        <p>&copy; 2025 Game Vibe. כל הזכויות שמורות.</p>
     </footer>
 
+    <!-- תיבת הודעה מותאמת אישית -->
+    <div id="messageBox" class="fixed inset-0 bg-[rgba(0,0,0,0.8)] hidden justify-center items-center z-[1000]">
+        <div class="bg-[#2d3748] p-8 rounded-2xl text-center text-white shadow-xl max-w-sm w-full mx-4">
+            <h3 id="messageBoxTitle" class="text-2xl font-bold mb-4"></h3>
+            <p id="messageBoxBody" class="mb-6"></p>
+            <button id="messageBoxClose" class="button">אישור</button>
+        </div>
+    </div>
+    
+    <!-- טעינת ספריית p5.js קודם כל -->
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.4.0/lib/p5.js"></script>
+    
+    <!-- קובץ JavaScript משולב שיטפל בטעינת המשחק -->
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            /**
-             * פונקציה לטעינת נתוני המשחקים מקובץ JSON.
-             * @returns {Promise<Array<Object>|null>} מערך המשחקים או null במקרה של שגיאה.
-             */
-            async function fetchGames() {
-                try {
-                    const response = await fetch('data.json');
-                    if (!response.ok) {
-                        throw new Error(`שגיאת רשת בטעינת קובץ הנתונים (status: ${response.status})`);
+        // DOM elements
+        const gamePageContainer = document.getElementById('gamePageContainer');
+        const gameContainerElement = document.getElementById('gameContainer');
+        const infoCard = document.getElementById('infoCard');
+        const loadingContainer = document.getElementById('loadingContainer');
+        const buttonsOverlay = document.getElementById('buttonsOverlay');
+        const fullscreenButton = document.getElementById('fullscreenButton');
+        const messageBox = document.getElementById('messageBox');
+
+        // Metadata elements for SEO
+        const pageTitle = document.getElementById('pageTitle');
+        const metaDescription = document.getElementById('metaDescription');
+        const ogTitle = document.getElementById('ogTitle');
+        const ogDescription = document.getElementById('ogDescription');
+        const ogImage = document.getElementById('ogImage');
+        const ogUrl = document.getElementById('ogUrl');
+
+        // Global variable for the p5 instance
+        let p5Instance = null;
+        let currentSketch = null;
+
+        // Function to show a custom message box
+        function showMessageBox(title, content, callback) {
+            document.getElementById('messageBoxTitle').innerText = title;
+            document.getElementById('messageBoxBody').innerText = content;
+            messageBox.style.display = 'flex';
+            const closeButton = document.getElementById('messageBoxClose');
+            const newCloseButton = closeButton.cloneNode(true);
+            closeButton.parentNode.replaceChild(newCloseButton, closeButton);
+            newCloseButton.onclick = () => {
+                messageBox.style.display = 'none';
+                if (callback) callback();
+            };
+        }
+
+        // Function to dynamically load a JavaScript file
+        function loadScript(url) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = url;
+                script.onload = () => resolve(script);
+                script.onerror = () => reject(new Error(`Error loading script: ${url}`));
+                document.head.appendChild(script);
+            });
+        }
+
+        // Function to remove an existing p5 instance
+        function removeExistingP5() {
+            if (p5Instance) {
+                p5Instance.remove();
+                p5Instance = null;
+            }
+            const canvasContainer = document.getElementById('p5-canvas-container');
+            canvasContainer.innerHTML = ''; // Clear the container
+            currentSketch = null;
+        }
+
+        // Function to update the document metadata for SEO
+        function updateMetadata(game) {
+            if (game) {
+                document.title = game.title + ' | Game Vibe';
+                pageTitle.innerText = game.title + ' | Game Vibe';
+                metaDescription.setAttribute('content', game.story);
+                ogTitle.setAttribute('content', game.title);
+                ogDescription.setAttribute('content', game.story);
+                if (game.image) {
+                    ogImage.setAttribute('content', game.image);
+                }
+                ogUrl.setAttribute('content', window.location.href);
+            } else {
+                // Default metadata for the main page
+                document.title = 'Game Vibe';
+                pageTitle.innerText = 'Game Vibe';
+                metaDescription.setAttribute('content', 'קולקציית משחקי דפדפן קלאסיים וכיפיים.');
+                ogTitle.setAttribute('content', 'Game Vibe');
+                ogDescription.setAttribute('content', 'קולקציית משחקי דפדפן קלאסיים וכיפיים.');
+                ogImage.setAttribute('content', 'https://anihnon.github.io/Game-Vibe/assets/game-vibe-logo.png');
+                ogUrl.setAttribute('content', 'https://anihnon.github.io/Game-Vibe/');
+            }
+        }
+
+        // Main function to handle game loading based on URL
+        async function loadGame(pathname) {
+            removeExistingP5(); // Clear any previous game
+
+            const pathParts = pathname.split('/').filter(part => part !== '');
+            const isGamePage = pathParts[0] === 'games' && pathParts[1];
+            
+            // Set up default view for the home page or a non-game page
+            if (!isGamePage) {
+                document.getElementById('gameTitle').innerText = 'ברוכים הבאים ל-Game Vibe!';
+                loadingContainer.innerText = 'בחרו משחק מהרשימה כדי להתחיל.';
+                loadingContainer.style.display = 'block';
+                buttonsOverlay.style.display = 'none';
+                infoCard.classList.remove('visible');
+                updateMetadata(null);
+                return;
+            }
+
+            const gameId = pathParts[1];
+            loadingContainer.innerText = 'טוען משחק...';
+            loadingContainer.style.display = 'block';
+            
+            try {
+                const response = await fetch('data.json');
+                if (!response.ok) throw new Error('Error loading game data');
+                const games = await response.json();
+                const currentGame = games.find(game => game.id === gameId);
+
+                if (currentGame) {
+                    // Update UI with game data
+                    document.getElementById('gameTitle').innerText = currentGame.title;
+                    document.getElementById('infoTitle').innerText = currentGame.title;
+                    document.getElementById('infoStory').innerText = currentGame.story;
+                    
+                    const instructionsList = document.getElementById('instructionsList');
+                    instructionsList.innerHTML = '';
+                    currentGame.instructions.forEach(instruction => {
+                        const li = document.createElement('li');
+                        li.innerText = instruction;
+                        instructionsList.appendChild(li);
+                    });
+                    
+                    infoCard.classList.add('visible');
+                    buttonsOverlay.style.display = 'flex';
+                    loadingContainer.style.display = 'none';
+                    
+                    // Update metadata for SEO
+                    updateMetadata(currentGame);
+
+                    // Dynamically load the game script
+                    const scriptUrl = `games/${currentGame.jsFile}`;
+                    await loadScript(scriptUrl);
+                    
+                    if (typeof sketch !== 'undefined') {
+                        p5Instance = new p5(sketch, 'p5-canvas-container');
+                        currentSketch = sketch;
+                    } else {
+                        showMessageBox('שגיאה', 'קובץ המשחק נטען אך לא מכיל את פונקציית ה-p5 הנדרשת.');
+                        console.error("Game script loaded, but 'sketch' is not defined.");
                     }
-                    return await response.json();
-                } catch (error) {
-                    console.error("שגיאה בטעינת נתוני המשחקים:", error);
-                    return null;
+                } else {
+                    loadingContainer.innerText = `מזהה המשחק '${gameId}' לא נמצא.`;
+                    showMessageBox('שגיאה', `מזהה המשחק '${gameId}' לא נמצא בקובץ הנתונים.`);
+                    infoCard.classList.remove('visible');
+                    updateMetadata(null);
                 }
+            } catch (error) {
+                loadingContainer.innerText = 'אירעה שגיאה בטעינת הנתונים או הקובץ.';
+                showMessageBox('שגיאה', 'אירעה שגיאה בטעינת קובץ הנתונים או קובץ המשחק.');
+                console.error('Error loading game:', error);
             }
-            
-            /**
-             * פונקציה לבחירת משחקים מומלצים באופן אקראי.
-             * כרגע הלוגיקה היא אקראית, אך ניתן להרחיב אותה בעתיד.
-             * @param {Array<Object>} gamesArray - רשימת כל המשחקים.
-             * @param {number} count - מספר המשחקים המומלצים להצגה.
-             * @returns {Array<Object>} מערך של משחקים מומלצים.
-             */
-            function getRecommendedGames(gamesArray, count = 3) {
-                // יוצר עותק של המערך כדי לא לשנות את המקורי
-                const shuffledGames = [...gamesArray];
-                
-                // מערבב את המערך באופן אקראי
-                for (let i = shuffledGames.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [shuffledGames[i], shuffledGames[j]] = [shuffledGames[j], shuffledGames[i]];
+        }
+
+        // Event listeners
+        window.addEventListener('popstate', () => {
+            loadGame(window.location.pathname);
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadGame(window.location.pathname);
+
+            // Initial event listeners for buttons
+            document.getElementById('startButton').addEventListener('click', () => {
+                if (typeof window.startGame === 'function') {
+                    window.startGame();
+                } else {
+                    showMessageBox('שגיאה', 'פונקציית התחלת המשחק אינה זמינה. 🔄');
                 }
-                
-                // מחזיר את שלושת המשחקים הראשונים מהמערך המעורבב
-                return shuffledGames.slice(0, count);
-            }
+            });
 
-            /**
-             * פונקציה להצגת כרטיסיות משחקים.
-             * @param {Array<Object>} gamesArray - רשימת המשחקים להצגה.
-             * @param {HTMLElement} gameGrid - אלמנט ה-HTML שבו יוצגו המשחקים.
-             */
-            function displayGames(gamesArray, gameGrid) {
-                if (!gameGrid) return;
-                gameGrid.innerHTML = '';
-                if (!gamesArray || gamesArray.length === 0) {
-                    gameGrid.innerHTML = '<p style="text-align: center; color: #555;">אין משחקים זמינים כרגע.</p>';
-                    return;
-                }
-                gamesArray.forEach(game => {
-                    const card = document.createElement('div');
-                    card.className = 'game-card';
+            document.getElementById('achievementsButton').addEventListener('click', () => {
+                showMessageBox('הישגים', 'פונקציית ההישגים עדיין לא ממומשת. 🏆');
+            });
 
-                    const header = document.createElement('div');
-                    header.className = 'game-card-header';
-                    header.style.backgroundImage = `url('${game.image}')`;
-                    
-                    const h3 = document.createElement('h3');
-                    h3.textContent = game.title;
-                    header.appendChild(h3);
-
-                    const content = document.createElement('div');
-                    content.className = 'game-card-content';
-
-                    const desc = document.createElement('p');
-                    desc.className = 'description';
-                    desc.textContent = game.description;
-                    content.appendChild(desc);
-
-                    const btnDiv = document.createElement('div');
-                    btnDiv.className = 'buttons';
-                    // חשוב לוודא ש-game.id מועבר כפרמטר ב-URL
-                    btnDiv.innerHTML = `<a href="play.html?game=${encodeURIComponent(game.id)}" class="btn">שחק עכשיו</a>`;
-                    content.appendChild(btnDiv);
-
-                    card.appendChild(header);
-                    card.appendChild(content);
-
-                    gameGrid.appendChild(card);
-                });
-            }
-            
-            /**
-             * פונקציה להצגת כרטיסיות קטגוריות.
-             * @param {Array<string>} categoriesArray - רשימת הקטגוריות להצגה.
-             * @param {Array<Object>} allGames - רשימת כל המשחקים, לשם מציאת תמונה.
-             * @param {HTMLElement} categoryGrid - אלמנט ה-HTML שבו יוצגו הקטגוריות.
-             */
-            function displayCategories(categoriesArray, allGames, categoryGrid) {
-                if (!categoryGrid) return;
-                categoryGrid.innerHTML = '';
-                
-                categoriesArray.forEach(categoryName => {
-                    const gameExample = allGames.find(game => game.gameType === categoryName);
-                    const imageUrl = gameExample ? gameExample.image : 'https://placehold.co/600x400/cccccc/000000?text=Category';
-                    
-                    const card = document.createElement('div');
-                    card.className = 'category-card';
-                    card.innerHTML = `
-                        <div class="category-card-header" style="background-image: url('${imageUrl}')">
-                            <h3>${categoryName}</h3>
-                        </div>
-                        <div class="category-card-content">
-                            <!-- כאן הקישור יהיה לקטגוריה, לא למשחק ספציפי -->
-                            <a href="#">צפו במשחקים</a>
-                        </div>
-                    `;
-                    categoryGrid.appendChild(card);
-                });
-            }
-
-            // טען את המשחקים והצג אותם
-            const games = await fetchGames();
-            if (games) {
-                const gameGrid = document.getElementById('game-grid');
-                // קבל 3 משחקים מומלצים באופן אקראי
-                const recommendedGames = getRecommendedGames(games, 3);
-                displayGames(recommendedGames, gameGrid);
-                
-                const categoryGrid = document.getElementById('category-grid');
-                const uniqueCategories = [...new Set(games.map(game => game.gameType))];
-                displayCategories(uniqueCategories, games, categoryGrid);
-            }
-
-            // טיפול בגלילה חלקה לקישורים פנימיים
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('resetDataButton').addEventListener('click', () => {
+                showMessageBox('איפוס נתונים', 'האם אתה בטוח שברצונך לאפס את נתוני המשחק?', () => {
+                    if (typeof window.resetGameData === 'function') {
+                        window.resetGameData();
+                    } else {
+                        showMessageBox('שגיאה', 'פונקציית איפוס הנתונים אינה זמינה.');
+                    }
                 });
             });
+
+            // Handle internal navigation for links
+            document.body.addEventListener('click', e => {
+                const link = e.target.closest('a');
+                if (link && link.href.startsWith(window.location.origin)) {
+                    e.preventDefault();
+                    const newPath = link.pathname;
+                    history.pushState({}, '', newPath);
+                    loadGame(newPath);
+                }
+            });
+        });
+
+        fullscreenButton.addEventListener('click', () => {
+            if (gamePageContainer.requestFullscreen) {
+                gamePageContainer.requestFullscreen();
+            } else if (gamePageContainer.mozRequestFullScreen) {
+                gamePageContainer.mozRequestFullScreen();
+            } else if (gamePageContainer.webkitRequestFullscreen) {
+                gamePageContainer.webkitRequestFullscreen();
+            } else if (gamePageContainer.msRequestFullscreen) {
+                gamePageContainer.msRequestFullscreen();
+            }
+        });
+
+        // Resize the canvas to fit the container
+        window.addEventListener('resize', () => {
+            const container = document.getElementById('p5-canvas-container');
+            if (container && p5Instance && currentSketch) {
+                if (currentSketch.resizeCanvas) {
+                    currentSketch.resizeCanvas(container.clientWidth, container.clientHeight);
+                } else {
+                    p5Instance.resizeCanvas(container.clientWidth, container.clientHeight);
+                }
+            }
         });
     </script>
 </body>
