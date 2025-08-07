@@ -17,7 +17,6 @@ const MAX_JUMP_DISTANCE_X = 200;
 const MAX_JUMP_HEIGHT = 150;
 
 let jumpCount = 0;
-let isKeyPressedForJump = false; // דגל למניעת קפיצה רציפה בלחיצה ארוכה
 
 // פונקציה ליצירת נתונים של שלבים באופן דינמי והגיוני
 function generateLevels(p, numLevels) {
@@ -31,24 +30,25 @@ function generateLevels(p, numLevels) {
         const newFruits = [];
         const newEnemies = [];
         
-        // פלטפורמה התחלתית קבועה
+        // פלטפורמה התחלתית קבועה בתחתית המסך
         let lastPlatform = { x: 0, y: height - 50, w: width * 0.2, h: 50 };
         newPlatforms.push(lastPlatform);
         
-        // יצירת פלטפורמות באופן הגיוני
+        // יצירת פלטפורמות באופן הגיוני ושיטתי
         const numPlatforms = p.floor(p.random(4, 8 + difficultyFactor * 7));
         for (let j = 0; j < numPlatforms; j++) {
             let newX, newY;
             
-            // הגרלת מיקום לפלטפורמה חדשה במרחק קפיצה מהקודמת
-            newX = p.random(lastPlatform.x + 50, lastPlatform.x + MAX_JUMP_DISTANCE_X);
-            // אם המיקום יצא מחוץ למפה, נתחיל משמאל
-            if (newX + 150 > width) {
-                newX = p.random(width * 0.1, width * 0.4);
+            // הגרלת מיקום לפלטפורמה חדשה במרחק קפיצה הגיוני מהקודמת
+            newX = p.random(lastPlatform.x + 150, p.width - 200);
+            
+            // לוודא שהפלטפורמה לא תצא מחוץ למסך
+            if (newX > width - 100) {
+                newX = p.random(50, width * 0.2);
             }
             
             newY = p.random(lastPlatform.y - MAX_JUMP_HEIGHT, lastPlatform.y);
-            // לוודא שהפלטפורמה לא נמוכה מדי או גבוהה מדי
+            // לוודא שהפלטפורמה לא נמוכה מדי
             newY = p.constrain(newY, height * 0.2, height * 0.8);
 
             const newPlatform = {
@@ -61,18 +61,16 @@ function generateLevels(p, numLevels) {
             lastPlatform = newPlatform;
 
             // יצירת פרי על הפלטפורמה החדשה
-            if (p.random() > 0.5) { // הסתברות של 50% ליצור פרי
-                newFruits.push({
-                    x: newPlatform.x + newPlatform.w / 2,
-                    y: newPlatform.y - FRUIT_SIZE / 2 - 5
-                });
-            }
+            newFruits.push({
+                x: newPlatform.x + newPlatform.w / 2,
+                y: newPlatform.y - FRUIT_SIZE / 2 - 5
+            });
         }
         
         // יצירת אויבים, ממוקמים על פלטפורמות
         const numEnemies = p.floor(p.random(1, 3 + difficultyFactor * 2));
         for (let j = 0; j < numEnemies; j++) {
-            const platformForEnemy = newPlatforms[p.floor(p.random(newPlatforms.length))];
+            const platformForEnemy = newPlatforms[p.floor(p.random(1, newPlatforms.length))]; // לא על הפלטפורמה הראשונה
             newEnemies.push({
                 x: p.random(platformForEnemy.x, platformForEnemy.x + platformForEnemy.w - 40),
                 y: platformForEnemy.y - 40,
