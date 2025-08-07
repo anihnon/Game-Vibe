@@ -267,10 +267,10 @@
         async function loadGame() {
             // מזהה המשחק נלקח מפרמטר ה-URL
             const urlParams = new URLSearchParams(window.location.search);
-            const gameId = urlParams.get('id');
+            const gameId = urlParams.get('game');
 
             if (!gameId) {
-                loadingContainer.innerText = 'בחר משחק בכתובת, למשל: ?id=astroFruits';
+                loadingContainer.innerText = 'בחר משחק בכתובת, למשל: ?game=astroFruits';
                 return;
             }
 
