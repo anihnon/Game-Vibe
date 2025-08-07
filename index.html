@@ -5,9 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vibe Games</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="[https://fonts.googleapis.com](https://fonts.googleapis.com)">
+    <link rel="preconnect" href="[https://fonts.gstatic.com](https://fonts.gstatic.com)" crossorigin>
+    <link href="[https://fonts.googleapis.com/css2?family=Varela+Round&display=swap](https://fonts.googleapis.com/css2?family=Varela+Round&display=swap)" rel="stylesheet">
     <style>
         body {
             font-family: 'Varela Round', sans-serif;
@@ -241,7 +241,7 @@
         .hero-section {
             text-align: center;
             padding: 80px 20px;
-            background: url('https://placehold.co/1200x400/2c3e50/fff?text=Vibe+Games') no-repeat center center/cover;
+            background: url('[https://placehold.co/1200x400/2c3e50/fff?text=Vibe+Games](https://placehold.co/1200x400/2c3e50/fff?text=Vibe+Games)') no-repeat center center/cover;
             color: #fff;
             border-radius: 15px;
             margin-bottom: 40px;
@@ -448,11 +448,15 @@
 
         async function renderGamePage(gameId) {
              try {
+                // Fetch the HTML content of play.html
                 const playPageResponse = await fetch('play.html');
                 if (!playPageResponse.ok) throw new Error('Failed to fetch play.html');
                 const playPageContent = await playPageResponse.text();
+                
+                // Set the content of the main container to the fetched HTML
                 mainContent.innerHTML = playPageContent;
 
+                // Load game data and then the game script
                 const gamesDataResponse = await fetch('data.json');
                 if (!gamesDataResponse.ok) throw new Error('Failed to fetch data.json');
                 const gamesData = await gamesDataResponse.json();
@@ -461,8 +465,10 @@
                 if (gameData && gameData.jsFile) {
                     const script = document.createElement('script');
                     script.src = gameData.jsFile;
+                    // Append the script to the body to ensure it runs after the DOM is ready
                     document.body.appendChild(script);
                 } else {
+                    // Handle case where game data or script file is missing
                     mainContent.innerHTML = `
                         <div class="content-section">
                             <h2>שגיאה</h2>
@@ -545,7 +551,7 @@
             
             categoriesArray.forEach(categoryName => {
                 const gameExample = allGames.find(game => game.gameType === categoryName);
-                const imageUrl = gameExample ? gameExample.image : 'https://placehold.co/600x400/cccccc/000000?text=Category';
+                const imageUrl = gameExample ? gameExample.image : '[https://placehold.co/600x400/cccccc/000000?text=Category](https://placehold.co/600x400/cccccc/000000?text=Category)';
                 
                 const card = document.createElement('div');
                 card.className = 'category-card';
