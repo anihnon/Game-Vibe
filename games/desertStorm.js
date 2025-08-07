@@ -107,6 +107,7 @@ const sketch = (p) => {
 
   // רקע מונפש לתפריט
   let menuStars = [];
+  let buttonsOverlay;
 
   // ==================================================
   // P5.js פונקציות ליבה
@@ -114,11 +115,12 @@ const sketch = (p) => {
 
   p.setup = () => {
     let canvasContainer = document.getElementById('p5-canvas-container');
-    let canvas = p.createCanvas(canvasContainer.clientWidth, canvasContainer.clientHeight);
-    canvas.parent('p5-canvas-container');
-    p.frameRate(30);
+    p.createCanvas(canvasContainer.clientWidth, canvasContainer.clientHeight).parent('p5-canvas-container');
+    p.frameRate(60);
     p.textAlign(p.CENTER, p.CENTER);
     p.rectMode(p.CENTER);
+
+    buttonsOverlay = document.getElementById('buttonsOverlay');
 
     loadGameState();
     player = new Fighter(true, baseWidth / 2, baseHeight / 2);
@@ -137,14 +139,16 @@ const sketch = (p) => {
     window.startGame = () => {
       resetGame();
       runTransition('gameplay');
-      document.getElementById('buttonsOverlay').style.display = 'none';
+      buttonsOverlay.style.display = 'none';
     };
     window.resetGameData = () => {
-        localStorage.removeItem('desertStormSave');
-        loadGameState(); // טוען את ערכי ברירת המחדל
-        // צריך לרענן את התצוגה אם יש כזו
-        showMessageBox('איפוס', 'הנתונים אופסו בהצלחה.');
+      localStorage.removeItem('desertStormSave');
+      loadGameState(); // טוען את ערכי ברירת המחדל
+      showMessageBox('איפוס', 'הנתונים אופסו בהצלחה.');
     };
+    
+    // קריאה ראשונית ל-mainMenuScreen כדי להציג את התפריט
+    gameState = 'mainMenu';
   };
 
   p.draw = () => {
@@ -153,7 +157,6 @@ const sketch = (p) => {
 
     switch (gameState) {
       case 'loading':
-        // המעבר ל-mainMenu יקרה מה-HTML אחרי טעינת הנתונים
         p.background(34, 43, 58);
         p.fill(230);
         p.textSize(32 * scaleFactor);
@@ -182,9 +185,8 @@ const sketch = (p) => {
   p.windowResized = () => {
     let canvasContainer = document.getElementById('p5-canvas-container');
     p.resizeCanvas(canvasContainer.clientWidth, canvasContainer.clientHeight);
-    // עדכון כוכבי התפריט מחדש אם צריך
     menuStars = [];
-     for (let i = 0; i < 100; i++) {
+      for (let i = 0; i < 100; i++) {
       menuStars.push({
         x: p.random(p.width),
         y: p.random(p.height),
@@ -300,8 +302,7 @@ const sketch = (p) => {
       p.textSize(60 * scaleFactor);
       p.text('סופת מדבר', p.width / 2, p.height * 0.2);
       
-      // כאן ניתן להוסיף כפתורים אם רוצים לנהל אותם מתוך הקנבס
-      // כרגע הכפתורים מנוהלים מה-HTML
+      // הכפתורים מנוהלים מה-HTML, כך שאין צורך לצייר אותם כאן
   }
 
   function gameOverScreen() {
@@ -316,11 +317,11 @@ const sketch = (p) => {
 
       // כפתור חזרה לתפריט
       let backButton = new UIButton(p.width / 2, p.height * 0.8, 200 * scaleFactor, 50 * scaleFactor, 'חזרה לתפריט', () => {
-          document.getElementById('buttonsOverlay').style.display = 'flex';
+          buttonsOverlay.style.display = 'flex';
           runTransition('mainMenu');
       });
       backButton.draw();
-      backButton.checkClick();
+      backButton.checkClick(); // הוספת בדיקת הלחיצה
   }
 
   // פונקציות מסכים נוספות (חנות, הוראות, משימות) יכולות להתווסף כאן
@@ -384,35 +385,29 @@ const sketch = (p) => {
       // התנגשות קליעים
       for (let i = projectiles.length - 1; i >= 0; i--) {
           let proj = projectiles[i];
-          let hit = false;
+          let hitObject = null;
 
           // פגיעה בלוחמים
           for (const fighter of allFighters) {
               if (proj.owner !== fighter && p.dist(proj.x, proj.y, fighter.x, fighter.y) < fighter.size / 2) {
                   fighter.takeDamage(proj.damage);
-                  hit = true;
-                  if (proj.owner === player && fighter.isDead()) {
-                    player.xp += 20;
-                    player.kills++;
-                  }
+                  hitObject = fighter;
                   break;
               }
           }
-          if (hit) { 
-              projectiles.splice(i, 1); 
-              continue; 
+          // פגיעה בעצמים
+          if (!hitObject) {
+              for (const obj of allSolidObjects) {
+                  if (obj.isHit(proj.x, proj.y)) {
+                      obj.takeDamage(proj.damage);
+                      hitObject = obj;
+                      break;
+                  }
+              }
           }
 
-          // פגיעה בעצמים
-          for (const obj of allSolidObjects) {
-              if (obj.isHit(proj.x, proj.y)) {
-                  obj.takeDamage(proj.damage);
-                  hit = true;
-                  break;
-              }
-          }
-          if (hit) { 
-              projectiles.splice(i, 1); 
+          if (hitObject) {
+              projectiles.splice(i, 1);
           }
       }
       
@@ -448,14 +443,16 @@ const sketch = (p) => {
       }
   }
 
-
   // ==================================================
   // מצלמה, ממשק משתמש ואפקטים
   // ==================================================
 
   function updateCamera() {
-    camera.x = p.lerp(camera.x, p.width / 2 - player.x, 0.1);
-    camera.y = p.lerp(camera.y, p.height / 2 - player.y, 0.1);
+    let lerpFactor = 0.1;
+    let targetX = p.width / 2 - player.x;
+    let targetY = p.height / 2 - player.y;
+    camera.x += (targetX - camera.x) * lerpFactor;
+    camera.y += (targetY - camera.y) * lerpFactor;
   }
 
   function drawHUD() {
@@ -966,7 +963,7 @@ const sketch = (p) => {
 
       isMouseOver() {
           return p.mouseX > this.x - this.w / 2 && p.mouseX < this.x + this.w / 2 &&
-                 p.mouseY > this.y - this.h / 2 && p.mouseY < this.y + this.h / 2;
+                  p.mouseY > this.y - this.h / 2 && p.mouseY < this.y + this.h / 2;
       }
 
       checkClick() {
@@ -984,7 +981,7 @@ const sketch = (p) => {
       const weapons = {
           'pistol': { name: 'אקדח', damage: 8, fireRate: 20, spread: 0.1, pellets: 1, range: 400, ammoType: null },
           'smg':    { name: 'תמ"ק', damage: 10, fireRate: 5, spread: 0.3, pellets: 1, range: 500, ammoType: 'small' },
-          'ar':     { name: 'רובה סער', damage: 15, fireRate: 8, spread: 0.2, pellets: 1, range: 700, ammoType: 'medium' },
+          'ar':      { name: 'רובה סער', damage: 15, fireRate: 8, spread: 0.2, pellets: 1, range: 700, ammoType: 'medium' },
           'shotgun':{ name: 'שוטגאן', damage: 7, fireRate: 40, spread: 0.5, pellets: 8, range: 300, ammoType: 'large' },
       };
       return weapons[name];
@@ -1031,7 +1028,7 @@ const sketch = (p) => {
         if (savedData) {
             const parsedData = JSON.parse(savedData);
             // אימות בסיסי של הנתונים
-            if (typeof parsedData.currency === 'number') {
+            if (typeof parsedData.currency === 'number' && Array.isArray(parsedData.missionsCompleted)) {
                 gameData = parsedData;
             }
         }
