@@ -1,21 +1,86 @@
 const GAME_DATA_KEY = 'fruitDungeonGameData';
 let gamePhase = 'intro';
-const activeKeys = {};
-let player, fruits, enemies;
+let score = 0;
+let initialStage = 1;
+let player, fruits, enemies, platforms, timer;
 const FRUIT_SIZE = 20;
+let timeRemaining;
+let gameStartTime;
+const NUM_LEVELS = 150;
 
-// פונקציה גלובלית לניהול תיבות הודעה - נשארת ב-HTML
-// function showMessageBox(title, content, callback) {...}
+// הגדרות פיזיקה
+const GRAVITY = 0.5;
+const JUMP_POWER = -12;
+const PLAYER_SPEED = 5;
+
+// פונקציה ליצירת נתונים של שלבים באופן דינמי
+function generateLevels(numLevels) {
+    const levels = {};
+    const basePlatforms = [
+        { x: 0, y: 550, w: 900, h: 50 } // פלטפורמה תחתונה קבועה
+    ];
+
+    for (let i = 1; i <= numLevels; i++) {
+        // רמת הקושי עולה עם השלב
+        const difficultyFactor = i / numLevels;
+
+        // יצירת פלטפורמות באופן דינמי
+        const numPlatforms = p5.prototype.floor(p5.prototype.random(2, 5 + difficultyFactor * 5));
+        const newPlatforms = [...basePlatforms];
+        for (let j = 0; j < numPlatforms; j++) {
+            newPlatforms.push({
+                x: p5.prototype.random(p5.prototype.width * 0.1, p5.prototype.width * 0.9),
+                y: p5.prototype.random(p5.prototype.height * 0.2, p5.prototype.height * 0.8),
+                w: p5.prototype.random(100, 250),
+                h: 20
+            });
+        }
+
+        // יצירת פירות
+        const numFruits = p5.prototype.floor(p5.prototype.random(3, 7 + difficultyFactor * 5));
+        const newFruits = [];
+        for (let j = 0; j < numFruits; j++) {
+            newFruits.push({
+                x: p5.prototype.random(p5.prototype.width * 0.1, p5.prototype.width * 0.9),
+                y: p5.prototype.random(p5.prototype.height * 0.1, p5.prototype.height * 0.9)
+            });
+        }
+        
+        // יצירת אויבים
+        const numEnemies = p5.prototype.floor(p5.prototype.random(1, 3 + difficultyFactor * 3));
+        const newEnemies = [];
+        for (let j = 0; j < numEnemies; j++) {
+            newEnemies.push({
+                x: p5.prototype.random(p5.prototype.width * 0.1, p5.prototype.width * 0.9),
+                y: p5.prototype.random(p5.prototype.height * 0.5, p5.prototype.height * 0.9),
+                w: 40,
+                h: 40,
+                speedX: p5.prototype.random([-2, 2])
+            });
+        }
+
+        // יצירת נתוני השלב
+        levels[i] = {
+            playerStart: { x: 50, y: 50 },
+            platforms: newPlatforms,
+            fruits: newFruits,
+            enemies: newEnemies,
+            timeLimit: 60 + p5.prototype.floor(difficultyFactor * 60)
+        };
+    }
+    return levels;
+}
+
+// נתוני השלבים מיוצרים באופן דינמי במקום להיכתב ידנית
+const levelData = generateLevels(NUM_LEVELS);
 
 /**
  * פונקציה לשמירת נתוני המשחק ל-localStorage
- * @param {p5} p - מופע ה-p5 הנוכחי
  */
-function saveGameData(p) {
-    // במימוש אמיתי נשמור כאן נתונים כמו נקודות, שלב וכו'.
-    // לצורך הדגמה, נשמור רק את שלב המשחק.
+function saveGameData() {
     const data = {
-        currentLevel: initialStage
+        currentLevel: initialStage,
+        highScore: score
     };
     try {
         localStorage.setItem(GAME_DATA_KEY, JSON.stringify(data));
@@ -45,30 +110,15 @@ function loadGameData() {
 /**
  * פונקציה לאיפוס כל נתוני המשחק מ-localStorage
  */
-function resetGameData() {
+window.resetGameData = function() {
     try {
         localStorage.removeItem(GAME_DATA_KEY);
         console.log('נתוני המשחק אופסו בהצלחה.');
     } catch (e) {
         console.error('שגיאה באיפוס נתונים מ-localStorage:', e);
     }
-}
-
-// נתוני השלבים (מופשט לצורך הדגמה)
-const levelData = {
-    1: {
-        playerStart: { x: 100, y: 100 },
-        platforms: [{ x: 300, y: 500, w: 600, h: 50 }],
-        fruits: [{ x: 150, y: 200 }, { x: 450, y: 300 }]
-    },
-    2: {
-        playerStart: { x: 100, y: 100 },
-        platforms: [{ x: 300, y: 500, w: 600, h: 50 }],
-        fruits: [{ x: 150, y: 200 }, { x: 450, y: 300 }, { x: 500, y: 400 }]
-    }
+    window.location.reload();
 };
-
-let initialStage = 1; // שלב התחלתי
 
 /**
  * טוען שלב ספציפי
@@ -78,11 +128,14 @@ let initialStage = 1; // שלב התחלתי
 function loadLevel(p, levelNum) {
     const data = levelData[levelNum];
     if (data) {
-        player = { x: data.playerStart.x, y: data.playerStart.y, size: 30 };
-        fruits = data.fruits.map(f => ({ ...f, size: FRUIT_SIZE }));
-        enemies = [
-            { x: p.random(p.width), y: p.random(p.height), size: 30, speedX: 2, speedY: 2 }
-        ];
+        player = { x: data.playerStart.x, y: data.playerStart.y, w: 30, h: 30, velY: 0, isJumping: false };
+        platforms = data.platforms.map(pl => ({ ...pl }));
+        fruits = data.fruits.map(f => ({ ...f, size: FRUIT_SIZE, collected: false }));
+        enemies = data.enemies.map(e => ({ ...e }));
+        timeRemaining = data.timeLimit;
+        gameStartTime = p.millis();
+        score = 0;
+        console.log(`שלב ${levelNum} נטען.`);
     } else {
         console.error(`נתוני שלב ${levelNum} לא נמצאו.`);
     }
@@ -95,7 +148,7 @@ const sketch = function(p) {
         if (container) {
             p.createCanvas(container.clientWidth, container.clientHeight);
             const savedData = loadGameData();
-            if (savedData) {
+            if (savedData && savedData.currentLevel <= NUM_LEVELS) {
                 initialStage = savedData.currentLevel;
             }
             loadLevel(p, initialStage);
@@ -106,35 +159,92 @@ const sketch = function(p) {
         p.background(50);
         
         if (gamePhase === 'playing') {
-            // לוגיקת תנועה, ציור וקליטת אירועים
-            if (p.keyIsDown(p.LEFT_ARROW)) player.x -= 5;
-            if (p.keyIsDown(p.RIGHT_ARROW)) player.x += 5;
-            if (p.keyIsDown(p.UP_ARROW)) player.y -= 5;
-            if (p.keyIsDown(p.DOWN_ARROW)) player.y += 5;
+            // עדכון טיימר
+            const elapsedTime = (p.millis() - gameStartTime) / 1000;
+            const currentTimer = Math.max(0, timeRemaining - p.floor(elapsedTime));
+            if (currentTimer === 0) {
+                gamePhase = 'game_over';
+            }
 
-            p.fill(255, 100, 0);
-            p.ellipse(player.x, player.y, player.size);
+            // לוגיקת תנועה של השחקן
+            player.velY += GRAVITY;
+            player.y += player.velY;
+
+            // בדיקת התנגשויות עם פלטפורמות
+            player.isJumping = true;
+            for (let platform of platforms) {
+                if (
+                    player.y + player.h > platform.y &&
+                    player.y < platform.y + platform.h &&
+                    player.x + player.w > platform.x &&
+                    player.x < platform.x + platform.w
+                ) {
+                    if (player.y + player.h - player.velY <= platform.y) {
+                        player.y = platform.y - player.h;
+                        player.velY = 0;
+                        player.isJumping = false;
+                    }
+                }
+            }
+
+            // קלט מקשים
+            if (p.keyIsDown(p.LEFT_ARROW)) player.x -= PLAYER_SPEED;
+            if (p.keyIsDown(p.RIGHT_ARROW)) player.x += PLAYER_SPEED;
             
+            if (p.keyIsDown(p.UP_ARROW) && !player.isJumping) {
+                player.velY = JUMP_POWER;
+                player.isJumping = true;
+            }
+
+            // ציור השחקן
+            p.fill(255, 100, 0);
+            p.rect(player.x, player.y, player.w, player.h);
+
+            // ציור פלטפורמות
+            p.fill(100, 100, 100);
+            platforms.forEach(pl => p.rect(pl.x, pl.y, pl.w, pl.h));
+
+            // ציור פירות
             p.fill(0, 255, 0);
             fruits.forEach(f => p.ellipse(f.x, f.y, f.size));
-            
+
+            // בדיקת איסוף פירות ועדכון ציון
+            let collectedFruits = fruits.filter(f => p.dist(player.x + player.w / 2, player.y + player.h / 2, f.x, f.y) < (player.w / 2 + f.size / 2));
+            collectedFruits.forEach(() => score += 10);
+            fruits = fruits.filter(f => !collectedFruits.includes(f));
+
+            // תנועה וציור אויבים
             p.fill(255, 0, 0);
             enemies.forEach(e => {
                 e.x += e.speedX;
-                if (e.x > p.width || e.x < 0) e.speedX *= -1;
-                p.rect(e.x, e.y, e.size, e.size);
-            });
-            
-            // בדיקת התנגשויות
-            fruits = fruits.filter(f => p.dist(player.x, player.y, f.x, f.y) > (player.size / 2 + f.size / 2));
-            enemies.forEach(e => {
-                if (p.dist(player.x, player.y, e.x, e.y) < (player.size / 2 + e.size / 2)) {
+                if (e.x > p.width - e.w || e.x < 0) e.speedX *= -1;
+                p.rect(e.x, e.y, e.w, e.h);
+                
+                // בדיקת התנגשות עם אויב
+                if (p.dist(player.x + player.w / 2, player.y + player.h / 2, e.x + e.w / 2, e.y + e.h / 2) < (player.w / 2 + e.w / 2)) {
                     gamePhase = 'game_over';
                 }
             });
             
-            if (fruits.length === 0) gamePhase = 'level_complete';
+            // בדיקת ניצחון בשלב
+            if (fruits.length === 0) {
+                if (initialStage >= NUM_LEVELS) {
+                    gamePhase = 'game_won'; // ניצחון מוחלט
+                } else {
+                    gamePhase = 'level_complete'; // עבר שלב
+                    saveGameData();
+                }
+            }
             
+            // הצגת ציון, שלב וטיימר
+            p.fill(255);
+            p.textSize(20);
+            p.textAlign(p.LEFT, p.TOP);
+            p.text(`שלב: ${initialStage}`, 10, 10);
+            p.text(`ניקוד: ${score}`, 10, 40);
+            p.textAlign(p.RIGHT, p.TOP);
+            p.text(`זמן: ${currentTimer}`, p.width - 10, 10);
+
         } else if (gamePhase === 'intro') {
             p.textSize(32);
             p.fill(255);
@@ -144,37 +254,45 @@ const sketch = function(p) {
             p.textSize(32);
             p.fill(255);
             p.textAlign(p.CENTER, p.CENTER);
-            p.text('Game Over', p.width / 2, p.height / 2);
+            p.text('המשחק נגמר!', p.width / 2, p.height / 2);
+            p.textSize(20);
+            p.text('לחץ על התחל כדי להתחיל מחדש', p.width / 2, p.height / 2 + 40);
         } else if (gamePhase === 'level_complete') {
             p.textSize(32);
             p.fill(255);
             p.textAlign(p.CENTER, p.CENTER);
-            p.text('Level Complete!', p.width / 2, p.height / 2);
+            p.text('עברת את השלב!', p.width / 2, p.height / 2);
+            p.textSize(20);
+            p.text('לחץ על התחל לשלב הבא', p.width / 2, p.height / 2 + 40);
+        } else if (gamePhase === 'game_won') {
+            p.textSize(32);
+            p.fill(255);
+            p.textAlign(p.CENTER, p.CENTER);
+            p.text('כל הכבוד! ניצחת את המשחק!', p.width / 2, p.height / 2);
+            p.textSize(20);
+            p.text('לחץ על התחל כדי להתחיל מחדש', p.width / 2, p.height / 2 + 40);
         }
     };
     
-    // פונקציה גלובלית להתחלת המשחק שנקראת מה-HTML
     window.startGame = function() {
+        if (gamePhase === 'level_complete' && initialStage < NUM_LEVELS) {
+            initialStage++;
+            loadLevel(p, initialStage);
+        } else if (gamePhase === 'game_over' || gamePhase === 'game_won' || gamePhase === 'level_complete') {
+            initialStage = 1; 
+            loadLevel(p, initialStage);
+        } else {
+            loadLevel(p, initialStage);
+        }
         gamePhase = 'playing';
-        // נסתר את שכבת הכפתורים לאחר ההתחלה
         const buttonsOverlay = document.getElementById('buttonsOverlay');
         const infoCard = document.getElementById('infoCard');
         if (buttonsOverlay) buttonsOverlay.style.display = 'none';
         if (infoCard) infoCard.classList.remove('visible');
+        gameStartTime = p.millis();
     };
 
-    // פונקציה גלובלית לאיפוס נתונים שנקראת מה-HTML
-    window.resetGameData = function() {
-        resetGameData(); // קורא לפונקציה המקומית
-        window.location.reload();
-    };
-
-    p.windowResized = function() {
-        const container = document.getElementById('p5-canvas-container');
-        if (container) {
-            p.resizeCanvas(container.clientWidth, container.clientHeight);
-        }
-    };
+    p.keyPressed = function() {}
 };
 
 window.onload = function() {
