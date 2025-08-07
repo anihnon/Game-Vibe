@@ -283,42 +283,47 @@ const sketch = function(p) {
             p.textAlign(p.CENTER, p.CENTER);
             p.text('המשחק נגמר!', p.width / 2, p.height / 2);
             p.textSize(20);
-            p.text('לחץ על התחל כדי להתחיל מחדש', p.width / 2, p.height / 2 + 40);
+            p.text('לחץ על "התחל לשחק" כדי להתחיל מחדש', p.width / 2, p.height / 2 + 40);
         } else if (gamePhase === 'level_complete') {
             p.textSize(32);
             p.fill(255);
             p.textAlign(p.CENTER, p.CENTER);
             p.text('עברת את השלב!', p.width / 2, p.height / 2);
             p.textSize(20);
-            p.text('לחץ על התחל לשלב הבא', p.width / 2, p.height / 2 + 40);
+            p.text('לחץ על "התחל לשחק" לשלב הבא', p.width / 2, p.height / 2 + 40);
         } else if (gamePhase === 'game_won') {
             p.textSize(32);
             p.fill(255);
             p.textAlign(p.CENTER, p.CENTER);
             p.text('כל הכבוד! ניצחת את המשחק!', p.width / 2, p.height / 2);
             p.textSize(20);
-            p.text('לחץ על התחל כדי להתחיל מחדש', p.width / 2, p.height / 2 + 40);
+            p.text('לחץ על "התחל לשחק" כדי להתחיל מחדש', p.width / 2, p.height / 2 + 40);
         }
     };
     
-    // טיפול בלחיצת מקש עבור קפיצה כפולה
+    // טיפול בלחיצת מקש עבור קפיצה כפולה וגם התקדמות
     p.keyPressed = function() {
-        if (gamePhase === 'playing' && p.keyCode === p.UP_ARROW && jumpCount < 2) {
-            player.velY = JUMP_POWER;
-            jumpCount++;
+        if (gamePhase === 'playing') {
+            if (p.keyCode === p.UP_ARROW && jumpCount < 2) {
+                player.velY = JUMP_POWER;
+                jumpCount++;
+            }
+        } else if (p.keyCode === 32) { // 32 הוא keycode של רווח
+            window.startGame();
         }
     };
 
     window.startGame = function() {
-        if (gamePhase === 'level_complete' && initialStage < NUM_LEVELS) {
+        // אם המשחק הסתיים בהצלחה או בכישלון, מתחילים מהשלב הראשון.
+        if (gamePhase === 'game_over' || gamePhase === 'game_won') {
+            initialStage = 1;
+        } 
+        // אם השלב הושלם, מתקדמים לשלב הבא
+        else if (gamePhase === 'level_complete' && initialStage < NUM_LEVELS) {
             initialStage++;
-            loadLevel(p, initialStage);
-        } else if (gamePhase === 'game_over' || gamePhase === 'game_won' || gamePhase === 'level_complete') {
-            initialStage = 1; 
-            loadLevel(p, initialStage);
-        } else {
-            loadLevel(p, initialStage);
         }
+        
+        loadLevel(p, initialStage);
         gamePhase = 'playing';
         const buttonsOverlay = document.getElementById('buttonsOverlay');
         const infoCard = document.getElementById('infoCard');
