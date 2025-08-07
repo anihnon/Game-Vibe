@@ -349,7 +349,10 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // פונקציה לטעינת נתוני המשחקים מקובץ JSON
+            /**
+             * פונקציה לטעינת נתוני המשחקים מקובץ JSON.
+             * @returns {Promise<Array<Object>|null>} מערך המשחקים או null במקרה של שגיאה.
+             */
             async function fetchGames() {
                 try {
                     const response = await fetch('data.json');
@@ -362,8 +365,34 @@
                     return null;
                 }
             }
+            
+            /**
+             * פונקציה לבחירת משחקים מומלצים באופן אקראי.
+             * כרגע הלוגיקה היא אקראית, אך ניתן להרחיב אותה בעתיד.
+             * לדוגמה, לבחור משחקים על בסיס פופולריות, סוג המשחק ששוחק לאחרונה, וכו'.
+             * @param {Array<Object>} gamesArray - רשימת כל המשחקים.
+             * @param {number} count - מספר המשחקים המומלצים להצגה.
+             * @returns {Array<Object>} מערך של משחקים מומלצים.
+             */
+            function getRecommendedGames(gamesArray, count = 3) {
+                // יוצר עותק של המערך כדי לא לשנות את המקורי
+                const shuffledGames = [...gamesArray];
+                
+                // מערבב את המערך באופן אקראי
+                for (let i = shuffledGames.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffledGames[i], shuffledGames[j]] = [shuffledGames[j], shuffledGames[i]];
+                }
+                
+                // מחזיר את שלושת המשחקים הראשונים מהמערך המעורבב
+                return shuffledGames.slice(0, count);
+            }
 
-            // פונקציה להצגת כרטיסיות משחקים
+            /**
+             * פונקציה להצגת כרטיסיות משחקים.
+             * @param {Array<Object>} gamesArray - רשימת המשחקים להצגה.
+             * @param {HTMLElement} gameGrid - אלמנט ה-HTML שבו יוצגו המשחקים.
+             */
             function displayGames(gamesArray, gameGrid) {
                 if (!gameGrid) return;
                 gameGrid.innerHTML = '';
@@ -404,7 +433,12 @@
                 });
             }
             
-            // פונקציה להצגת כרטיסיות קטגוריות
+            /**
+             * פונקציה להצגת כרטיסיות קטגוריות.
+             * @param {Array<string>} categoriesArray - רשימת הקטגוריות להצגה.
+             * @param {Array<Object>} allGames - רשימת כל המשחקים, לשם מציאת תמונה.
+             * @param {HTMLElement} categoryGrid - אלמנט ה-HTML שבו יוצגו הקטגוריות.
+             */
             function displayCategories(categoriesArray, allGames, categoryGrid) {
                 if (!categoryGrid) return;
                 categoryGrid.innerHTML = '';
@@ -432,7 +466,9 @@
             const games = await fetchGames();
             if (games) {
                 const gameGrid = document.getElementById('game-grid');
-                displayGames(games.slice(0, 3), gameGrid); // מציג רק 3 משחקים מומלצים
+                // קבל 3 משחקים מומלצים באופן אקראי
+                const recommendedGames = getRecommendedGames(games, 3);
+                displayGames(recommendedGames, gameGrid);
                 
                 const categoryGrid = document.getElementById('category-grid');
                 const uniqueCategories = [...new Set(games.map(game => game.gameType))];
