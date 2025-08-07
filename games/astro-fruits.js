@@ -31,30 +31,40 @@ function generateLevels(p, numLevels) {
         const newEnemies = [];
         
         // פלטפורמה התחלתית קבועה בתחתית המסך
-        let lastPlatform = { x: 0, y: height - 50, w: width * 0.2, h: 50 };
+        let lastPlatform = { x: 50, y: height - 50, w: width * 0.2, h: 50 };
         newPlatforms.push(lastPlatform);
         
         // יצירת פלטפורמות באופן הגיוני ושיטתי
         const numPlatforms = p.floor(p.random(4, 8 + difficultyFactor * 7));
         for (let j = 0; j < numPlatforms; j++) {
             let newX, newY;
+            const newPlatformWidth = p.random(100, 200);
+
+            // קביעת טווח קפיצה ושינוי כיוון אם הפלטפורמה יוצאת מהמסך
+            let direction = p.random() > 0.5 ? 1 : -1;
+            const minJumpDist = 150;
+            const maxJumpDist = 250;
             
-            // הגרלת מיקום לפלטפורמה חדשה במרחק קפיצה הגיוני מהקודמת
-            newX = p.random(lastPlatform.x + 150, p.width - 200);
+            // חישוב מיקום X
+            let potentialX = lastPlatform.x + direction * p.random(minJumpDist, maxJumpDist);
             
-            // לוודא שהפלטפורמה לא תצא מחוץ למסך
-            if (newX > width - 100) {
-                newX = p.random(50, width * 0.2);
+            // בדיקה אם הפלטפורמה החדשה חורגת מהגבולות
+            if (potentialX < 50 || potentialX + newPlatformWidth > width - 50) {
+                // אם חורגת, נהפוך את הכיוון
+                direction *= -1;
+                potentialX = lastPlatform.x + direction * p.random(minJumpDist, maxJumpDist);
             }
-            
+
+            newX = potentialX;
+
             newY = p.random(lastPlatform.y - MAX_JUMP_HEIGHT, lastPlatform.y);
             // לוודא שהפלטפורמה לא נמוכה מדי
             newY = p.constrain(newY, height * 0.2, height * 0.8);
-
+            
             const newPlatform = {
                 x: newX,
                 y: newY,
-                w: p.random(100, 200),
+                w: newPlatformWidth,
                 h: 20
             };
             newPlatforms.push(newPlatform);
