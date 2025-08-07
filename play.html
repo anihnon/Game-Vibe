@@ -1,16 +1,9 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Dynamic meta tags - will be updated by JavaScript -->
-    <title id="pageTitle">Game Vibe</title>
-    <meta name="description" id="metaDescription" content="קולקציית משחקי דפדפן קלאסיים וכיפיים." />
-    <meta property="og:title" id="ogTitle" content="Game Vibe" />
-    <meta property="og:description" id="ogDescription" content="קולקציית משחקי דפדפן קלאסיים וכיפיים." />
-    <meta property="og:image" id="ogImage" content="https://anihnon.github.io/Game-Vibe/assets/game-vibe-logo.png" />
-    <meta property="og:url" id="ogUrl" content="https://anihnon.github.io/Game-Vibe/" />
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="game-page-title">Vibe Games</title>
     <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -18,431 +11,102 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
+                        sans: ['Varela Round', 'sans-serif'],
                     },
+                    colors: {
+                        'primary': '#2c3e50',
+                        'secondary': '#34495e',
+                        'accent': '#3498db'
+                    }
                 },
             },
         };
     </script>
     <style>
-        /* Basic styles */
         body {
+            font-family: 'Varela Round', sans-serif;
+            background: linear-gradient(135deg, #f4f4f9, #e0e0e5);
             direction: rtl;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-            background: #1a202c;
-            color: #e2e8f0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
-
-        header, footer {
-            background: #2d3748;
-            color: white;
-            text-align: center;
-            padding: 15px 0;
-            user-select: none;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        
-        header h2 a {
-            color: inherit;
-            text-decoration: none;
-            transition: color 0.3s ease, text-decoration 0.3s ease;
-        }
-        
-        header h2 a:hover {
-            color: #a0aec0;
-            text-decoration: underline;
-        }
-        
-        canvas {
-            background-color: #1a202c;
-            border-radius: 1rem;
-        }
-        
-        .button {
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            padding: 12px 24px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .button:hover {
-            background-color: #45a049;
-            transform: scale(1.05);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-        }
-        
-        .button.red {
-            background-color: #f44336;
-        }
-        
-        .button.red:hover {
-            background-color: #da190b;
-        }
-        
-        .info-card-container {
-            text-align: right;
-            padding: 1.5rem;
-            background: #2d3748;
-            border-radius: 1rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            transition: all 0.3s ease-in-out;
-            max-height: 0;
-            overflow: hidden;
-            margin-top: 0;
-            opacity: 0;
-        }
-
-        .info-card-container.visible {
-            max-height: 500px;
-            margin-top: 1.5rem;
-            opacity: 1;
-        }
-        
-        .message-box-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .game-canvas-container {
             width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: none;
+            height: 100vh;
+            display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            background-color: #2c3e50;
         }
-        
-        .message-box {
-            background-color: #2d3748;
-            color: #e2e8f0;
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            max-width: 400px;
-            text-align: center;
+        .controls-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
         }
-        
-        .message-box-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 1.5rem;
+        .title-text {
+            color: #3498db;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
     </style>
 </head>
-<body class="flex flex-col min-h-screen">
-    <header class="bg-[#2d3748] text-white text-center py-4 shadow-md">
-        <h2 class="text-xl font-bold"><a href="/">Game Vibe 🎮</a></h2>
-    </header>
+<body class="bg-primary text-gray-100">
 
-    <main class="flex-1 flex justify-center items-center py-8 px-4">
-        <div id="gamePageContainer" class="bg-[#222b3a] rounded-[20px] shadow-xl p-8 text-center max-w-[900px] w-full flex flex-col items-center">
-            <!-- Dynamic game title will be loaded here -->
-            <h1 id="gameTitle" class="text-3xl font-bold mb-4 text-white">...</h1>
+    <div id="game-page-container" class="relative min-h-screen flex flex-col items-center justify-center">
 
-            <div id="gameContainer" class="relative mt-5 w-full flex flex-col justify-center items-center bg-[#333] rounded-xl overflow-hidden aspect-video max-w-[900px] shadow-2xl">
-                <div id="loadingContainer" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-lg text-gray-400 z-10">טוען משחק...</div>
-                
-                <!-- This is the container for the p5.js canvas -->
-                <div id="p5-canvas-container" class="w-full h-full"></div>
-                
-                <!-- Buttons that will be displayed on the canvas, in the pre-game stage -->
-                <div id="buttonsOverlay" class="absolute inset-0 flex flex-col justify-center items-center gap-4 p-8 rounded-xl z-10 box-border bg-[rgba(34,43,58,0.9)]" style="display: none;">
-                    <div id="additionalButtons" class="flex flex-col md:flex-row gap-4 mt-4">
-                        <button id="startButton" class="button">התחל לשחק</button>
-                        <button id="achievementsButton" class="button">הישגים</button>
-                        <button id="storeButton" class="button">חנות</button>
-                        <button id="resetDataButton" class="button red">איפוס נתונים</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Fullscreen button below the canvas -->
-            <div class="mt-4">
-                <button id="fullscreenButton" class="button">מסך מלא</button>
-            </div>
-
-            <!-- Now the story and instructions are below the button -->
-            <div id="infoCard" class="info-card-container">
-                <h2 id="infoTitle" class="text-2xl font-bold mb-2">...</h2>
-                <p id="infoStory" class="text-lg text-gray-300 mb-4"></p>
-                <div id="infoInstructions">
-                    <h3 class="text-xl font-semibold mb-2">הוראות:</h3>
-                    <ul id="instructionsList" class="text-gray-400 list-disc list-inside"></ul>
-                </div>
-            </div>
+        <!-- כפתורי שליטה וניווט -->
+        <div class="controls-container fixed top-4 right-4 p-3 rounded-lg shadow-xl flex flex-col sm:flex-row gap-3">
+            <a href="#/" class="back-btn bg-accent hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block mr-2 -ml-1 transform rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                חזור
+            </a>
+            <button id="fullscreen-btn" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5v4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 0h-4m4 0l-5-5" />
+                </svg>
+                מסך מלא
+            </button>
         </div>
-    </main>
-    
-    <footer>
-        <p>&copy; 2024 Vibe Games</p>
-    </footer>
 
-    <!-- Message Box Overlay -->
-    <div id="messageBoxOverlay" class="message-box-overlay">
-        <div id="messageBox" class="message-box">
-            <h3 id="messageBoxTitle" class="text-2xl font-bold"></h3>
-            <p id="messageBoxContent" class="mt-4"></p>
-            <div class="message-box-buttons">
-                <button id="messageBoxOk" class="button">אישור</button>
-                <button id="messageBoxCancel" class="button red" style="display: none;">ביטול</button>
-            </div>
+        <!-- מיכל לקנבס של p5.js -->
+        <div id="p5-canvas-container" class="game-canvas-container">
+            <h2 class="text-3xl font-bold title-text">טוען משחק...</h2>
         </div>
+
     </div>
-    
-    <!-- P5.js library, will be loaded before the sketch -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
 
-    <script type="module">
-        // Global variables for p5.js sketch and instance
-        let p5Instance = null;
-        let currentSketch = null;
-        let gamesData = [];
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const gamePageContainer = document.getElementById('game-page-container');
+            const fullscreenButton = document.getElementById('fullscreen-btn');
 
-        /**
-         * Fetches game data from a JSON file.
-         * @returns {Promise<Array>} A promise that resolves to an array of game objects.
-         */
-        async function fetchGames() {
-            try {
-                // Fetcher to get the json file
-                const response = await fetch('/data (1).json');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return await response.json();
-            } catch (e) {
-                console.error("Could not fetch games:", e);
-                return [];
-            }
-        }
-
-        /**
-         * Loads and runs a game sketch dynamically.
-         * @param {string} gameId The ID of the game to load.
-         */
-        async function loadGame(gameId) {
-            console.log(`Attempting to load game with ID: ${gameId}`);
-            const game = gamesData.find(g => g.id === gameId);
-            const gameTitleElement = document.getElementById('gameTitle');
-            const infoTitleElement = document.getElementById('infoTitle');
-            const infoStoryElement = document.getElementById('infoStory');
-            const instructionsListElement = document.getElementById('instructionsList');
-            const loadingContainer = document.getElementById('loadingContainer');
-
-            // Clear previous game and data
-            if (p5Instance) {
-                p5Instance.remove();
-                p5Instance = null;
-                currentSketch = null;
-                const canvasContainer = document.getElementById('p5-canvas-container');
-                canvasContainer.innerHTML = '';
-            }
-
-            loadingContainer.style.display = 'block';
-            gameTitleElement.textContent = 'טוען משחק...';
-            
-            if (!game) {
-                showMessageBox('שגיאה', 'המשחק המבוקש לא נמצא.');
-                gameTitleElement.textContent = 'שגיאה';
-                loadingContainer.style.display = 'none';
-                return;
-            }
-
-            // Update page metadata and dynamic content
-            document.title = game.title + " - Game Vibe";
-            document.getElementById('metaDescription').content = game.description;
-            document.getElementById('ogTitle').content = game.title;
-            document.getElementById('ogDescription').content = game.description;
-            document.getElementById('ogImage').content = game.image;
-            document.getElementById('ogUrl').content = window.location.origin + window.location.pathname;
-            
-            gameTitleElement.textContent = game.title;
-            infoTitleElement.textContent = `אודות ${game.title}`;
-            infoStoryElement.textContent = game.story;
-            instructionsListElement.innerHTML = '';
-            game.instructions.forEach(instruction => {
-                const li = document.createElement('li');
-                li.textContent = instruction;
-                instructionsListElement.appendChild(li);
-            });
-            
-            // Show the info card and update button texts
-            document.getElementById('infoCard').classList.add('visible');
-            const buttonsOverlay = document.getElementById('buttonsOverlay');
-            buttonsOverlay.style.display = 'flex';
-            
-            // Wait a bit to ensure the DOM is ready for the new canvas
-            setTimeout(async () => {
-                const canvasContainer = document.getElementById('p5-canvas-container');
-                try {
-                    const gameScript = await import(`./${game.jsFile}`);
-                    currentSketch = gameScript.default;
-                    if (typeof currentSketch === 'function') {
-                        p5Instance = new p5(currentSketch, canvasContainer);
-                        // Resize canvas to fit the container
-                        p5Instance.resizeCanvas(canvasContainer.clientWidth, canvasContainer.clientHeight);
-                        loadingContainer.style.display = 'none';
-                    } else {
-                        throw new Error('Game script did not export a valid p5 sketch function.');
-                    }
-                } catch (error) {
-                    console.error("Failed to load game script:", error);
-                    showMessageBox('שגיאה', `אירעה שגיאה בטעינת המשחק: ${error.message}`);
-                    loadingContainer.style.display = 'none';
-                }
-            }, 100);
-        }
-
-        /**
-         * Custom message box function instead of `alert()`.
-         * @param {string} title The title of the message box.
-         * @param {string} content The content of the message.
-         * @param {boolean} showCancel If true, a cancel button is shown.
-         * @returns {Promise<boolean>} A promise that resolves to true for "OK" and false for "Cancel".
-         */
-        function showMessageBox(title, content, showCancel = false) {
-            return new Promise(resolve => {
-                const overlay = document.getElementById('messageBoxOverlay');
-                const titleEl = document.getElementById('messageBoxTitle');
-                const contentEl = document.getElementById('messageBoxContent');
-                const okBtn = document.getElementById('messageBoxOk');
-                const cancelBtn = document.getElementById('messageBoxCancel');
-
-                titleEl.textContent = title;
-                contentEl.textContent = content;
-                cancelBtn.style.display = showCancel ? 'inline-block' : 'none';
-
-                overlay.style.display = 'flex';
-
-                const handleOk = () => {
-                    overlay.style.display = 'none';
-                    okBtn.removeEventListener('click', handleOk);
-                    cancelBtn.removeEventListener('click', handleCancel);
-                    resolve(true);
-                };
-
-                const handleCancel = () => {
-                    overlay.style.display = 'none';
-                    okBtn.removeEventListener('click', handleOk);
-                    cancelBtn.removeEventListener('click', handleCancel);
-                    resolve(false);
-                };
-
-                okBtn.addEventListener('click', handleOk);
-                cancelBtn.addEventListener('click', handleCancel);
-            });
-        }
-        
-        // This function will be called from within the game sketch if it exists
-        window.resetGameData = async () => {
-            const confirmed = await showMessageBox('איפוס נתונים', 'האם אתה בטוח שברצונך לאפס את כל נתוני המשחק? פעולה זו היא בלתי הפיכה.', true);
-            if (confirmed) {
-                showMessageBox('הצלחה', 'נתוני המשחק אופסו בהצלחה.');
-                console.log("Game data reset!");
-                // Here you would add the actual logic to reset data,
-                // e.g., clearing local storage, a database, etc.
-            }
-        };
-
-        // Handle navigation and dynamic content loading
-        async function handleRouting() {
-            // Get the game ID from the URL path, e.g., '/game/desertStorm' -> 'desertStorm'
-            const path = window.location.pathname;
-            const match = path.match(/\/game\/([a-zA-Z0-9]+)$/);
-            
-            if (match && match[1]) {
-                const gameId = match[1];
-                loadGame(gameId);
-            } else {
-                // Redirect to the home page if the URL is not for a game
-                window.location.href = '/';
-            }
-        }
-        
-        // Event listeners for buttons
-        const startButton = document.getElementById('startButton');
-        if (startButton) {
-            startButton.addEventListener('click', () => {
-                if (currentSketch && typeof currentSketch.startGame === 'function') {
-                    currentSketch.startGame();
-                    document.getElementById('buttonsOverlay').style.display = 'none';
-                }
-            });
-        }
-
-        const resetDataButton = document.getElementById('resetDataButton');
-        if (resetDataButton) {
-            resetDataButton.addEventListener('click', () => {
-                if (window.resetGameData) {
-                    window.resetGameData();
-                }
-            });
-        }
-        
-        const fullscreenButton = document.getElementById('fullscreenButton');
-        const gamePageContainer = document.getElementById('gamePageContainer');
-        if (fullscreenButton && gamePageContainer) {
             fullscreenButton.addEventListener('click', () => {
                 if (gamePageContainer.requestFullscreen) {
                     gamePageContainer.requestFullscreen();
-                } else if (gamePageContainer.mozRequestFullScreen) {
+                } else if (gamePageContainer.mozRequestFullScreen) { // Firefox
                     gamePageContainer.mozRequestFullScreen();
-                } else if (gamePageContainer.webkitRequestFullscreen) {
+                } else if (gamePageContainer.webkitRequestFullscreen) { // Chrome, Safari and Opera
                     gamePageContainer.webkitRequestFullscreen();
-                } else if (gamePageContainer.msRequestFullscreen) {
+                } else if (gamePageContainer.msRequestFullscreen) { // IE/Edge
                     gamePageContainer.msRequestFullscreen();
                 }
             });
-        }
 
-        // Handle internal navigation for links
-        document.body.addEventListener('click', e => {
-            const link = e.target.closest('a');
-            if (link && link.href.startsWith(window.location.origin)) {
-                e.preventDefault();
-                const newPath = link.pathname;
-                
-                // If it's a game link, handle it with our router
-                if (newPath.startsWith('/game/')) {
-                    history.pushState({}, '', newPath);
-                    handleRouting();
-                } else {
-                    // For other links, just navigate normally
-                    window.location.href = newPath;
-                }
+            // פונקציה להצגת הודעות במקום alert()
+            function showMessageBox(title, message) {
+                const messageBox = document.createElement('div');
+                messageBox.className = 'fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50';
+                messageBox.innerHTML = `
+                    <div class="bg-white text-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
+                        <h3 class="text-xl font-bold mb-2">${title}</h3>
+                        <p class="mb-4">${message}</p>
+                        <button onclick="this.closest('.fixed').remove()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">סגור</button>
+                    </div>
+                `;
+                document.body.appendChild(messageBox);
             }
-        });
-
-        // Listen for browser history changes (back/forward buttons)
-        window.addEventListener('popstate', handleRouting);
-        
-        // Resize the canvas to fit the container
-        window.addEventListener('resize', () => {
-            const container = document.getElementById('p5-canvas-container');
-            if (container && p5Instance) {
-                p5Instance.resizeCanvas(container.clientWidth, container.clientHeight);
-            }
-        });
-        
-        // On page load, fetch games data once and then handle routing
-        window.addEventListener('load', async () => {
-            gamesData = await fetchGames();
-            handleRouting();
+            window.showMessageBox = showMessageBox;
         });
     </script>
+    <!-- כאן ייטען קובץ ה-p5.js באופן דינמי על ידי index.html -->
+    <!-- כאן ייטען קובץ ה-JavaScript הספציפי של המשחק באופן דינמי -->
 </body>
 </html>
