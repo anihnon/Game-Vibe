@@ -3,35 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>טוען משחק...</title>
-    <style>
-        body {
-            background-color: #1a202c;
-            color: #e2e8f0;
-            font-family: 'Varela Round', sans-serif;
-            text-align: center;
-            padding-top: 50px;
-        }
-    </style>
+    <title>מנווט מחדש...</title>
 </head>
 <body>
-    <h1>טוען משחק...</h1>
-    <p>אנא המתן.</p>
     <script>
-        // Get the current URL path
-        const path = window.location.pathname;
+        // זהו קוד שנועד לפתור בעיות ניתוב ב-GitHub Pages עבור אפליקציות SPA.
+        // הוא לוקח את הנתיב המלא של הכתובת הנוכחית ומעביר אותו כהאשטאג (#)
+        // לדף הבית (index.html). הקוד של ה-SPA ב-index.html יכול לטפל בו.
 
-        // Check if the path is for a game, e.g., /game/snake
-        const match = path.match(/\/game\/([a-zA-Z0-9]+)$/);
+        var path = window.location.pathname;
+        var redirect = window.location.origin + window.location.pathname + "#" + window.location.hash + window.location.search;
 
-        // If it's a game URL, redirect to the play.html page
-        if (match) {
-            const gameId = match[1];
-            // Construct the correct URL for the play page with the game ID
-            window.location.replace(`play.html?game=${encodeURIComponent(gameId)}`);
+        // הוסף את השם של המאגר ב-GitHub (Game-Vibe) כדי להתאים לנתיב
+        if (path.indexOf("/Game-Vibe/") > -1) {
+            path = path.substring(path.indexOf("/Game-Vibe/") + "/Game-Vibe/".length);
+        }
+
+        // אם הנתיב מכיל את השם של המאגר, נטפל בו
+        if (path.length > 0) {
+            // בנה את הכתובת החדשה עם הנתיב המקורי
+            var newPath = window.location.origin + window.location.pathname.replace(path, "") + "#" + path + window.location.search;
+            window.location.replace(newPath);
         } else {
-            // Otherwise, redirect to the homepage
-            window.location.replace('/');
+            // אם אין נתיב, פשוט עבור לדף הבית
+            window.location.replace(window.location.origin + window.location.pathname.replace("404.html", ""));
         }
     </script>
 </body>
