@@ -358,28 +358,28 @@ const sketch = function(p) {
             p.textSize(32);
             p.fill(255);
             p.textAlign(p.CENTER, p.CENTER);
-            p.text('לחץ על "התחל לשחק"', p.width / 2, p.height / 2);
+            p.text('לחץ על מקש רווח כדי להתחיל', p.width / 2, p.height / 2);
         } else if (gamePhase === 'game_over') {
             p.textSize(32);
             p.fill(255);
             p.textAlign(p.CENTER, p.CENTER);
             p.text('המשחק נגמר!', p.width / 2, p.height / 2);
             p.textSize(20);
-            p.text('לחץ על "התחל לשחק" כדי להתחיל מחדש', p.width / 2, p.height / 2 + 40);
+            p.text('לחץ על מקש רווח כדי להתחיל מחדש', p.width / 2, p.height / 2 + 40);
         } else if (gamePhase === 'level_complete') {
             p.textSize(32);
             p.fill(255);
             p.textAlign(p.CENTER, p.CENTER);
             p.text('עברת את השלב!', p.width / 2, p.height / 2);
             p.textSize(20);
-            p.text('לחץ על "התחל לשחק" לשלב הבא', p.width / 2, p.height / 2 + 40);
+            p.text('לחץ על מקש רווח לשלב הבא', p.width / 2, p.height / 2 + 40);
         } else if (gamePhase === 'game_won') {
             p.textSize(32);
             p.fill(255);
             p.textAlign(p.CENTER, p.CENTER);
             p.text('כל הכבוד! ניצחת את המשחק!', p.width / 2, p.height / 2);
             p.textSize(20);
-            p.text('לחץ על "התחל לשחק" כדי להתחיל מחדש', p.width / 2, p.height / 2 + 40);
+            p.text('לחץ על מקש רווח כדי להתחיל מחדש', p.width / 2, p.height / 2 + 40);
         } else if (gamePhase === 'store') {
             p.textAlign(p.CENTER, p.TOP);
             p.textSize(48);
@@ -453,7 +453,7 @@ const sketch = function(p) {
             p.fill(255);
             p.textAlign(p.CENTER, p.BOTTOM);
             p.textSize(20);
-            p.text('לחץ על מקש הרווח כדי לחזור', p.width / 2, p.height - 20);
+            p.text('לחץ על מקש רווח כדי לחזור', p.width / 2, p.height - 20);
         }
     };
     
@@ -486,9 +486,7 @@ const sketch = function(p) {
             if (p.keyCode === 32) { // מקש רווח
                 window.startGame();
             } else if (p.keyCode === 83) { // מקש 'S'
-                gamePhase = 'store';
-                const buttonsOverlay = document.getElementById('buttonsOverlay');
-                if (buttonsOverlay) buttonsOverlay.style.display = 'none';
+                window.openStore(); // קורא לפונקציית החנות
             }
         } else if (gamePhase === 'store') {
             if (p.keyCode === 32) { // מקש רווח
@@ -555,4 +553,12 @@ const sketch = function(p) {
 
 window.onload = function() {
     window.p5Instance = new p5(sketch, 'p5-canvas-container');
+
+    // חיבור כפתור החנות מה-HTML לפונקציה המתאימה בקוד
+    const storeButton = document.getElementById('storeButton');
+    if (storeButton) {
+        storeButton.addEventListener('click', () => {
+            window.openStore();
+        });
+    }
 };
