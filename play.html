@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- תגיות מטא דינמיות - יתעדכנו על ידי JavaScript -->
+    <!-- Dynamic meta tags - will be updated by JavaScript -->
     <title id="pageTitle">Game Vibe</title>
     <meta name="description" id="metaDescription" content="קולקציית משחקי דפדפן קלאסיים וכיפיים." />
     <meta property="og:title" id="ogTitle" content="Game Vibe" />
     <meta property="og:description" id="ogDescription" content="קולקציית משחקי דפדפן קלאסיים וכיפיים." />
     <meta property="og:image" id="ogImage" content="https://anihnon.github.io/Game-Vibe/assets/game-vibe-logo.png" />
     <meta property="og:url" id="ogUrl" content="https://anihnon.github.io/Game-Vibe/" />
-    
+
     <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -25,7 +25,7 @@
         };
     </script>
     <style>
-        /* סגנונות בסיסיים */
+        /* Basic styles */
         body {
             direction: rtl;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -38,6 +38,7 @@
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
+
         header, footer {
             background: #2d3748;
             color: white;
@@ -46,19 +47,23 @@
             user-select: none;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
+        
         header h2 a {
             color: inherit;
             text-decoration: none;
             transition: color 0.3s ease, text-decoration 0.3s ease;
         }
+        
         header h2 a:hover {
             color: #a0aec0;
             text-decoration: underline;
         }
+        
         canvas {
             background-color: #1a202c;
             border-radius: 1rem;
         }
+        
         .button {
             background-color: #4CAF50;
             border: none;
@@ -73,17 +78,21 @@
             transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
         .button:hover {
             background-color: #45a049;
             transform: scale(1.05);
             box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
         }
+        
         .button.red {
             background-color: #f44336;
         }
+        
         .button.red:hover {
             background-color: #da190b;
         }
+        
         .info-card-container {
             text-align: right;
             padding: 1.5rem;
@@ -96,30 +105,61 @@
             margin-top: 0;
             opacity: 0;
         }
+
         .info-card-container.visible {
-            max-height: 500px; /* Adjust this value */
+            max-height: 500px;
             margin-top: 1.5rem;
             opacity: 1;
+        }
+        
+        .message-box-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .message-box {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .message-box-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
         }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
     <header class="bg-[#2d3748] text-white text-center py-4 shadow-md">
-        <h2 class="text-xl font-bold"><a href="/Game-Vibe/">Game Vibe 🎮</a></h2>
+        <h2 class="text-xl font-bold"><a href="/">Game Vibe 🎮</a></h2>
     </header>
 
     <main class="flex-1 flex justify-center items-center py-8 px-4">
         <div id="gamePageContainer" class="bg-[#222b3a] rounded-[20px] shadow-xl p-8 text-center max-w-[900px] w-full flex flex-col items-center">
-            <!-- כותרת המשחק הדינמית תטען כאן -->
+            <!-- Dynamic game title will be loaded here -->
             <h1 id="gameTitle" class="text-3xl font-bold mb-4 text-white">...</h1>
 
             <div id="gameContainer" class="relative mt-5 w-full flex flex-col justify-center items-center bg-[#333] rounded-xl overflow-hidden aspect-video max-w-[900px] shadow-2xl">
                 <div id="loadingContainer" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-lg text-gray-400 z-10">טוען משחק...</div>
                 
-                <!-- זהו המיכל עבור קנבס ה-p5.js -->
+                <!-- This is the container for the p5.js canvas -->
                 <div id="p5-canvas-container" class="w-full h-full"></div>
                 
-                <!-- כפתורים שיוצגו על הקנבס, בשלב טרום המשחק -->
+                <!-- Buttons that will be displayed on the canvas, in the pre-game stage -->
                 <div id="buttonsOverlay" class="absolute inset-0 flex flex-col justify-center items-center gap-4 p-8 rounded-xl z-10 box-border bg-[rgba(34,43,58,0.9)]" style="display: none;">
                     <div id="additionalButtons" class="flex flex-col md:flex-row gap-4 mt-4">
                         <button id="startButton" class="button">התחל לשחק</button>
@@ -130,12 +170,12 @@
                 </div>
             </div>
 
-            <!-- כפתור מסך מלא מתחת לקנבס -->
+            <!-- Fullscreen button below the canvas -->
             <div class="mt-4">
                 <button id="fullscreenButton" class="button">מסך מלא</button>
             </div>
 
-            <!-- כעת הסיפור וההוראות נמצאים מתחת לכפתור -->
+            <!-- Now the story and instructions are below the button -->
             <div id="infoCard" class="info-card-container">
                 <h2 id="infoTitle" class="text-2xl font-bold mb-2">...</h2>
                 <p id="infoStory" class="text-lg text-gray-300 mb-4"></p>
@@ -144,250 +184,265 @@
                     <ul id="instructionsList" class="text-gray-400 list-disc list-inside"></ul>
                 </div>
             </div>
-            
         </div>
     </main>
-
-    <footer class="bg-[#2d3748] text-white text-center py-4 shadow-md mt-auto">
-        <p>&copy; 2025 Game Vibe. כל הזכויות שמורות.</p>
+    
+    <footer>
+        <p>&copy; 2024 Vibe Games</p>
     </footer>
 
-    <!-- תיבת הודעה מותאמת אישית -->
-    <div id="messageBox" class="fixed inset-0 bg-[rgba(0,0,0,0.8)] hidden justify-center items-center z-[1000]">
-        <div class="bg-[#2d3748] p-8 rounded-2xl text-center text-white shadow-xl max-w-sm w-full mx-4">
-            <h3 id="messageBoxTitle" class="text-2xl font-bold mb-4"></h3>
-            <p id="messageBoxBody" class="mb-6"></p>
-            <button id="messageBoxClose" class="button">אישור</button>
+    <!-- Message Box Overlay -->
+    <div id="messageBoxOverlay" class="message-box-overlay">
+        <div id="messageBox" class="message-box">
+            <h3 id="messageBoxTitle" class="text-2xl font-bold"></h3>
+            <p id="messageBoxContent" class="mt-4"></p>
+            <div class="message-box-buttons">
+                <button id="messageBoxOk" class="button">אישור</button>
+                <button id="messageBoxCancel" class="button red" style="display: none;">ביטול</button>
+            </div>
         </div>
     </div>
     
-    <!-- טעינת ספריית p5.js קודם כל -->
-    <script src="https://cdn.jsdelivr.net/npm/p5@1.4.0/lib/p5.js"></script>
-    
-    <!-- קובץ JavaScript ראשי שיטפל בניתוב -->
-    <script src="main.js"></script>
-</body>
-</html>
-```javascript
-// main.js
+    <!-- P5.js library, will be loaded before the sketch -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
 
-// DOM elements
-const gamePageContainer = document.getElementById('gamePageContainer');
-const gameContainerElement = document.getElementById('gameContainer');
-const infoCard = document.getElementById('infoCard');
-const loadingContainer = document.getElementById('loadingContainer');
-const buttonsOverlay = document.getElementById('buttonsOverlay');
-const fullscreenButton = document.getElementById('fullscreenButton');
-const messageBox = document.getElementById('messageBox');
+    <script type="module">
+        // Global variables for p5.js sketch and instance
+        let p5Instance = null;
+        let currentSketch = null;
+        let gamesData = [];
 
-// Metadata elements for SEO
-const pageTitle = document.getElementById('pageTitle');
-const metaDescription = document.getElementById('metaDescription');
-const ogTitle = document.getElementById('ogTitle');
-const ogDescription = document.getElementById('ogDescription');
-const ogImage = document.getElementById('ogImage');
-const ogUrl = document.getElementById('ogUrl');
-
-// Global variable for the p5 instance
-let p5Instance = null;
-let currentSketch = null;
-
-// Function to show a custom message box
-function showMessageBox(title, content, callback) {
-    document.getElementById('messageBoxTitle').innerText = title;
-    document.getElementById('messageBoxBody').innerText = content;
-    messageBox.style.display = 'flex';
-    const closeButton = document.getElementById('messageBoxClose');
-    const newCloseButton = closeButton.cloneNode(true);
-    closeButton.parentNode.replaceChild(newCloseButton, closeButton);
-    newCloseButton.onclick = () => {
-        messageBox.style.display = 'none';
-        if (callback) callback();
-    };
-}
-
-// Function to dynamically load a JavaScript file
-function loadScript(url) {
-    return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = url;
-        script.onload = () => resolve(script);
-        script.onerror = () => reject(new Error(`Error loading script: ${url}`));
-        document.head.appendChild(script);
-    });
-}
-
-// Function to remove an existing p5 instance
-function removeExistingP5() {
-    if (p5Instance) {
-        p5Instance.remove();
-        p5Instance = null;
-    }
-    const canvasContainer = document.getElementById('p5-canvas-container');
-    canvasContainer.innerHTML = ''; // Clear the container
-    currentSketch = null;
-}
-
-// Function to update the document metadata for SEO
-function updateMetadata(game) {
-    if (game) {
-        document.title = game.title + ' | Game Vibe';
-        pageTitle.innerText = game.title + ' | Game Vibe';
-        metaDescription.setAttribute('content', game.story);
-        ogTitle.setAttribute('content', game.title);
-        ogDescription.setAttribute('content', game.story);
-        if (game.image) {
-            ogImage.setAttribute('content', game.image);
+        /**
+         * Fetches game data from a JSON file.
+         * @returns {Promise<Array>} A promise that resolves to an array of game objects.
+         */
+        async function fetchGames() {
+            try {
+                // Fetcher to get the json file
+                const response = await fetch('/data (1).json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return await response.json();
+            } catch (e) {
+                console.error("Could not fetch games:", e);
+                return [];
+            }
         }
-        ogUrl.setAttribute('content', window.location.href);
-    } else {
-        // Default metadata for the main page
-        document.title = 'Game Vibe';
-        pageTitle.innerText = 'Game Vibe';
-        metaDescription.setAttribute('content', 'קולקציית משחקי דפדפן קלאסיים וכיפיים.');
-        ogTitle.setAttribute('content', 'Game Vibe');
-        ogDescription.setAttribute('content', 'קולקציית משחקי דפדפן קלאסיים וכיפיים.');
-        ogImage.setAttribute('content', '[https://anihnon.github.io/Game-Vibe/assets/game-vibe-logo.png](https://anihnon.github.io/Game-Vibe/assets/game-vibe-logo.png)');
-        ogUrl.setAttribute('content', '[https://anihnon.github.io/Game-Vibe/](https://anihnon.github.io/Game-Vibe/)');
-    }
-}
 
-// Main function to handle game loading based on URL
-async function loadGame(pathname) {
-    removeExistingP5(); // Clear any previous game
+        /**
+         * Loads and runs a game sketch dynamically.
+         * @param {string} gameId The ID of the game to load.
+         */
+        async function loadGame(gameId) {
+            console.log(`Attempting to load game with ID: ${gameId}`);
+            const game = gamesData.find(g => g.id === gameId);
+            const gameTitleElement = document.getElementById('gameTitle');
+            const infoTitleElement = document.getElementById('infoTitle');
+            const infoStoryElement = document.getElementById('infoStory');
+            const instructionsListElement = document.getElementById('instructionsList');
+            const loadingContainer = document.getElementById('loadingContainer');
 
-    const pathParts = pathname.split('/').filter(part => part !== '');
-    const isGamePage = pathParts[0] === 'games' && pathParts[1];
-    
-    // Set up default view for the home page or a non-game page
-    if (!isGamePage) {
-        document.getElementById('gameTitle').innerText = 'ברוכים הבאים ל-Game Vibe!';
-        loadingContainer.innerText = 'בחרו משחק מהרשימה כדי להתחיל.';
-        loadingContainer.style.display = 'block';
-        buttonsOverlay.style.display = 'none';
-        infoCard.classList.remove('visible');
-        updateMetadata(null);
-        return;
-    }
+            // Clear previous game and data
+            if (p5Instance) {
+                p5Instance.remove();
+                p5Instance = null;
+                currentSketch = null;
+                const canvasContainer = document.getElementById('p5-canvas-container');
+                canvasContainer.innerHTML = '';
+            }
 
-    const gameId = pathParts[1];
-    loadingContainer.innerText = 'טוען משחק...';
-    loadingContainer.style.display = 'block';
-    
-    try {
-        const response = await fetch('data/games.json');
-        if (!response.ok) throw new Error('Error loading game data');
-        const games = await response.json();
-        const currentGame = games.find(game => game.id === gameId);
-
-        if (currentGame) {
-            // Update UI with game data
-            document.getElementById('gameTitle').innerText = currentGame.title;
-            document.getElementById('infoTitle').innerText = currentGame.title;
-            document.getElementById('infoStory').innerText = currentGame.story;
+            loadingContainer.style.display = 'block';
+            gameTitleElement.textContent = 'טוען משחק...';
             
-            const instructionsList = document.getElementById('instructionsList');
-            instructionsList.innerHTML = '';
-            currentGame.instructions.forEach(instruction => {
+            if (!game) {
+                showMessageBox('שגיאה', 'המשחק המבוקש לא נמצא.');
+                gameTitleElement.textContent = 'שגיאה';
+                loadingContainer.style.display = 'none';
+                return;
+            }
+
+            // Update page metadata and dynamic content
+            document.title = game.title + " - Game Vibe";
+            document.getElementById('metaDescription').content = game.description;
+            document.getElementById('ogTitle').content = game.title;
+            document.getElementById('ogDescription').content = game.description;
+            document.getElementById('ogImage').content = game.image;
+            document.getElementById('ogUrl').content = window.location.origin + window.location.pathname;
+            
+            gameTitleElement.textContent = game.title;
+            infoTitleElement.textContent = `אודות ${game.title}`;
+            infoStoryElement.textContent = game.story;
+            instructionsListElement.innerHTML = '';
+            game.instructions.forEach(instruction => {
                 const li = document.createElement('li');
-                li.innerText = instruction;
-                instructionsList.appendChild(li);
+                li.textContent = instruction;
+                instructionsListElement.appendChild(li);
             });
             
-            infoCard.classList.add('visible');
+            // Show the info card and update button texts
+            document.getElementById('infoCard').classList.add('visible');
+            const buttonsOverlay = document.getElementById('buttonsOverlay');
             buttonsOverlay.style.display = 'flex';
-            loadingContainer.style.display = 'none';
             
-            // Update metadata for SEO
-            updateMetadata(currentGame);
+            // Wait a bit to ensure the DOM is ready for the new canvas
+            setTimeout(async () => {
+                const canvasContainer = document.getElementById('p5-canvas-container');
+                try {
+                    const gameScript = await import(`./${game.jsFile}`);
+                    currentSketch = gameScript.default;
+                    if (typeof currentSketch === 'function') {
+                        p5Instance = new p5(currentSketch, canvasContainer);
+                        // Resize canvas to fit the container
+                        p5Instance.resizeCanvas(canvasContainer.clientWidth, canvasContainer.clientHeight);
+                        loadingContainer.style.display = 'none';
+                    } else {
+                        throw new Error('Game script did not export a valid p5 sketch function.');
+                    }
+                } catch (error) {
+                    console.error("Failed to load game script:", error);
+                    showMessageBox('שגיאה', `אירעה שגיאה בטעינת המשחק: ${error.message}`);
+                    loadingContainer.style.display = 'none';
+                }
+            }, 100);
+        }
 
-            // Dynamically load the game script
-            const scriptUrl = `games/${currentGame.jsFile}`;
-            await loadScript(scriptUrl);
-            
-            if (typeof sketch !== 'undefined') {
-                p5Instance = new p5(sketch, 'p5-canvas-container');
-                currentSketch = sketch;
-            } else {
-                showMessageBox('שגיאה', 'קובץ המשחק נטען אך לא מכיל את פונקציית ה-p5 הנדרשת.');
-                console.error("Game script loaded, but 'sketch' is not defined.");
+        /**
+         * Custom message box function instead of `alert()`.
+         * @param {string} title The title of the message box.
+         * @param {string} content The content of the message.
+         * @param {boolean} showCancel If true, a cancel button is shown.
+         * @returns {Promise<boolean>} A promise that resolves to true for "OK" and false for "Cancel".
+         */
+        function showMessageBox(title, content, showCancel = false) {
+            return new Promise(resolve => {
+                const overlay = document.getElementById('messageBoxOverlay');
+                const titleEl = document.getElementById('messageBoxTitle');
+                const contentEl = document.getElementById('messageBoxContent');
+                const okBtn = document.getElementById('messageBoxOk');
+                const cancelBtn = document.getElementById('messageBoxCancel');
+
+                titleEl.textContent = title;
+                contentEl.textContent = content;
+                cancelBtn.style.display = showCancel ? 'inline-block' : 'none';
+
+                overlay.style.display = 'flex';
+
+                const handleOk = () => {
+                    overlay.style.display = 'none';
+                    okBtn.removeEventListener('click', handleOk);
+                    cancelBtn.removeEventListener('click', handleCancel);
+                    resolve(true);
+                };
+
+                const handleCancel = () => {
+                    overlay.style.display = 'none';
+                    okBtn.removeEventListener('click', handleOk);
+                    cancelBtn.removeEventListener('click', handleCancel);
+                    resolve(false);
+                };
+
+                okBtn.addEventListener('click', handleOk);
+                cancelBtn.addEventListener('click', handleCancel);
+            });
+        }
+        
+        // This function will be called from within the game sketch if it exists
+        window.resetGameData = async () => {
+            const confirmed = await showMessageBox('איפוס נתונים', 'האם אתה בטוח שברצונך לאפס את כל נתוני המשחק? פעולה זו היא בלתי הפיכה.', true);
+            if (confirmed) {
+                showMessageBox('הצלחה', 'נתוני המשחק אופסו בהצלחה.');
+                console.log("Game data reset!");
+                // Here you would add the actual logic to reset data,
+                // e.g., clearing local storage, a database, etc.
             }
-        } else {
-            loadingContainer.innerText = `מזהה המשחק '${gameId}' לא נמצא.`;
-            showMessageBox('שגיאה', `מזהה המשחק '${gameId}' לא נמצא בקובץ הנתונים.`);
-            infoCard.classList.remove('visible');
-            updateMetadata(null);
-        }
-    } catch (error) {
-        loadingContainer.innerText = 'אירעה שגיאה בטעינת הנתונים או הקובץ.';
-        showMessageBox('שגיאה', 'אירעה שגיאה בטעינת קובץ הנתונים או קובץ המשחק.');
-        console.error('Error loading game:', error);
-    }
-}
+        };
 
-// Event listeners
-window.addEventListener('popstate', () => {
-    loadGame(window.location.pathname);
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-    loadGame(window.location.pathname);
-
-    // Initial event listeners for buttons
-    document.getElementById('startButton').addEventListener('click', () => {
-        if (typeof window.startGame === 'function') {
-            window.startGame();
-        } else {
-            showMessageBox('שגיאה', 'פונקציית התחלת המשחק אינה זמינה. 🔄');
-        }
-    });
-
-    document.getElementById('achievementsButton').addEventListener('click', () => {
-        showMessageBox('הישגים', 'פונקציית ההישגים עדיין לא ממומשת. 🏆');
-    });
-
-    document.getElementById('resetDataButton').addEventListener('click', () => {
-        showMessageBox('איפוס נתונים', 'האם אתה בטוח שברצונך לאפס את נתוני המשחק?', () => {
-            if (typeof window.resetGameData === 'function') {
-                window.resetGameData();
+        // Handle navigation and dynamic content loading
+        async function handleRouting() {
+            // Get the game ID from the URL path, e.g., '/game/desertStorm' -> 'desertStorm'
+            const path = window.location.pathname;
+            const match = path.match(/\/game\/([a-zA-Z0-9]+)$/);
+            
+            if (match && match[1]) {
+                const gameId = match[1];
+                loadGame(gameId);
             } else {
-                showMessageBox('שגיאה', 'פונקציית איפוס הנתונים אינה זמינה.');
+                // Redirect to the home page if the URL is not for a game
+                window.location.href = '/';
+            }
+        }
+        
+        // Event listeners for buttons
+        const startButton = document.getElementById('startButton');
+        if (startButton) {
+            startButton.addEventListener('click', () => {
+                if (currentSketch && typeof currentSketch.startGame === 'function') {
+                    currentSketch.startGame();
+                    document.getElementById('buttonsOverlay').style.display = 'none';
+                }
+            });
+        }
+
+        const resetDataButton = document.getElementById('resetDataButton');
+        if (resetDataButton) {
+            resetDataButton.addEventListener('click', () => {
+                if (window.resetGameData) {
+                    window.resetGameData();
+                }
+            });
+        }
+        
+        const fullscreenButton = document.getElementById('fullscreenButton');
+        const gamePageContainer = document.getElementById('gamePageContainer');
+        if (fullscreenButton && gamePageContainer) {
+            fullscreenButton.addEventListener('click', () => {
+                if (gamePageContainer.requestFullscreen) {
+                    gamePageContainer.requestFullscreen();
+                } else if (gamePageContainer.mozRequestFullScreen) {
+                    gamePageContainer.mozRequestFullScreen();
+                } else if (gamePageContainer.webkitRequestFullscreen) {
+                    gamePageContainer.webkitRequestFullscreen();
+                } else if (gamePageContainer.msRequestFullscreen) {
+                    gamePageContainer.msRequestFullscreen();
+                }
+            });
+        }
+
+        // Handle internal navigation for links
+        document.body.addEventListener('click', e => {
+            const link = e.target.closest('a');
+            if (link && link.href.startsWith(window.location.origin)) {
+                e.preventDefault();
+                const newPath = link.pathname;
+                
+                // If it's a game link, handle it with our router
+                if (newPath.startsWith('/game/')) {
+                    history.pushState({}, '', newPath);
+                    handleRouting();
+                } else {
+                    // For other links, just navigate normally
+                    window.location.href = newPath;
+                }
             }
         });
-    });
 
-    // Handle internal navigation for links
-    document.body.addEventListener('click', e => {
-        const link = e.target.closest('a');
-        if (link && link.href.startsWith(window.location.origin)) {
-            e.preventDefault();
-            const newPath = link.pathname;
-            history.pushState({}, '', newPath);
-            loadGame(newPath);
-        }
-    });
-});
-
-fullscreenButton.addEventListener('click', () => {
-    if (gamePageContainer.requestFullscreen) {
-        gamePageContainer.requestFullscreen();
-    } else if (gamePageContainer.mozRequestFullScreen) {
-        gamePageContainer.mozRequestFullScreen();
-    } else if (gamePageContainer.webkitRequestFullscreen) {
-        gamePageContainer.webkitRequestFullscreen();
-    } else if (gamePageContainer.msRequestFullscreen) {
-        gamePageContainer.msRequestFullscreen();
-    }
-});
-
-// Resize the canvas to fit the container
-window.addEventListener('resize', () => {
-    const container = document.getElementById('p5-canvas-container');
-    if (container && p5Instance && currentSketch) {
-        if (currentSketch.resizeCanvas) {
-            currentSketch.resizeCanvas(container.clientWidth, container.clientHeight);
-        } else {
-            p5Instance.resizeCanvas(container.clientWidth, container.clientHeight);
-        }
-    }
-});
+        // Listen for browser history changes (back/forward buttons)
+        window.addEventListener('popstate', handleRouting);
+        
+        // Resize the canvas to fit the container
+        window.addEventListener('resize', () => {
+            const container = document.getElementById('p5-canvas-container');
+            if (container && p5Instance) {
+                p5Instance.resizeCanvas(container.clientWidth, container.clientHeight);
+            }
+        });
+        
+        // On page load, fetch games data once and then handle routing
+        window.addEventListener('load', async () => {
+            gamesData = await fetchGames();
+            handleRouting();
+        });
+    </script>
+</body>
+</html>
