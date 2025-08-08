@@ -236,7 +236,7 @@ function loadLevel(p, levelNum) {
 }
 
 // הגדרת הסקצ' של p5
-const sketch = function(p) {
+window.sketch = function(p) {
     p.setup = function() {
         const container = document.getElementById('p5-canvas-container');
         if (container) {
